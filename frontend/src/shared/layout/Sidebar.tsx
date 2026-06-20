@@ -4,7 +4,6 @@ import styles from './Sidebar.module.css';
 
 export function Sidebar() {
   const logout = useAuthStore((s) => s.logout);
-  const user = useAuthStore((s) => s.user);
   const navigate = useNavigate();
 
   const handleLogout = () => {
