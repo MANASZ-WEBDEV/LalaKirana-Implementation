@@ -2,10 +2,10 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
-import authRoutes from './routes/auth.routes.js';
-import productRoutes from './routes/products.routes.js';
-import inventoryRoutes from './routes/inventory.routes.js';
-import reportRoutes from './routes/reports.routes.js';
+import authRoutes from './features/auth/auth.routes.js';
+import productRoutes from './features/products/products.routes.js';
+import inventoryRoutes from './features/inventory/inventory.routes.js';
+import reportRoutes from './features/reports/reports.routes.js';
 
 dotenv.config();
 
