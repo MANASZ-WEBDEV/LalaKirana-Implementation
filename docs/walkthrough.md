@@ -1,6 +1,6 @@
-# LalaKirana — Scaffold Walkthrough
+# LalaKirana — Scaffold & Auth Walkthrough
 
-We have completed the backend feature-based organization and the entire frontend shared infrastructure scaffold (Steps 1, 2, and 3). 
+We have completed the backend feature-based organization, the entire frontend shared infrastructure scaffold, and the complete authentication feature (Steps 1, 2, 3, and 4).
 
 ---
 
@@ -63,5 +63,50 @@ Scaffolded a React + Vite + TypeScript application in `frontend/` and implemente
 
 ---
 
-## 3. Local Commits
-All changes have been successfully committed to your local repository.
+## 3. Step 4 — Feature: Auth — Login, Sessions, Password Reset
+
+Implemented the complete authentication feature including backend APIs, middlewares, frontend state hooks, and custom Split-Panel Login / OTP Reset UI components:
+
+### Backend Implementation
+- **Schemas**: Validated with Zod schemas in [auth.schema.ts](file:///c:/MANAS/Projects/LK/Implementation/backend/src/features/auth/auth.schema.ts) (Login, ForgotPassword, ResetPassword, ChangePassword).
+- **Service**: In [auth.service.ts](file:///c:/MANAS/Projects/LK/Implementation/backend/src/features/auth/auth.service.ts) handling JTI token generation/sessions creation, revocation (blocklisting), and OTP requests.
+- **Controller**: In [auth.controller.ts](file:///c:/MANAS/Projects/LK/Implementation/backend/src/features/auth/auth.controller.ts) implementing rate-limited login, account lockout (5 attempts → 30 min lock), profile fetching, remote session termination, and OTP password resets.
+- **Email Service**: In [email.service.ts](file:///c:/MANAS/Projects/LK/Implementation/backend/src/features/auth/email.service.ts) using Nodemailer to deliver OTPs, with a fallback to console logging for local testing.
+- **Middleware**: Integrated JWT token checking, session existence verification, blocklist checks, and asynchronous `last_seen` updates in [auth.middleware.ts](file:///c:/MANAS/Projects/LK/Implementation/backend/src/middleware/auth.middleware.ts).
+- **Tests**: Created comprehensive integration test suite in [auth.test.ts](file:///c:/MANAS/Projects/LK/Implementation/backend/tests/auth.test.ts) covering lockout mechanics, profile fetching, remote logouts, and OTP resets.
+
+### Frontend Implementation
+- **API Client**: Mapped in [auth.api.ts](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/auth/auth.api.ts) for clean HTTP requests.
+- **Queries & Mutations**: TanStack React Query queries and mutations in [auth.queries.ts](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/auth/auth.queries.ts) with cache auto-invalidation.
+- **Helpers**: Token getters/setters and client-side expiration checks in [auth.helpers.ts](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/auth/auth.helpers.ts).
+- **Components & Layout**:
+  - [LoginPage.tsx](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/auth/LoginPage.tsx) + [LoginPage.module.css](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/auth/LoginPage.module.css): Premium Ice Latte & Mint branding layout (40% split-branding sidebar), validation handling, and integration with `authStore`.
+  - [ForgotPasswordModal.tsx](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/auth/ForgotPasswordModal.tsx) + [ForgotPasswordModal.module.css](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/auth/ForgotPasswordModal.module.css): 3-step modal handling email validation, OTP code submission, password resetting, and success checkmarks.
+
+---
+
+## 4. Verification Details
+
+All tests and core flows have been verified against the hosted Supabase instance:
+
+### Backend Integration Tests (Vitest)
+All 8 integration tests ran and passed successfully:
+```
+ ✓ tests/auth.test.ts (8 tests) 12614ms
+       ✓ should login successfully with correct credentials  637ms
+       ✓ should return 401 for incorrect password  600ms
+       ✓ should lock the account after 5 failed attempts  3287ms
+       ✓ should get current user details from GET /me  762ms
+       ✓ should get active sessions list  498ms
+       ✓ should revoke session on logout  801ms
+       ✓ should handle forgot password and reset password successfully  3423ms
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+```
+
+### Browser Verification
+Using the automated browser subagent, we verified:
+1. Navigating to `http://localhost:5173/login` loads the newly styled Split-Panel layout.
+2. Form-level inputs validation blocks submissions for missing or invalid values.
+3. Submitting valid credentials (`owner@lalakirana.in` / `changeme123`) authenticates the user, stores the JWT, and correctly redirects them to `http://localhost:5173/dashboard`.

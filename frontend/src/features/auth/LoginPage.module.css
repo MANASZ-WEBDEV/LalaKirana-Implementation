@@ -1,0 +1,115 @@
+.container {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.brandPanel {
+  width: 40%;
+  background-color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  padding: 3rem;
+}
+
+.brandContent {
+  text-align: center;
+}
+
+.logoText {
+  font-family: var(--font-display);
+  font-size: 3.5rem;
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: -1px;
+}
+
+.logoSubtext {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  opacity: 0.8;
+  margin-top: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: 500;
+}
+
+.formPanel {
+  flex: 1;
+  background-color: var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  background-color: #ffffff;
+  padding: 2.5rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-outline-variant);
+  box-shadow: var(--shadow-md);
+}
+
+.cardHeader {
+  margin-bottom: 2rem;
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  color: var(--color-on-surface);
+  margin: 0;
+  font-weight: 700;
+}
+
+.subheading {
+  font-size: 0.875rem;
+  color: var(--color-on-surface-variant);
+  margin-top: 0.5rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.passwordWrapper {
+  position: relative;
+}
+
+.forgotBtn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-size: 0.825rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: none;
+  transition: color var(--transition-fast) ease;
+}
+
+.forgotBtn:hover {
+  color: var(--color-primary-container);
+  text-decoration: underline;
+}
+
+.submitBtn {
+  width: 100%;
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 868px) {
+  .brandPanel {
+    display: none;
+  }
+}

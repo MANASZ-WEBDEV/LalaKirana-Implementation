@@ -5,9 +5,12 @@ declare global {
         id: string;
         role: 'owner' | 'staff';
         email: string;
+        jti?: string;
+        exp?: number;
       };
     }
   }
 }
 
 export {};
+
