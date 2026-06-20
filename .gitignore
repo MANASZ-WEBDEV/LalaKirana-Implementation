@@ -1,6 +1,7 @@
 # Dependencies
 node_modules/
 /dist
+backend/dist/
 /build
 .npm
 shims-tsx.d.ts
@@ -32,3 +33,4 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 *.log
+
