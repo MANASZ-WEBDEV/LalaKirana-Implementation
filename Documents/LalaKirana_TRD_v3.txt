@@ -1,0 +1,638 @@
+
+⚙️
+LalaKirana
+Technical Requirements Document (TRD)
+Version 3.0
+Dynamic Pricing  •  EOD Stock Entry  •  Rate Limiting  •  JWT Revocation  •  Password Reset  •  Session Management
+Field
+Detail
+Version
+3.0 — June 2026
+Stack
+React + Vite  |  Node.js + Express  |  PostgreSQL (Supabase)
+New in v3
+price_history table; eod_entries table; token_blocklist table; sessions table; rate limiter middleware; password reset OTP flow; offline price sync
+Developer
+Manas
+
+
+1. Technology Stack
+Layer
+Technology
+Version
+Reason
+Frontend
+React + Vite
+19.x / 6.x
+Fast, component-based, same as SmartAttend
+CSS
+Tailwind CSS
+3.x
+Utility-first styling
+Routing
+React Router
+6.x
+Client-side routing
+State
+Zustand
+5.x
+Order queue + offline bill queue
+Offline / PWA
+Vite PWA Plugin (Workbox)
+0.20.x
+Service worker, offline cache, background sync
+Offline Storage
+idb-keyval
+6.x
+IndexedDB wrapper for offline bill queue
+HTTP Client
+Axios
+1.x
+JWT interceptors, reconnect retry
+Print
+React-to-Print
+3.x
+Browser print, no extra software
+Backend
+Node.js + Express
+22.x / 5.x
+REST API, middleware stack
+Auth
+JWT + bcrypt
+9.x / 5.x
+Token auth, secure hashing
+Rate Limiting
+express-rate-limit
+7.x
+Brute-force protection on login
+Email (OTP)
+Nodemailer + Gmail SMTP
+6.x
+Password reset OTP delivery
+Validation
+Zod
+3.x
+Schema validation both ends
+Database
+PostgreSQL via Supabase
+16.x
+Relational, free tier, RLS
+DB Client
+Supabase JS Client
+2.x
+Query interface + RLS
+Hosting — FE
+Vercel
+—
+Free tier, auto-deploy
+Hosting — BE
+Railway
+—
+Free starter, Node.js native
+Hosting — DB
+Supabase
+—
+Free 500MB tier
+
+
+2. Complete Database Schema (v3.0)
+11 tables. New in v3: price_history, eod_entries, token_blocklist, sessions.
+
+2.1–2.7  Core Tables (unchanged from v2)
+users, categories, products, stock_log, customers, bills, bill_items — same as TRD v2. Only products gains one new column:
+products — new column
+  price_updated_at  TIMESTAMPTZ DEFAULT now(),  -- updated on every price change
+  -- All other columns unchanged from v2
+
+2.8  khata_entries & 2.9  wallet_entries
+Unchanged from TRD v2.
+
+2.10  price_history
+CREATE TABLE price_history
+CREATE TABLE price_history (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  product_id  UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  old_price   NUMERIC(10,2) NOT NULL,
+  new_price   NUMERIC(10,2) NOT NULL,
+  changed_by  UUID REFERENCES users(id),
+  changed_at  TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX idx_price_history_product ON price_history(product_id);
+CREATE INDEX idx_price_history_date    ON price_history(changed_at);
+
+2.11  eod_entries
+CREATE TABLE eod_entries
+CREATE TABLE eod_entries (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  entry_date  DATE NOT NULL,               -- the day these sales occurred
+  product_id  UUID REFERENCES products(id) ON DELETE SET NULL,
+  qty_sold    INTEGER NOT NULL,
+  created_by  UUID REFERENCES users(id),
+  created_at  TIMESTAMPTZ DEFAULT now()
+);
+-- Each row = one product's daily diary total
+-- stock_log rows with reason='eod_entry' are generated on confirmation
+CREATE INDEX idx_eod_date ON eod_entries(entry_date);
+
+2.12  token_blocklist
+CREATE TABLE token_blocklist
+CREATE TABLE token_blocklist (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  token_jti   TEXT UNIQUE NOT NULL,  -- JWT 'jti' claim (unique token ID)
+  user_id     UUID REFERENCES users(id) ON DELETE CASCADE,
+  expires_at  TIMESTAMPTZ NOT NULL,  -- same as JWT exp — for cleanup
+  created_at  TIMESTAMPTZ DEFAULT now()
+);
+-- Cleanup job: DELETE FROM token_blocklist WHERE expires_at < now();
+-- Run nightly via pg_cron or a scheduled Railway job
+CREATE INDEX idx_blocklist_jti ON token_blocklist(token_jti);
+
+2.13  sessions
+CREATE TABLE sessions
+CREATE TABLE sessions (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id      UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token_jti    TEXT UNIQUE NOT NULL,
+  device_hint  TEXT,   -- e.g. 'Chrome on Windows' (from User-Agent)
+  ip_address   TEXT,
+  last_seen    TIMESTAMPTZ DEFAULT now(),
+  created_at   TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX idx_sessions_user ON sessions(user_id);
+
+2.14  otp_requests
+CREATE TABLE otp_requests
+CREATE TABLE otp_requests (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email       TEXT NOT NULL,
+  otp_hash    TEXT NOT NULL,   -- bcrypt hash of the 6-digit OTP
+  used        BOOLEAN DEFAULT false,
+  expires_at  TIMESTAMPTZ NOT NULL,  -- now() + 10 minutes
+  created_at  TIMESTAMPTZ DEFAULT now()
+);
+
+
+3. Security Architecture — Full Suite
+3.1  Rate Limiting & Account Lockout
+middleware/rateLimiter.js
+const rateLimit = require('express-rate-limit');
+
+// Applied only to POST /auth/login
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,  // 15 minutes
+  max: 5,                     // 5 attempts per IP per window
+  message: { error: 'Too many login attempts. Try again in 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Account lockout stored in DB (separate from IP rate limit)
+// After 5 failed attempts: users.locked_until = now() + 30 minutes
+// Login check: if locked_until > now() → reject with time remaining
+
+3.2  JWT with JTI + Revocation
+services/auth.service.js — Token Generation
+const { v4: uuidv4 } = require('uuid');
+const jwt = require('jsonwebtoken');
+
+function generateToken(user) {
+  const jti = uuidv4();  // unique ID per token
+  const token = jwt.sign(
+    { sub: user.id, role: user.role, jti },
+    process.env.JWT_SECRET,
+    { expiresIn: '8h' }
+  );
+  // Record session in DB
+  await db.sessions.insert({ user_id: user.id, token_jti: jti, ... });
+  return token;
+}
+
+// On logout: INSERT into token_blocklist, DELETE from sessions
+// On auth middleware: check token_blocklist — reject if found
+// On password change: DELETE all sessions for user, INSERT all JTIs to blocklist
+
+3.3  Password Reset — OTP Flow
+Password Reset Flow — Step by Step
+•  1. Staff clicks 'Forgot Password' on login screen — enters their email
+•  2. Server checks email exists in users table — if not, return generic message (no user enumeration)
+•  3. Generate 6-digit OTP — hash it with bcrypt, store in otp_requests with 10-minute expiry
+•  4. Send OTP to email via Nodemailer (Gmail SMTP) — plain text email
+•  5. Staff enters OTP on the reset screen within 10 minutes
+•  6. Server: find latest unused otp_request for email, verify OTP hash, check not expired
+•  7. If valid: mark OTP as used, allow staff to set new password
+•  8. New password hashed with bcrypt (rounds=12), saved to users table
+•  9. All active sessions for this user are immediately invalidated (all JTIs blocklisted)
+•  10. Staff is redirected to login with new password
+•  OWNER SHORTCUT: Owner can set any staff member's password directly from Settings — no OTP needed
+
+3.4  Session Management
+GET /auth/sessions — Response Shape
+{
+  sessions: [
+    {
+      id: 'uuid',
+      device_hint: 'Chrome on Windows',
+      ip_address: '192.168.1.5',
+      last_seen: '2026-06-19T08:32:00Z',
+      created_at: '2026-06-19T07:00:00Z',
+      is_current: true   // the session making this request
+    },
+    { id: 'uuid2', device_hint: 'Chrome on Android', ... }
+  ]
+}
+
+// DELETE /auth/sessions/:id  → logs out that specific session
+// DELETE /auth/sessions/all  → logs out all sessions for the user (owner only for others)
+
+3.5  Offline Price Sync on Reconnect
+store/connectivity.js — Reconnect Handler
+// Runs when navigator.onLine changes from false → true
+async function handleReconnect() {
+  // 1. Re-fetch all product prices from API
+  const freshPrices = await api.products.getPrices();
+
+  // 2. Compare against cached prices in Zustand store
+  const changedProducts = freshPrices.filter(p =>
+    p.price !== cachedPrices[p.id] || p.price_updated_at > lastOnlineTime
+  );
+
+  // 3. If any prices changed: show warning banner
+  if (changedProducts.length > 0) {
+    showPriceChangeWarning(changedProducts);
+    // Banner: 'Prices changed for: Rice, Wheat Oil — please verify before billing'
+  }
+
+  // 4. Update Zustand cache with fresh prices
+  updateCachedPrices(freshPrices);
+
+  // 5. Flush offline bill sync queue
+  await syncOfflineBills();
+}
+
+
+4. REST API Design (v3.0)
+All routes prefixed /api/v1. JWT required on all except POST /auth/login and POST /auth/forgot-password.
+
+4.1  Auth & Sessions
+Method
+Endpoint
+Description
+Who
+POST
+/auth/login
+Email + password → JWT (rate-limited: 5/15min)
+All
+POST
+/auth/logout
+Blocklist token, delete session
+All
+GET
+/auth/me
+Current user profile
+All
+POST
+/auth/forgot-password
+Send OTP to email
+All
+POST
+/auth/reset-password
+Verify OTP, set new password
+All
+PUT
+/auth/change-password
+Change own password (invalidates all sessions)
+All
+PUT
+/users/:id/reset-password
+Owner resets any staff password
+Owner
+GET
+/auth/sessions
+List all active sessions for current user
+All
+DELETE
+/auth/sessions/:id
+Log out a specific session
+All
+DELETE
+/auth/sessions/all
+Log out all sessions for a user
+Owner
+
+4.2  Products & Pricing
+Method
+Endpoint
+Description
+Who
+GET
+/products
+All products with stock, category, price_updated_at
+All
+GET
+/products/prices
+Lightweight: id + price + price_updated_at only (for reconnect sync)
+All
+GET
+/products/low-stock
+Products below threshold
+All
+POST
+/products
+Create product
+Owner
+PUT
+/products/:id
+Update product (price change logs to price_history)
+All
+POST
+/products/bulk-price
+Bulk update: array of {id, price} — atomic
+All
+DELETE
+/products/:id
+Soft-delete
+Owner
+GET
+/products/:id/price-history
+All price changes for one product
+Owner
+GET
+/categories
+List categories
+All
+POST
+/categories
+Create category
+Owner
+
+4.3  Inventory & EOD Entry
+Method
+Endpoint
+Description
+Who
+POST
+/products/:id/adjust-stock
+Manual stock adjustment
+All
+POST
+/inventory/eod
+Submit EOD diary batch — deducts stock for all items
+All
+GET
+/inventory/eod?date=YYYY-MM-DD
+Get EOD entry for a specific date
+All
+POST
+/inventory/audit
+Monthly audit — physical counts, generates variance
+Owner
+GET
+/inventory/stock-log/:productId
+Full stock change history per product
+All
+
+4.4  Billing
+Method
+Endpoint
+Description
+Who
+POST
+/bills
+Create draft
+All
+GET
+/bills
+List — filter by status, date, mode
+All
+GET
+/bills/:id
+Single bill + items
+All
+PUT
+/bills/:id
+Update draft
+All
+POST
+/bills/:id/confirm
+Confirm — deducts stock, snapshots prices
+All
+POST
+/bills/:id/cancel
+Cancel draft
+All
+POST
+/bills/sync
+Batch sync offline bills
+All
+
+4.5  Khata & Reports
+Method
+Endpoint
+Description
+Who
+GET
+/customers
+All customers
+All
+POST
+/customers
+Create
+All
+PUT
+/customers/:id
+Update
+All
+GET
+/customers/:id/ledger
+Transaction history
+All
+POST
+/customers/:id/payment
+Log repayment
+All
+GET
+/customers/:id/statement
+Monthly statement
+All
+GET
+/reports/dashboard
+Today's stats
+All
+GET
+/reports/sales
+Sales by date range
+All
+GET
+/reports/top-products
+Top 10
+Owner
+GET
+/reports/price-history
+All price changes across all products
+Owner
+GET
+/reports/eod-summary
+EOD entry totals by date
+All
+
+
+5. Key Business Logic
+5.1  Price Change (Single Product)
+PUT /products/:id — When price field changes
+•  1. Read current price from products table
+•  2. INSERT into price_history: { product_id, old_price, new_price, changed_by, changed_at }
+•  3. UPDATE products SET price = new_price, price_updated_at = now()
+•  4. Return updated product
+•  Past bills are NEVER touched — bill_items.unit_price is a snapshot from time of sale
+
+5.2  Bulk Price Update
+POST /products/bulk-price — Atomic batch update
+•  Request body: [{ id: 'uuid', price: 45.00 }, { id: 'uuid2', price: 120.00 }, ...]
+•  Server runs the entire batch inside a single Supabase transaction
+•  For each product with a changed price: INSERT price_history, UPDATE products
+•  Products where new price equals current price are skipped — no log entry
+•  If any single update fails: entire batch rolls back — no partial updates
+•  Response: { updated: N, skipped: M, products: [...] }
+
+5.3  EOD Stock Entry Confirmation
+POST /inventory/eod — Batch stock deduction
+•  Request body: { entry_date: 'YYYY-MM-DD', items: [{ product_id, qty_sold }] }
+•  For each item: check product exists and is_active = true
+•  Deduct: UPDATE products SET stock_qty = stock_qty - qty_sold (allow negative — audit will correct)
+•  INSERT eod_entries row per item
+•  INSERT stock_log row per item with reason='eod_entry' and entry_date
+•  Return: total items processed, total estimated value, any products now below threshold
+•  No bill number generated — this is a stock operation, not a sales transaction
+
+5.4  Bill Confirmation — Price Snapshot
+POST /bills/:id/confirm — Price integrity
+•  For each bill_item: read product.price AT THE MOMENT OF CONFIRMATION
+•  Store this as bill_items.unit_price — permanently fixed
+•  If product price changed since item was added to cart: use the NEW current price
+•  Frontend shows price age badge — operator sees if a price is stale before confirming
+•  Once confirmed: changing the product price later NEVER alters the bill
+•  This guarantees bills are always an accurate receipt of what was charged
+
+
+6. Security Requirements — Full Table
+Area
+Implementation
+Risk Level
+Rate limiting
+express-rate-limit: 5 login attempts / 15 min / IP
+High — prevents brute force
+Account lockout
+users.locked_until set for 30 min after 5 failures
+High — per-account protection
+Password hashing
+bcrypt, rounds=12
+High — uncrackable hashes
+JWT uniqueness
+Each token has a unique jti (UUID v4)
+Medium — enables revocation
+JWT revocation
+token_blocklist checked on every auth middleware call
+High — immediate logout
+Session tracking
+sessions table: device, IP, last_seen per token
+Medium — visibility and control
+Password reset
+Email OTP, bcrypt-hashed, 10-minute expiry, single use
+High — secure recovery
+Owner reset
+Owner can set any staff password from Settings
+Medium — admin override
+Session kill
+Owner can terminate any session remotely
+High — lost device / staff departure
+Input validation
+Zod schemas on all endpoints, both FE and BE
+High — prevents injection
+SQL injection
+Supabase JS parameterised queries — impossible
+High — ORM-level protection
+CORS
+Restricted to production frontend URL
+Medium — prevents cross-origin abuse
+HTTPS
+Enforced by Vercel + Railway in production
+High — all traffic encrypted
+RLS
+Supabase Row Level Security on all 11 tables
+High — DB-level auth enforcement
+Bill integrity
+Hard delete blocked — status='cancelled' only
+Medium — full audit trail
+Price integrity
+Every price change logged in price_history
+Medium — full audit trail
+Offline price sync
+Prices re-fetched on reconnect; mismatch warning shown
+Medium — billing accuracy
+Secrets
+All secrets in Vercel/Railway env — never in Git
+High — no credential leaks
+
+7. Database Migration Files (v3.0)
+Migration Execution Order
+001_create_users.sql              -- + locked_until column
+002_create_categories.sql
+003_create_products.sql           -- + price_updated_at column
+004_create_stock_log.sql
+005_create_customers.sql
+006_create_bills.sql
+007_create_bill_items.sql
+008_create_khata_entries.sql
+009_create_wallet_entries.sql
+010_create_price_history.sql      -- NEW in v3
+011_create_eod_entries.sql        -- NEW in v3
+012_create_token_blocklist.sql    -- NEW in v3
+013_create_sessions.sql           -- NEW in v3
+014_create_otp_requests.sql       -- NEW in v3
+015_seed_categories.sql
+016_seed_admin_user.sql
+
+8. Environment Variables (v3.0)
+backend/.env
+PORT=5000
+NODE_ENV=development
+
+SUPABASE_URL=https://xxxx.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=eyJ...
+
+JWT_SECRET=minimum-64-char-random-string
+JWT_EXPIRY=8h
+
+FRONTEND_URL=http://localhost:5173
+
+# Password Reset OTP Email
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-shop-email@gmail.com
+SMTP_PASS=your-gmail-app-password   # NOT your login password
+OTP_FROM_NAME=LalaKirana
+
+frontend/.env
+VITE_API_BASE_URL=http://localhost:5000/api/v1
+VITE_PRICE_STALE_WARN_HOURS=12   # yellow badge threshold
+VITE_PRICE_STALE_ERROR_HOURS=24  # red badge threshold
+
+9. Pre-Launch Checklist
+Must complete before going live
+•  All .env variables set in Vercel and Railway dashboards — none in Git
+•  All 16 migration files run successfully on production Supabase
+•  Supabase RLS policies enabled on all 11 tables
+•  CORS origin locked to production URL
+•  JWT_SECRET is at least 64 random characters
+•  Gmail SMTP app password created (not account password) and tested
+•  Password reset OTP email tested end-to-end
+•  Login rate limiter tested: 5 failed attempts → lockout message shown
+•  Session list and remote logout tested from owner account
+•  PWA offline tested: disconnect WiFi → create bill → reconnect → verify sync + price warning
+•  Bulk price update tested: change 10 prices → verify price_history rows created
+•  EOD stock entry tested: enter 5 items → verify stock_log deductions
+•  Bill print layout tested on actual printer (A4 and thermal if applicable)
+•  All owner-only routes return 403 when accessed by staff role
+•  token_blocklist cleanup job scheduled (nightly, removes expired tokens)
+
+LalaKirana TRD v3.0 — June 2026 — Every decision documented. Every line justified.

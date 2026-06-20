@@ -1,0 +1,692 @@
+
+𝐋𝐚𝐥𝐚𝐊𝐢𝐫𝐚𝐧𝐚
+App Flow & Backend Schema
+Phase 1 — Inventory Management  |  Admin Panel
+Document
+Detail
+Covers
+App Flow (all Phase 1 screens) + Backend Schema (API + DB)
+Phase
+Phase 1 — Inventory Management
+Screens
+Login, Dashboard, Inventory List, Add/Edit Product, Bulk Price Update, EOD Stock Entry, Stock Adjustment, Settings
+Version
+1.0 — June 2026
+
+
+Part 1 — App Flow
+1.1  Site Map — All Phase 1 Screens
+SITE MAP — LalaKirana Admin Phase 1
+                        ┌──────────────────┐
+                        │   LOGIN SCREEN   │
+                        └────────┬─────────┘
+                                 │ Authenticated
+                        ┌────────▼─────────┐
+                        │    DASHBOARD     │  ← stat cards + recent activity
+                        └────────┬─────────┘
+           ┌────────────┬────────┴────────┬────────────┐
+           ▼            ▼                 ▼            ▼
+    ┌────────────┐ ┌──────────┐  ┌─────────────┐ ┌──────────┐
+    │ INVENTORY  │ │  PRICE   │  │  EOD STOCK  │ │ SETTINGS │
+    │    LIST    │ │  UPDATE  │  │    ENTRY    │ │          │
+    └─────┬──────┘ └──────────┘  └─────────────┘ └──────────┘
+          │
+   ┌──────┴──────┐
+   ▼             ▼
+┌──────┐   ┌──────────┐
+│ ADD  │   │  EDIT /  │
+│PROD. │   │ ADJUST   │
+└──────┘   └──────────┘
+
+Screen
+Route
+Access
+Login
+/login
+Public — redirects to /dashboard if already authed
+Dashboard
+/dashboard
+Owner + Staff
+Inventory List
+/inventory
+Owner + Staff
+Add Product
+/inventory/new
+Owner + Staff
+Edit Product
+/inventory/:id/edit
+Owner + Staff
+Stock Adjustment
+/inventory/:id/adjust
+Owner + Staff
+Bulk Price Update
+/inventory/prices
+Owner + Staff
+EOD Stock Entry
+/inventory/eod
+Owner + Staff
+Settings
+/settings
+Owner only
+Password Reset
+/reset-password
+Public
+
+
+1.2  Login & Auth Flow
+LOGIN FLOW — with rate limiting and lockout
+User visits /login
+   │
+   ├── Already has valid JWT in localStorage?
+   │       YES → redirect to /dashboard immediately
+   │       NO  → show login form
+   │
+   ▼
+User enters email + password → clicks 'Sign in'
+   │
+   ├── Frontend: Zod validates email format and password length
+   │       FAIL → inline error, no API call made
+   │
+   ▼
+POST /api/v1/auth/login
+   │
+   ├── Rate check: > 5 attempts in 15 min from this IP?
+   │       YES → 429 Too Many Requests → show lockout timer on screen
+   │
+   ├── Check users.locked_until > now()?
+   │       YES → 403 + remaining lock time → show 'Account locked X min'
+   │
+   ├── Email not found → generic error (no user enumeration)
+   │
+   ├── bcrypt.compare(password, hash)
+   │       FAIL → increment failed_attempts, check if >= 5 → set locked_until
+   │               return generic 'Invalid email or password'
+   │
+   ├── SUCCESS
+   │       → reset failed_attempts = 0
+   │       → generate JWT with unique jti (UUID)
+   │       → INSERT sessions row (device_hint, ip_address)
+   │       → return { token, user: { id, name, role } }
+   │
+   ▼
+Frontend stores JWT in localStorage
+Axios default header set: Authorization: Bearer <token>
+Redirect to /dashboard
+
+1.3  Dashboard Flow
+DASHBOARD — what loads and when
+GET /dashboard
+   │
+   ├── Parallel API calls on mount:
+   │       GET /api/v1/reports/dashboard   → stat cards
+   │       GET /api/v1/products/low-stock  → low stock alert list
+   │       GET /api/v1/products/prices     → cache prices for stale-badge calc
+   │       GET /api/v1/price-history?limit=5 → recent price changes widget
+   │
+   ├── Stat cards render with skeleton loaders → fill on response
+   │
+   ├── Low stock list: sorted by qty ASC, max 10 shown
+   │       Each row: [Adjust Stock] button → opens Stock Adjustment drawer
+   │
+   ├── Recent price changes: shows last 5 changes with product name, old→new, who
+   │
+   └── [Bulk Price Update] button top-right → navigates to /inventory/prices
+
+1.4  Inventory List Flow
+INVENTORY LIST — product browsing, filtering, actions
+GET /inventory
+   │
+   ├── On mount: GET /api/v1/products?include=category,stock
+   │       + GET /api/v1/categories  (for filter tabs)
+   │
+   ├── Category filter tabs render across top
+   │       Click tab → filter products client-side (already fetched)
+   │
+   ├── Search bar: client-side filter on product name
+   │       Debounced 300ms — no extra API call for search
+   │
+   ├── Each product row shows price age badge:
+   │       now() - price_updated_at < 12h  → no badge (fresh)
+   │       12h–24h                         → yellow ⏱ badge
+   │       > 24h                           → red ⚠ badge
+   │
+   ├── Action menu (···) per row:
+   │       Edit Product  → navigates to /inventory/:id/edit
+   │       Adjust Stock  → opens side drawer
+   │       View Price History → opens modal with price_history for that product
+   │       Deactivate    → confirm dialog → PUT /products/:id {is_active:false}
+   │
+   └── [+ Add Product] button → navigates to /inventory/new
+
+1.5  Add / Edit Product Flow
+ADD PRODUCT — /inventory/new
+User fills form: name, category, price, stock_qty, unit, low_stock_threshold
+   │
+   ├── Frontend Zod validation on submit:
+   │       name: min 2 chars
+   │       price: positive number, max 2 decimal places
+   │       stock_qty: non-negative integer
+   │       low_stock_threshold: non-negative integer
+   │
+   ├── PASS → POST /api/v1/products
+   │       Backend validates again (Zod)
+   │       INSERT products row
+   │       Response: created product
+   │
+   ├── SUCCESS → toast 'Product saved — {name} added to {category}'
+   │           → redirect to /inventory
+   │
+   └── EDIT flow is identical but uses PUT /api/v1/products/:id
+       Price change → trigger auto-logs to price_history via DB trigger
+
+1.6  Bulk Price Update Flow
+BULK PRICE UPDATE — /inventory/prices
+Page loads: GET /api/v1/products?fields=id,name,category,price,price_updated_at
+   │
+   ├── Renders scrollable table: product name | current price | new price input
+   │       New price inputs pre-filled with current price
+   │
+   ├── User edits prices for today's market changes
+   │       Changed rows get a subtle Raisin left border highlight
+   │       'Changed: N products' counter updates live
+   │
+   ├── Click [Save All Changes]:
+   │       Frontend builds array: [{ id, price }] for changed items only
+   │       Skip items where new price === current price
+   │
+   ├── POST /api/v1/products/bulk-price
+   │       Body: { items: [{ id, price }, ...] }
+   │       Server runs atomic transaction:
+   │           For each item: INSERT price_history + UPDATE products.price
+   │           All succeed or all roll back
+   │
+   ├── SUCCESS → toast 'Prices updated — {N} products saved'
+   │           → all stale badges refresh immediately
+   │
+   └── FAIL → toast error, no prices changed
+
+
+1.7  EOD Stock Entry Flow
+EOD STOCK ENTRY — /inventory/eod
+Page loads: default date = today
+   │
+   ├── Check if an EOD entry already exists for today:
+   │       GET /api/v1/inventory/eod?date=YYYY-MM-DD
+   │       If yes: load existing entry for editing
+   │       If no: show empty entry form
+   │
+   ├── Operator uses product search to find and add items:
+   │       Search: client-side filter from cached product list
+   │       Click product → adds row with qty input (default 1)
+   │
+   ├── Operator enters qty sold from paper diary for each item
+   │       Estimated value shows live: sum(product.price × qty_sold)
+   │
+   ├── Click [Confirm Entry]:
+   │       POST /api/v1/inventory/eod
+   │       Body: { entry_date, items: [{ product_id, qty_sold }] }
+   │
+   ├── Server for each item:
+   │       INSERT eod_entries row
+   │       UPDATE products.stock_qty -= qty_sold
+   │       INSERT stock_log (reason='eod_entry', entry_date)
+   │       Handle duplicate: UPSERT on (product_id, entry_date) unique constraint
+   │
+   └── SUCCESS → toast 'Stock updated — {N} products, ₹{value} est. recorded'
+
+1.8  Stock Adjustment Flow
+STOCK ADJUST DRAWER — opens from product action menu
+User clicks '···' on a product row → selects 'Adjust Stock'
+   │
+   ├── Drawer slides in from right
+   │       Shows: product name, category, current stock qty
+   │
+   ├── User selects adjustment type:
+   │       Add stock    → qty will increase
+   │       Remove stock → qty will decrease (validates: won't go below 0)
+   │       Set exact    → sets to a specific number (for audit corrections)
+   │
+   ├── User enters quantity + selects reason from dropdown:
+   │       New arrival / Damage / Returned / Audit correction / Other
+   │
+   ├── 'New stock will be: X units' preview shown live
+   │
+   ├── Click [Apply Adjustment]:
+   │       POST /api/v1/products/:id/adjust-stock
+   │       Body: { type, quantity, reason, note }
+   │       Server: UPDATE products.stock_qty
+   │               INSERT stock_log (reason, change_qty, note)
+   │
+   └── SUCCESS → drawer closes, row updates live, toast confirmation
+
+
+1.9  Settings Flow (Owner Only)
+SETTINGS — /settings — owner role required
+Sections:
+   1. Staff Management
+      GET /api/v1/users → list all staff
+      [+ Add Staff] → form: name, email, role → POST /api/v1/users
+      [Reset Password] per staff → PUT /api/v1/users/:id/reset-password
+      [Deactivate] → soft-delete staff account
+   2. Session Management
+      GET /api/v1/auth/sessions → all active sessions
+      Shows: device, IP, last seen
+      [Log out] per session → DELETE /api/v1/auth/sessions/:id
+      [Log out all devices] → DELETE /api/v1/auth/sessions/all
+   3. Categories
+      GET /api/v1/categories → manage store categories
+      [+ Add category] → POST /api/v1/categories
+   4. Account
+      Change own password → PUT /api/v1/auth/change-password
+      All sessions invalidated on password change
+
+
+Part 2 — Backend Schema
+2.1  Express App Structure
+backend/src/ — complete layout
+src/
+├── app.js                    ← Express setup, CORS, global middleware
+├── server.js                 ← HTTP listen, graceful shutdown
+│
+├── routes/
+│   ├── auth.routes.js        ← /auth/*
+│   ├── products.routes.js    ← /products/*, /categories/*
+│   ├── inventory.routes.js   ← /inventory/eod, /inventory/audit
+│   ├── bills.routes.js       ← /bills/*  (Phase 2)
+│   ├── khata.routes.js       ← /customers/*  (Phase 2)
+│   └── reports.routes.js     ← /reports/*
+│
+├── controllers/
+│   ├── auth.controller.js
+│   ├── products.controller.js
+│   └── inventory.controller.js
+│
+├── services/
+│   ├── auth.service.js       ← JWT generation, bcrypt, OTP
+│   ├── products.service.js   ← business logic, bulk price atomicity
+│   ├── inventory.service.js  ← EOD entry, stock adjustment logic
+│   └── email.service.js      ← Nodemailer OTP delivery
+│
+├── middleware/
+│   ├── auth.middleware.js    ← JWT verify + blocklist check
+│   ├── role.middleware.js    ← requireOwner, requireStaff
+│   ├── rateLimiter.js        ← express-rate-limit on /auth/login
+│   └── validate.middleware.js← Zod schema validation
+│
+├── db/
+│   ├── supabase.js           ← createClient with service role key
+│   └── migrations/           ← all 16 .sql files
+│
+├── schemas/                  ← Zod schemas (shared FE + BE)
+│   ├── product.schema.js
+│   ├── auth.schema.js
+│   └── inventory.schema.js
+│
+└── utils/
+    ├── billNumber.js         ← LK-YYYY-NNNNN generator
+    ├── priceAge.js           ← stale price calculation helper
+    └── deviceHint.js         ← User-Agent parser for sessions
+
+2.2  Middleware Chain per Request
+Every API request passes through this chain in order
+Request arrives
+  │
+  ├── 1. CORS middleware
+  │       Allow-Origin: FRONTEND_URL only
+  │       Allow-Methods: GET, POST, PUT, DELETE
+  │       Allow-Headers: Content-Type, Authorization
+  │
+  ├── 2. express.json() — parse request body
+  │
+  ├── 3. Rate limiter (POST /auth/login only)
+  │       5 requests / 15 min / IP
+  │
+  ├── 4. auth.middleware (all routes except /auth/login, /auth/forgot-password)
+  │       Extract JWT from Authorization: Bearer header
+  │       jwt.verify(token, JWT_SECRET)
+  │       Check token_blocklist for token.jti — if found: 401
+  │       Update sessions.last_seen for this jti
+  │       Attach req.user = { id, role, jti }
+  │
+  ├── 5. role.middleware (owner-only routes)
+  │       if req.user.role !== 'owner': 403 Forbidden
+  │
+  ├── 6. validate.middleware (routes with body/query)
+  │       Zod parse request body or query
+  │       If invalid: 400 with structured error messages
+  │
+  ├── 7. Controller function
+  │       Calls service → calls Supabase client
+  │
+  └── 8. Error handler (global Express error middleware)
+          Catches unhandled errors
+          Returns { error: message } with appropriate status
+
+
+2.3  Phase 1 API Routes — Full Specification
+Auth Routes
+Method
+Route
+Body / Query
+Response
+Roles
+POST
+/auth/login
+{ email, password }
+{ token, user }
+Public
+POST
+/auth/logout
+—
+{ success }
+All
+GET
+/auth/me
+—
+{ user }
+All
+POST
+/auth/forgot-password
+{ email }
+{ message }
+Public
+POST
+/auth/reset-password
+{ email, otp, newPassword }
+{ success }
+Public
+PUT
+/auth/change-password
+{ currentPassword, newPassword }
+{ success }
+All
+GET
+/auth/sessions
+—
+{ sessions[] }
+All
+DELETE
+/auth/sessions/:id
+—
+{ success }
+All
+
+Product & Category Routes
+Method
+Route
+Body / Query
+Response
+Roles
+GET
+/products
+?category&search&active
+{ products[] }
+All
+GET
+/products/low-stock
+—
+{ products[] }
+All
+GET
+/products/prices
+—
+{ id,price,price_updated_at }[]
+All
+GET
+/products/:id
+—
+{ product, price_history[] }
+All
+GET
+/products/:id/price-history
+—
+{ history[] }
+All
+POST
+/products
+{ name,category_id,price,stock_qty,unit,threshold }
+{ product }
+All
+PUT
+/products/:id
+{ any fields }
+{ product }
+All
+DELETE
+/products/:id
+—
+{ success }
+Owner
+POST
+/products/bulk-price
+{ items:[{id,price}] }
+{ updated,skipped }
+All
+GET
+/categories
+—
+{ categories[] }
+All
+POST
+/categories
+{ name }
+{ category }
+Owner
+
+Inventory Routes
+Method
+Route
+Body / Query
+Response
+Roles
+POST
+/products/:id/adjust-stock
+{ type,quantity,reason,note }
+{ product, log_entry }
+All
+POST
+/inventory/eod
+{ entry_date, items:[{product_id,qty_sold}] }
+{ entries, summary }
+All
+GET
+/inventory/eod
+?date=YYYY-MM-DD
+{ entries[] }
+All
+GET
+/inventory/stock-log/:productId
+?limit&offset
+{ logs[] }
+All
+POST
+/inventory/audit
+{ items:[{product_id,physical_qty}] }
+{ variance_report }
+Owner
+
+Reports Routes (Phase 1 subset)
+Method
+Route
+Body / Query
+Response
+Roles
+GET
+/reports/dashboard
+—
+{ total_products, low_stock_count, out_of_stock, inventory_value }
+All
+GET
+/reports/price-history
+?from&to&product_id
+{ changes[] }
+Owner
+GET
+/reports/stock-log
+?from&to&reason
+{ logs[] }
+Owner
+
+
+2.4  Key Backend Service Functions
+products.service.js
+bulkUpdatePrices(items) — atomic price update
+async function bulkUpdatePrices(items, userId) {
+  // items = [{ id: UUID, price: number }]
+  // Run entirely inside a Supabase RPC transaction
+  const changed = [];
+  const skipped = [];
+
+  for (const item of items) {
+    const { data: current } = await supabase
+      .from('products')
+      .select('price')
+      .eq('id', item.id)
+      .single();
+
+    if (current.price === item.price) {
+      skipped.push(item.id);
+      continue;
+    }
+
+    // DB trigger handles price_history INSERT automatically
+    await supabase.from('products').update({
+      price: item.price
+      // price_updated_at updated by the same trigger
+    }).eq('id', item.id);
+
+    changed.push(item.id);
+  }
+
+  return { updated: changed.length, skipped: skipped.length };
+}
+
+inventory.service.js
+submitEODEntry(entry_date, items, userId)
+async function submitEODEntry(entry_date, items, userId) {
+  // items = [{ product_id, qty_sold }]
+  const results = [];
+
+  for (const item of items) {
+    // UPSERT eod_entries (handles re-submission for same day)
+    await supabase.from('eod_entries').upsert({
+      entry_date,
+      product_id: item.product_id,
+      qty_sold:   item.qty_sold,
+      created_by: userId
+    }, { onConflict: 'product_id,entry_date' });
+
+    // Deduct from stock
+    await supabase.rpc('decrement_stock', {
+      p_id: item.product_id,
+      qty:  item.qty_sold
+    });
+
+    // Log the movement
+    await supabase.from('stock_log').insert({
+      product_id: item.product_id,
+      change_qty: -item.qty_sold,
+      reason:     'eod_entry',
+      created_by: userId
+    });
+
+    results.push(item.product_id);
+  }
+
+  return { processed: results.length };
+}
+
+auth.service.js
+generateToken(user) + revokeToken(jti)
+const { v4: uuidv4 } = require('uuid');
+const jwt = require('jsonwebtoken');
+
+async function generateToken(user, deviceHint, ip) {
+  const jti = uuidv4();
+  const token = jwt.sign(
+    { sub: user.id, role: user.role, jti },
+    process.env.JWT_SECRET,
+    { expiresIn: '8h' }
+  );
+  await supabase.from('sessions').insert({
+    user_id: user.id, token_jti: jti,
+    device_hint: deviceHint, ip_address: ip
+  });
+  return token;
+}
+
+async function revokeToken(jti, userId, expiresAt) {
+  await supabase.from('token_blocklist').insert(
+    { token_jti: jti, user_id: userId, expires_at: expiresAt }
+  );
+  await supabase.from('sessions')
+    .delete().eq('token_jti', jti);
+}
+
+
+2.5  Error Handling Standards
+HTTP Status
+When
+Response Shape
+200 OK
+Success
+{ data: ... }
+201 Created
+Resource created
+{ data: created_resource }
+400 Bad Request
+Zod validation fail
+{ error: 'Validation failed', details: [{ field, message }] }
+401 Unauthorized
+Missing/invalid/revoked JWT
+{ error: 'Unauthorized' }
+403 Forbidden
+Valid JWT but wrong role
+{ error: 'Forbidden — owner access required' }
+404 Not Found
+Resource does not exist
+{ error: 'Product not found' }
+409 Conflict
+Duplicate (e.g. category name)
+{ error: 'Category already exists' }
+422 Unprocessable
+Business logic fail (e.g. stock < 0)
+{ error: 'Stock cannot go below zero' }
+429 Too Many Requests
+Rate limit exceeded
+{ error: 'Too many attempts', retryAfter: 900 }
+500 Internal Error
+Unhandled exception
+{ error: 'Something went wrong' } — no stack trace in prod
+
+2.6  Zod Validation Schemas — Phase 1
+schemas/product.schema.js
+const { z } = require('zod');
+
+const CreateProductSchema = z.object({
+  name:                z.string().min(2).max(100),
+  category_id:         z.string().uuid().optional(),
+  price:               z.number().positive().multipleOf(0.01),
+  stock_qty:           z.number().int().min(0),
+  unit:                z.enum(['pcs','kg','g','litre','ml']),
+  low_stock_threshold: z.number().int().min(0).default(5),
+});
+
+const BulkPriceSchema = z.object({
+  items: z.array(z.object({
+    id:    z.string().uuid(),
+    price: z.number().positive().multipleOf(0.01),
+  })).min(1).max(500),
+});
+
+const EODEntrySchema = z.object({
+  entry_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  items: z.array(z.object({
+    product_id: z.string().uuid(),
+    qty_sold:   z.number().int().positive(),
+  })).min(1),
+});
+
+module.exports = { CreateProductSchema, BulkPriceSchema, EODEntrySchema };
+
+LalaKirana App Flow & Backend Schema v1.0 — Phase 1 — June 2026

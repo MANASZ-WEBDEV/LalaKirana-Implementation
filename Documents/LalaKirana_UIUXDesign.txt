@@ -1,0 +1,741 @@
+
+𝐋𝐚𝐥𝐚𝐊𝐢𝐫𝐚𝐧𝐚
+Admin Panel — UI/UX Design System
+Phase 1 — Inventory Management
+Warm  •  Familiar  •  Built for the family  •  Not a SaaS tool
+CARAMEL
+#2E1F26
+RAISIN
+#C87740
+PARCHMENT
+#F5ECD7
+DEEPROAST
+#3D2A1E
+SAND
+#E8D5B0
+SAGE
+#7A8C6E
+
+Palette: Combo 05 — Raisin & Caramel, Extended
+Field
+Detail
+Design Version
+1.0 — June 2026
+Palette
+Combo 05: Raisin #C87740 + Caramel #2E1F26, extended to 8 tokens
+Display Typeface
+Playfair Display — old-money serif, carries legacy weight
+UI Typeface
+DM Sans — clean, legible at small sizes, operator-friendly
+Data Typeface
+DM Mono — prices, bill numbers, quantities
+Signature Element
+Terracotta ledger-rule on sidebar active states
+Target Device
+Desktop browser (1280px+), PWA-installed on shop computer
+
+
+1. Design Philosophy
+LalaKirana is not a product for the market. It is a tool built by a family, for a family. The design reflects this: warm, unhurried, deeply familiar — like the shop itself. Every decision pushes against the generic SaaS admin template.
+
+Design Principles — What This UI Must Feel Like
+•  Ledger-like — not a dashboard. The shop has 50 years of paper records. The UI should feel like their digital continuation.
+•  Operator-first — the billing screen is used under pressure. Clarity and speed beat aesthetics when it counts.
+•  Warm at rest, sharp in action — the idle UI is earthy and calm. Interactive states are high-contrast and immediate.
+•  No generic blue — not a single default #1E40AF anywhere. Every color is earned from the palette.
+•  Typography carries personality — Playfair Display headings feel like a hand-lettered signboard over the counter.
+•  The sidebar is the spine of a register book — structured, authoritative, quietly marking your place.
+
+2. Color System
+8 tokens derived from Combo 05. Every color in the UI maps to exactly one of these tokens — no ad-hoc hex values anywhere in the codebase.
+
+
+Token Name
+Hex Value
+Usage Role
+ 
+Caramel
+#2E1F26
+Sidebar background, primary surface, modal overlays
+ 
+Raisin
+#C87740
+Primary CTA buttons, active nav item accent, links
+ 
+Parchment
+#F5ECD7
+Main content area background, form backgrounds
+ 
+Deep Roast
+#3D2A1E
+Sidebar hover states, card headers, secondary surfaces
+ 
+Sand
+#E8D5B0
+Borders, dividers, table lines, input outlines
+ 
+Ink
+#1A120D
+All body text, labels, headings on light backgrounds
+ 
+Sage
+#7A8C6E
+Success states, in-stock badges, confirmed bill status
+ 
+Dust
+#C4A882
+Placeholder text, disabled states, secondary labels
+
+Semantic colour aliases used in Tailwind config:
+
+Alias
+Maps To
+Example Use
+--color-bg-base
+Parchment #F5ECD7
+Main content background
+--color-bg-sidebar
+Caramel #2E1F26
+Sidebar, top nav
+--color-accent
+Raisin #C87740
+Buttons, active states, badges
+--color-accent-deep
+Ember #A85E2A
+Button hover, pressed state
+--color-border
+Sand #E8D5B0
+All borders and dividers
+--color-text
+Ink #1A120D
+Primary body text
+--color-text-muted
+Dust #C4A882
+Secondary text, placeholders
+--color-success
+Sage #7A8C6E
+Success, in-stock, paid status
+
+
+3. Typography System
+Role
+Typeface
+Weight
+Usage
+Display
+Playfair Display
+700 Bold
+Page titles, section headers, sidebar logo
+Heading
+Playfair Display
+600 SemiBold
+Card titles, modal headings, screen names
+Body
+DM Sans
+400 Regular
+All body text, descriptions, labels
+Body Strong
+DM Sans
+600 SemiBold
+Form labels, table column headers, key info
+Caption
+DM Sans
+400 Regular
+Helper text, timestamps, secondary info
+Data
+DM Mono
+400 Regular
+Prices, bill numbers, stock quantities, dates
+Button
+DM Sans
+600 SemiBold
+All button labels — sentence case, never all-caps
+
+Scale Name
+Size
+Line Height
+Usage
+display-xl
+32px / 2rem
+1.2
+Page hero title (e.g. 'Inventory')
+display-lg
+24px / 1.5rem
+1.3
+Screen section headings
+heading
+20px / 1.25rem
+1.4
+Card headers, modal titles
+body-lg
+16px / 1rem
+1.6
+Primary reading text
+body
+14px / 0.875rem
+1.6
+Standard UI text, form fields
+caption
+12px / 0.75rem
+1.5
+Timestamps, helper text, badges
+data
+14px / 0.875rem
+1.4
+Prices, quantities — DM Mono
+
+Import from Google Fonts:
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;600&family=DM+Mono&display=swap');
+
+
+4. Component Library
+4.1  Sidebar Navigation
+The sidebar is the spine of the admin panel — structured like a register book. Width: 240px fixed. Background: Caramel. The signature element is a 3px Raisin left border on the active nav item, echoing a bookmark ribbon in a ledger.
+
+SIDEBAR — 240px wide, Caramel background
+┌────────────────────────┐
+│  🛒  LalaKirana         │  ← Playfair Display, Parchment, 20px
+│      Admin Panel       │  ← DM Sans caption, Dust, 11px
+├────────────────────────┤  ← Sand border
+│                        │
+│  ▪ Dashboard           │  ← inactive: Dust text, no border
+│                        │
+│ ▌ Inventory       ●    │  ← ACTIVE: 3px Raisin left rule,
+│                        │     Parchment text, Raisin dot badge
+│  ▪ Billing             │
+│  ▪ Khata               │
+│  ▪ Reports             │
+│  ▪ Settings            │
+│                        │
+├────────────────────────┤
+│  👤 Shop Owner          │  ← bottom: avatar + name
+│     owner@lalakirana   │
+│  [Log out]             │  ← Raisin text button
+└────────────────────────┘
+
+State
+Background
+Left Border
+Text Color
+Default / idle
+Caramel #2E1F26
+None
+Dust #C4A882
+Hover
+Deep Roast #3D2A1E
+None
+Parchment #F5ECD7
+Active (current page)
+Deep Roast #3D2A1E
+3px solid Raisin #C87740
+Parchment #F5ECD7
+Disabled
+Caramel #2E1F26
+None
+Dust at 40% opacity
+
+4.2  Top Header Bar
+HEADER BAR — full width, Parchment bg, Sand bottom border
+┌───────────────────────────────────────────────────────────────┐
+│  Inventory              [🔍 Search products...]   [+ Add]    │
+│  ─────────────────────────────────────────────────────────── │
+│  Playfair Display 24px  │  DM Sans 14px          │  Button   │
+└───────────────────────────────────────────────────────────────┘
+
+Page title uses Playfair Display 24px Ink. Search bar: 320px wide, Sand border, Parchment bg, 8px radius. Primary action button always top-right.
+
+4.3  Buttons
+Variant
+Background
+Text
+Border
+Use When
+Primary
+Raisin #C87740
+Parchment
+None
+Confirm Bill, Save Product, Add to Khata
+Primary Hover
+Ember #A85E2A
+Parchment
+None
+On hover / focus
+Secondary
+Parchment
+Raisin
+1px Raisin
+Edit, View Details, Cancel
+Ghost
+Transparent
+Raisin
+None
+Inline actions, table row actions
+Danger
+#7A1F1F deep red
+Parchment
+None
+Delete product, Cancel bill
+Disabled
+Sand #E8D5B0
+Dust
+None
+Any action not yet available
+
+All buttons: DM Sans 600, 14px, sentence case. Height: 40px. Padding: 0 16px. Border radius: 6px. No rounded-full pill shapes — corners are slightly rounded, not circular.
+
+4.4  Data Table (Product List)
+PRODUCT TABLE — Inventory screen
+┌──────────┬────────────────┬──────────┬───────┬──────────┬────────┐
+│ Category │ Product Name   │ Price    │ Stock │ Status   │ Action │
+├──────────┼────────────────┼──────────┼───────┼──────────┼────────┤
+│ Spices   │ Turmeric 200g  │ ₹ 48.00  │  42   │ ● In Stock│ ··· │
+├──────────┼────────────────┼──────────┼───────┼──────────┼────────┤
+│ Grains   │ Basmati Rice   │ ₹ 120.00 │   4   │ ⚠ Low    │ ··· │
+├──────────┼────────────────┼──────────┼───────┼──────────┼────────┤
+│ Tea      │ Tata Tea 250g  │ ₹ 95.00  │   0   │ ✕ Out    │ ··· │
+└──────────┴────────────────┴──────────┴───────┴──────────┴────────┘
+  Price updated: 2h ago  ← stale price badge appears here if >12h
+
+Element
+Style
+Table header row
+Deep Roast bg, Parchment text, DM Sans 600 12px, UPPERCASE
+Table row (even)
+Cream #FBF6EE bg
+Table row (odd)
+Parchment bg
+Table row hover
+Sand bg, slight Raisin left border flash on hover
+Price column
+DM Mono 14px, Ink text, right-aligned
+Stock column
+DM Mono 14px, centre-aligned
+In Stock badge
+Sage #7A8C6E bg, Parchment text, 4px radius
+Low Stock badge
+Amber #C87740 bg (Raisin), Parchment text
+Out of Stock badge
+#7A1F1F bg, Parchment text
+Price stale — yellow badge
+Sand bg, Ink text, ⏱ icon, shows age in hours
+Price stale — red badge
+Raisin bg, Parchment text, shows 24h+ warning
+Action menu (···)
+Ghost button, opens a small Caramel dropdown
+
+
+4.5  Forms — Add / Edit Product
+ADD PRODUCT MODAL or SIDE DRAWER — 480px
+┌──────────────────────────────────────────────┐
+│  Add New Product                         [×] │  ← Playfair Display 20px
+├──────────────────────────────────────────────┤  ← Raisin divider
+│                                              │
+│  Product Name *                              │
+│  [________________________________]          │  ← text input
+│                                              │
+│  Category *              Unit               │
+│  [Spices           ▼]    [kg      ▼]        │  ← select dropdowns
+│                                              │
+│  Price (₹) *             Stock Qty *         │
+│  [____________]          [__________]        │
+│                                              │
+│  Low Stock Alert at                         │
+│  [____] units  ← helper: 'We'll warn you'   │
+│                                              │
+├──────────────────────────────────────────────┤
+│  [Cancel]                     [Save Product] │
+└──────────────────────────────────────────────┘
+
+Form Element
+Style
+Input background
+Cream #FBF6EE
+Input border
+1px Sand — 2px Raisin on focus
+Input text
+Ink, DM Sans 14px
+Label
+DM Sans 600 12px, Ink, uppercase tracking-wide
+Placeholder
+Dust, DM Sans 14px
+Error state
+1px #7A1F1F border, small error message below in #7A1F1F
+Required asterisk
+Raisin colour
+Modal backdrop
+Caramel at 80% opacity
+Modal card
+Parchment bg, Sand border, 8px radius, shadow
+Divider inside modal
+1px Raisin — not Sand — adds warmth
+
+4.6  Stat Cards — Dashboard
+STAT CARD — 4 across on dashboard
+┌─────────────────────────┐
+│  TOTAL PRODUCTS         │  ← DM Sans 600 11px UPPERCASE Dust
+│                         │
+│  247                    │  ← DM Mono 36px Caramel
+│                         │
+│  ↑ 3 added this week    │  ← DM Sans 12px Sage (positive change)
+│  ───── Raisin rule ───  │  ← 2px Raisin bottom accent
+└─────────────────────────┘
+Card bg: Cream. Border: 1px Sand. Radius: 8px.
+
+Stat Card Type
+Icon
+Accent Color
+Total Products
+📦
+Raisin
+Low Stock Items
+⚠️
+Amber / Raisin
+Out of Stock
+✕
+#7A1F1F deep red
+Inventory Value
+₹
+Sage
+
+
+4.7  Badges & Status Indicators
+Badge
+Background
+Text
+Use
+In Stock
+Sage #7A8C6E
+Parchment
+Product available, qty > threshold
+Low Stock
+Raisin #C87740
+Parchment
+qty > 0 but below threshold
+Out of Stock
+#7A1F1F
+Parchment
+qty = 0
+Price Fresh
+Sage
+Parchment
+Updated < 12 hours ago
+Price Stale
+Sand #E8D5B0
+Ink
+Updated 12–24 hours ago, ⏱ icon
+Price Outdated
+Raisin
+Parchment
+Updated > 24 hours ago, ⚠ icon
+Bill — Paid
+Sage
+Parchment
+Confirmed and paid
+Bill — Khata
+#5C4B2A warm amber
+Parchment
+Added to customer credit
+Bill — Draft
+Dust
+Ink
+Open, not yet confirmed
+Bill — Cancelled
+#7A1F1F
+Parchment
+Voided
+
+4.8  Toast Notifications
+Type
+Left Accent
+Icon
+Example Message
+Success
+Sage
+✓
+Product saved — Turmeric 200g added to Spices
+Warning
+Raisin
+⚠
+Basmati Rice is below low-stock threshold (4 left)
+Error
+#7A1F1F
+✕
+Stock update failed — please try again
+Info
+Sand / Dust
+ℹ
+Prices re-fetched — 2 products updated while offline
+Toasts: bottom-right, Cream bg, 1px Sand border, left accent bar in status colour, DM Sans 14px, auto-dismiss 4 seconds.
+
+
+5. Screen-by-Screen Designs — Phase 1
+5.1  Login Screen
+LOGIN — centred card, full Caramel background
+┌─────────────────────────────────────────────────────────────────┐
+│                     [Caramel full-page bg]                      │
+│                                                                 │
+│              🛒                                                 │
+│        LalaKirana                  ← Playfair Display 40px     │
+│        Admin Panel                 ← DM Sans 16px Dust         │
+│                                                                 │
+│   ┌───────────────────────────────────────────────────────┐    │
+│   │                                                       │    │
+│   │   Email address                                       │    │
+│   │   [_____________________________________________]      │    │
+│   │                                                       │    │
+│   │   Password                    Forgot password?        │    │
+│   │   [_____________________________________________]      │    │
+│   │                                                       │    │
+│   │   [          Sign in to LalaKirana          ]         │    │
+│   │              ← Primary button, full width             │    │
+│   └───────────────────────────────────────────────────────┘    │
+│          Card: Parchment bg, 400px wide, Sand border           │
+└─────────────────────────────────────────────────────────────────┘
+
+The login screen is the first thing the operator sees every morning. It should feel like unlocking the shop — the full Caramel background makes the Parchment card glow like paper under warm light.
+
+5.2  Dashboard — Phase 1
+DASHBOARD — full layout
+┌─────────┬────────────────────────────────────────────────────┐
+│         │  Dashboard          [Bulk Price Update]            │
+│ SIDEBAR │ ─────────────────────────────────────────────────  │
+│ 240px   │                                                    │
+│Caramel  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────┐ │
+│         │  │ Products │ │ Low Stock│ │ Out Stock│ │ Value│ │
+│ Active: │  │   247    │ │    8     │ │    2     │ │₹1.2L │ │
+│Dashboard│  └──────────┘ └──────────┘ └──────────┘ └──────┘ │
+│         │                                                    │
+│         │  Recently Updated Prices        [View all →]      │
+│         │  ┌──────────────────────────────────────────────┐ │
+│         │  │ Rice 1kg  ₹58→₹62  2h ago  by Shop Owner    │ │
+│         │  │ Wheat     ₹45→₹48  2h ago  by Shop Owner    │ │
+│         │  └──────────────────────────────────────────────┘ │
+│         │                                                    │
+│         │  Low Stock Alert                                   │
+│         │  ┌──────────────────────────────────────────────┐ │
+│         │  │ ⚠ Basmati Rice  4 left  [Adjust Stock]       │ │
+│         │  │ ⚠ Tata Tea 250g 3 left  [Adjust Stock]       │ │
+│         │  └──────────────────────────────────────────────┘ │
+└─────────┴────────────────────────────────────────────────────┘
+
+5.3  Inventory Screen — Product List
+INVENTORY — full layout
+┌─────────┬────────────────────────────────────────────────────┐
+│         │  Inventory     [🔍 Search...]  [Filter ▼] [+ Add] │
+│ SIDEBAR │ ─────────────────────────────────────────────────  │
+│         │  All  Spices  Grains  Tea  Snacks  Household  ··· │
+│ Active: │  ← Category filter tabs, Raisin underline active  │
+│Inventory│                                                    │
+│         │  ┌────────┬──────────────┬────────┬──────┬──────┐ │
+│         │  │Category│ Product      │  Price │ Qty  │Status│ │
+│         │  ├────────┼──────────────┼────────┼──────┼──────┤ │
+│         │  │ Spices │ Turmeric 200g│ ₹48.00 │  42  │  ●   │ │
+│         │  ├────────┼──────────────┼────────┼──────┼──────┤ │
+│         │  │ Grains │ Basmati Rice │ ₹120 ⏱│   4  │  ⚠   │ │
+│         │  ├────────┼──────────────┼────────┼──────┼──────┤ │
+│         │  │ Tea    │ Tata Tea 250g│ ₹95.00 │   0  │  ✕   │ │
+│         │  └────────┴──────────────┴────────┴──────┴──────┘ │
+│         │  Showing 87 products  [← Prev]  Page 1  [Next →]  │
+└─────────┴────────────────────────────────────────────────────┘
+  ⏱ = stale price badge on that product's price cell
+
+5.4  Bulk Price Update Screen
+BULK PRICE UPDATE — morning price update workflow
+┌─────────┬────────────────────────────────────────────────────┐
+│         │  Update Prices            [Save All Changes]       │
+│ SIDEBAR │  Last updated: Today 6:30 AM                       │
+│         │ ─────────────────────────────────────────────────  │
+│         │                                                    │
+│         │  🔍 Filter by category: [All ▼]                   │
+│         │                                                    │
+│         │  ┌──────────────────┬──────────────┬────────────┐ │
+│         │  │ Product          │ Current Price│ New Price  │ │
+│         │  ├──────────────────┼──────────────┼────────────┤ │
+│         │  │ Rice 1kg         │   ₹ 58.00    │ [₹ 62.00] │ │
+│         │  │ Wheat 1kg        │   ₹ 45.00    │ [₹ _____ ]│ │
+│         │  │ Turmeric 200g    │   ₹ 48.00    │ [₹ _____ ]│ │
+│         │  └──────────────────┴──────────────┴────────────┘ │
+│         │                                                    │
+│         │  ● Changed: 1 product   ○ Skipped: 2 unchanged    │
+│         │  [Save All Changes]  — atomic, all or nothing      │
+└─────────┴────────────────────────────────────────────────────┘
+  Changed rows: highlighted with a pale Raisin left border
+
+
+5.5  EOD Stock Entry Screen
+EOD STOCK ENTRY — end of day diary entry
+┌─────────┬────────────────────────────────────────────────────┐
+│         │  End of Day Stock Entry        [Confirm Entry]     │
+│ SIDEBAR │  For: Today, Thu 19 Jun 2026  [Change date]        │
+│         │ ─────────────────────────────────────────────────  │
+│         │  Enter quantities sold via small cash sales today. │
+│         │  Leave blank for items not sold.                   │
+│         │                                                    │
+│         │  🔍 [Search product to add...]                     │
+│         │                                                    │
+│         │  ┌────────────────────────────┬──────────────────┐ │
+│         │  │ Product                    │  Qty Sold Today  │ │
+│         │  ├────────────────────────────┼──────────────────┤ │
+│         │  │ Turmeric 200g              │  [ 8 ]      ✕   │ │
+│         │  │ Salt 1kg                   │  [ 12 ]     ✕   │ │
+│         │  │ Biscuits (Parle-G)         │  [ 5 ]      ✕   │ │
+│         │  └────────────────────────────┴──────────────────┘ │
+│         │                                                    │
+│         │  Est. value: ₹ 640   Items entered: 3  [Confirm]  │
+└─────────┴────────────────────────────────────────────────────┘
+
+5.6  Stock Adjustment Drawer
+STOCK ADJUST — side drawer, opens from product row action menu
+                      ┌──────────────────────────────────────┐
+                      │  Adjust Stock              [×]       │
+                      │  Turmeric 200g — Spices              │
+                      │  Current stock: 42 units             │
+                      ├──────────────────────────────────────┤
+                      │                                      │
+                      │  Adjustment type                     │
+                      │  ● Add stock  ○ Remove  ○ Set exact  │
+                      │                                      │
+                      │  Quantity                            │
+                      │  [____________] units                │
+                      │                                      │
+                      │  Reason                              │
+                      │  [New arrival          ▼]            │
+                      │   New arrival / Damage / Correction  │
+                      │                                      │
+                      │  Note (optional)                     │
+                      │  [__________________________________] │
+                      │                                      │
+                      │  New stock will be: 56 units         │
+                      │  [Cancel]         [Apply Adjustment] │
+                      └──────────────────────────────────────┘
+
+
+6. Spacing, Layout & Grid
+Token
+Value
+Use
+space-1
+4px
+Icon padding, tight inline gaps
+space-2
+8px
+Between label and input, tight card padding
+space-3
+12px
+Badge padding, button inner vertical
+space-4
+16px
+Standard component padding, form field gap
+space-6
+24px
+Card padding, section gap inside screen
+space-8
+32px
+Gap between major sections
+space-12
+48px
+Top of screen to first content
+sidebar-width
+240px
+Fixed sidebar — never collapses on desktop
+content-max
+1200px
+Max content width in main area
+border-radius-sm
+4px
+Badges, small chips
+border-radius-md
+6px
+Buttons, inputs, dropdowns
+border-radius-lg
+8px
+Cards, modals, drawers
+
+7. Interaction & Motion
+Interaction
+Duration
+Easing
+Effect
+Sidebar item hover
+150ms
+ease-out
+Background fades to Deep Roast
+Button hover
+100ms
+ease-out
+Darkens to Ember, slight scale 0.98
+Modal open
+200ms
+ease-out
+Fade in + translate-y 8px → 0
+Toast enter
+250ms
+ease-out
+Slide in from right
+Toast dismiss
+200ms
+ease-in
+Fade out
+Table row hover
+100ms
+ease
+Sand background washes in
+Price badge pulse
+2s loop
+ease-in-out
+Red badge gentle pulse if >24h stale
+Form focus ring
+100ms
+linear
+Raisin border replaces Sand border
+Drawer open
+250ms
+ease-out
+Slides in from right
+Page transition
+150ms
+ease
+Opacity 0→1 on route change
+Respect prefers-reduced-motion: all transitions and animations disabled when the user's OS has this set.
+
+
+8. Responsive Behaviour (PWA)
+Phase 1 is desktop-first — the shop has one computer. However the PWA must not break if opened on a phone (for the owner checking remotely).
+
+Breakpoint
+Sidebar
+Layout
+≥ 1280px (desktop)
+240px fixed, always visible
+Full side-by-side layout
+1024–1279px (laptop)
+240px fixed
+Tables may scroll horizontally
+768–1023px (tablet)
+Collapsed to 64px icon-only sidebar
+Drawers become full-screen sheets
+< 768px (mobile)
+Hidden, accessible via hamburger menu
+Single column, stacked cards
+
+PWA manifest: theme_color = #2E1F26 (Caramel). background_color = #F5ECD7 (Parchment). This ensures the browser chrome matches the app on install.
+
+9. Accessibility
+Rule
+Implementation
+Colour contrast
+Parchment on Caramel: 9.2:1 ✓   Parchment on Raisin: 4.8:1 ✓   Ink on Parchment: 18:1 ✓
+Focus ring
+2px Raisin outline, 2px offset — visible on all interactive elements
+Touch targets
+Minimum 44×44px — all buttons and nav items
+Screen reader
+All icons have aria-label; status badges have aria-live='polite'
+Reduced motion
+All CSS transitions wrapped in @media (prefers-reduced-motion: no-preference)
+Keyboard nav
+Full tab order; sidebar navigable with arrow keys; modals trap focus
+Error messages
+Associated with inputs via aria-describedby; not colour-only indicators
+
+LalaKirana Design System v1.0 — Warm. Familiar. Built for the family, not the market.
