@@ -1,0 +1,24 @@
+.skeleton {
+  background-color: var(--color-surface-dim);
+  background-image: linear-gradient(
+    90deg,
+    var(--color-surface-dim) 0px,
+    var(--color-surface-container) 50%,
+    var(--color-surface-dim) 100%
+  );
+  background-size: 200px 100%;
+  background-repeat: no-repeat;
+  display: inline-block;
+  line-height: 1;
+  width: 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
