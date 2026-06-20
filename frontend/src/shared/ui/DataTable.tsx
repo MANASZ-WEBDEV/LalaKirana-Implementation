@@ -1,10 +1,10 @@
-import React from 'react';
+import { type ReactNode } from 'react';
 import styles from './DataTable.module.css';
 
 export interface ColumnConfig<T> {
   key: string;
   header: string;
-  render?: (row: T) => React.ReactNode;
+  render?: (row: T) => ReactNode;
   align?: 'left' | 'right' | 'center';
   width?: string;
 }
@@ -12,7 +12,7 @@ export interface ColumnConfig<T> {
 interface DataTableProps<T> {
   columns: ColumnConfig<T>[];
   data: T[];
-  emptyState?: React.ReactNode;
+  emptyState?: ReactNode;
   rowKey: (row: T) => string | number;
 }
 
@@ -54,7 +54,7 @@ export function DataTable<T>({
                   className={styles.td}
                   style={{ textAlign: col.align || 'left' }}
                 >
-                  {col.render ? col.render(row) : (row as Record<string, unknown>)[col.key] as React.ReactNode}
+                  {col.render ? col.render(row) : (row as Record<string, unknown>)[col.key] as ReactNode}
                 </td>
               ))}
             </tr>
