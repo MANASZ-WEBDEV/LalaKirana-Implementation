@@ -276,7 +276,7 @@ export function useCreateProduct() {
 
 ---
 
-### Backend — TypeScript with Feature-Grouped Controllers
+### Backend — TypeScript with Feature-Based Folder Structure
 
 ```
 backend/
@@ -288,34 +288,33 @@ backend/
 │   ├── app.ts                  ← Express, CORS, middleware chain, route mounting
 │   ├── server.ts               ← HTTP listen, graceful shutdown
 │   │
-│   ├── routes/
-│   │   ├── auth.routes.ts
-│   │   ├── products.routes.ts
-│   │   ├── inventory.routes.ts
-│   │   └── reports.routes.ts
-│   │
-│   ├── controllers/            ← req/res only, calls service for logic
-│   │   ├── auth.controller.ts
-│   │   ├── products.controller.ts
-│   │   ├── inventory.controller.ts
-│   │   └── reports.controller.ts
-│   │
-│   ├── services/               ← all business logic, calls Supabase client
-│   │   ├── auth.service.ts     ← JWT, bcrypt, OTP, token blocklist, sessions
-│   │   ├── products.service.ts ← CRUD, bulk price (atomic), price history
-│   │   ├── inventory.service.ts← EOD entry, stock adjust, audit
-│   │   └── email.service.ts    ← Nodemailer OTP delivery
+│   ├── features/
+│   │   ├── auth/
+│   │   │   ├── auth.routes.ts
+│   │   │   ├── auth.controller.ts
+│   │   │   ├── auth.service.ts
+│   │   │   ├── auth.schema.ts
+│   │   │   └── email.service.ts     ← Nodemailer OTP delivery
+│   │   ├── products/
+│   │   │   ├── products.routes.ts
+│   │   │   ├── products.controller.ts
+│   │   │   ├── products.service.ts
+│   │   │   └── product.schema.ts
+│   │   ├── inventory/
+│   │   │   ├── inventory.routes.ts
+│   │   │   ├── inventory.controller.ts
+│   │   │   ├── inventory.service.ts
+│   │   │   └── inventory.schema.ts
+│   │   └── reports/
+│   │       ├── reports.routes.ts
+│   │       ├── reports.controller.ts
+│   │       └── reports.service.ts
 │   │
 │   ├── middleware/
 │   │   ├── auth.middleware.ts   ← JWT verify + blocklist check + session last_seen
 │   │   ├── role.middleware.ts   ← requireOwner()
 │   │   ├── rateLimiter.ts      ← 5 attempts / 15 min / IP on /auth/login
 │   │   └── validate.middleware.ts ← Zod parse body/query, return 400 on fail
-│   │
-│   ├── schemas/                ← Zod schemas (shared types via z.infer<>)
-│   │   ├── auth.schema.ts
-│   │   ├── product.schema.ts
-│   │   └── inventory.schema.ts
 │   │
 │   ├── db/
 │   │   └── supabase.ts         ← createClient with SERVICE_ROLE_KEY, typed
@@ -532,10 +531,10 @@ Each step ends with a working, testable app. Pass all verify points before movin
 ### Step 4 — Feature: Auth — Login, Sessions, Password Reset (~90 min)
 
 **Backend:**
-- [ ] `schemas/auth.schema.ts` — Zod: LoginSchema (email+password), ForgotPasswordSchema, ResetPasswordSchema, ChangePasswordSchema
-- [ ] `services/auth.service.ts`: `generateToken(user, deviceHint, ip)` → inserts sessions row + returns JWT with jti; `revokeToken(jti)` → inserts token_blocklist + deletes session; `verifyOTP(email, otp)`; `sendOTPEmail(email, otp)` via Nodemailer
-- [ ] `controllers/auth.controller.ts`: login (rate limit → lockout check → bcrypt → generateToken), logout (revokeToken), me (return req.user), forgotPassword (6-digit OTP → hash → insert otp_requests → sendOTPEmail), resetPassword (verifyOTP → update password → revoke all sessions), changePassword (verify current → update → revoke all sessions)
-- [ ] Wire `auth.routes.ts`: POST `/login` (rateLimiter), POST `/logout` (auth), GET `/me` (auth), POST `/forgot-password`, POST `/reset-password`, PUT `/change-password` (auth), GET `/sessions` (auth), DELETE `/sessions/:id` (auth)
+- [ ] `src/features/auth/auth.schema.ts` — Zod: LoginSchema (email+password), ForgotPasswordSchema, ResetPasswordSchema, ChangePasswordSchema
+- [ ] `src/features/auth/auth.service.ts`: `generateToken(user, deviceHint, ip)` → inserts sessions row + returns JWT with jti; `revokeToken(jti)` → inserts token_blocklist + deletes session; `verifyOTP(email, otp)`; `sendOTPEmail(email, otp)` via Nodemailer
+- [ ] `src/features/auth/auth.controller.ts`: login (rate limit → lockout check → bcrypt → generateToken), logout (revokeToken), me (return req.user), forgotPassword (6-digit OTP → hash → insert otp_requests → sendOTPEmail), resetPassword (verifyOTP → update password → revoke all sessions), changePassword (verify current → update → revoke all sessions)
+- [ ] Wire `src/features/auth/auth.routes.ts`: POST `/login` (rateLimiter), POST `/logout` (auth), GET `/me` (auth), POST `/forgot-password`, POST `/reset-password`, PUT `/change-password` (auth), GET `/sessions` (auth), DELETE `/sessions/:id` (auth)
 - [ ] Complete `auth.middleware.ts`: jwt.verify → check token_blocklist → update sessions.last_seen → attach req.user
 
 **Frontend:**
@@ -563,9 +562,9 @@ Each step ends with a working, testable app. Pass all verify points before movin
 ### Step 5 — Feature: Dashboard (~60 min)
 
 **Backend:**
-- [ ] `services/reports.service.ts` — `getDashboardStats()`: 4 parallel Supabase queries (total active products, low stock count, out of stock count, inventory value sum)
-- [ ] `controllers/reports.controller.ts` — dashboard endpoint returns all stats
-- [ ] Wire `reports.routes.ts`: GET `/reports/dashboard` (auth), GET `/products/low-stock` (auth), GET `/price-history?limit=` (auth)
+- [ ] `src/features/reports/reports.service.ts` — `getDashboardStats()`: 4 parallel Supabase queries (total active products, low stock count, out of stock count, inventory value sum)
+- [ ] `src/features/reports/reports.controller.ts` — dashboard endpoint returns all stats
+- [ ] Wire `src/features/reports/reports.routes.ts`: GET `/reports/dashboard` (auth), GET `/products/low-stock` (auth), GET `/price-history?limit=` (auth)
 
 **Frontend:**
 - [ ] `features/dashboard/dashboard.queries.ts` — `useDashboardStats()`, `useLowStockProducts()`, `useRecentPriceChanges(limit)`
@@ -585,10 +584,10 @@ Each step ends with a working, testable app. Pass all verify points before movin
 ### Step 6 — Feature: Inventory — Product List (~90 min)
 
 **Backend:**
-- [ ] `schemas/product.schema.ts` — Zod: CreateProductSchema, UpdateProductSchema, BulkPriceSchema, StockAdjustSchema — all with exported `z.infer<>` types
-- [ ] `services/products.service.ts` — getAllProducts(filters), getProductById(id), createProduct(data), updateProduct(id, data) [triggers price_history via DB trigger], softDeleteProduct(id), bulkUpdatePrices(items) [atomic]
-- [ ] `controllers/products.controller.ts` — wire all endpoints
-- [ ] Wire `products.routes.ts`: GET `/products`, GET `/products/low-stock`, GET `/products/prices`, GET `/products/:id`, GET `/products/:id/price-history`, POST `/products`, PUT `/products/:id`, DELETE `/products/:id` (owner), POST `/products/bulk-price`, GET `/categories`, POST `/categories` (owner)
+- [ ] `src/features/products/product.schema.ts` — Zod: CreateProductSchema, UpdateProductSchema, BulkPriceSchema, StockAdjustSchema — all with exported `z.infer<>` types
+- [ ] `src/features/products/products.service.ts` — getAllProducts(filters), getProductById(id), createProduct(data), updateProduct(id, data) [triggers price_history via DB trigger], softDeleteProduct(id), bulkUpdatePrices(items) [atomic]
+- [ ] `src/features/products/products.controller.ts` — wire all endpoints
+- [ ] Wire `src/features/products/products.routes.ts`: GET `/products`, GET `/products/low-stock`, GET `/products/prices`, GET `/products/:id`, GET `/products/:id/price-history`, POST `/products`, PUT `/products/:id`, DELETE `/products/:id` (owner), POST `/products/bulk-price`, GET `/categories`, POST `/categories` (owner)
 
 **Frontend:**
 - [ ] `inventory.api.ts` — getProducts, getCategories, createProduct, updateProduct, softDeleteProduct, adjustStock, getStockLog, getPriceHistory
@@ -673,7 +672,7 @@ Each step ends with a working, testable app. Pass all verify points before movin
   - [Confirm Entry] → mutation → toast → invalidateQueries
 
 **Backend:**
-- [ ] `services/inventory.service.ts` — submitEODEntry(entry_date, items, userId): UPSERT eod_entries, decrement stock_qty, insert stock_log with `reason='eod_entry'`
+- [ ] `src/features/inventory/inventory.service.ts` — submitEODEntry(entry_date, items, userId): UPSERT eod_entries, decrement stock_qty, insert stock_log with `reason='eod_entry'`
 
 **Backend Tests:**
 - [ ] `tests/inventory.test.ts` — EOD entry creates stock_log rows, stock decremented, same-day UPSERT no duplicates
@@ -697,7 +696,7 @@ Each step ends with a working, testable app. Pass all verify points before movin
 - [ ] `AccountTab.tsx + AccountTab.module.css` (All roles) — change password: current + new + confirm, on success: clear authStore → navigate to `/login` with toast
 
 **Backend:**
-- [ ] Add user management routes: POST `/users` (owner), GET `/users` (owner), PUT `/users/:id/reset-password` (owner), DELETE `/users/:id` (owner)
+- [ ] Add user management routes in `src/features/auth/auth.routes.ts`: POST `/users` (owner), GET `/users` (owner), PUT `/users/:id/reset-password` (owner), DELETE `/users/:id` (owner)
 
 **Verify:**
 1. ☐ Owner creates staff → staff can log in with that email
