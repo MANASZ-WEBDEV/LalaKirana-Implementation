@@ -1,4 +1,7 @@
 import nodemailer from 'nodemailer';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -12,8 +15,9 @@ const transporter = nodemailer.createTransport({
 
 export const emailService = {
   sendOTPEmail: async (email: string, otp: string): Promise<boolean> => {
+    const fromAddress = process.env.SMTP_FROM || process.env.SMTP_USER || 'no-reply@lalakirana.in';
     const mailOptions = {
-      from: `"LalaKirana Admin" <${process.env.SMTP_USER || 'no-reply@lalakirana.in'}>`,
+      from: `"LalaKirana Admin" <${fromAddress}>`,
       to: email,
       subject: 'LalaKirana Password Reset OTP',
       text: `Your One-Time Password (OTP) for password reset is: ${otp}. It is valid for 10 minutes.`,

@@ -11,6 +11,7 @@ declare global {
       SMTP_PORT?: string;
       SMTP_USER?: string;
       SMTP_PASS?: string;
+      SMTP_FROM?: string;
       NODE_ENV?: 'development' | 'production' | 'test';
     }
   }

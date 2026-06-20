@@ -1,13 +1,11 @@
+import 'dotenv/config';
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 
 import authRoutes from './features/auth/auth.routes.js';
 import productRoutes from './features/products/products.routes.js';
 import inventoryRoutes from './features/inventory/inventory.routes.js';
 import reportRoutes from './features/reports/reports.routes.js';
-
-dotenv.config();
 
 const app = express();
 

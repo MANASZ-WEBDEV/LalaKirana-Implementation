@@ -1,7 +1,5 @@
+import 'dotenv/config';
 import app from './app.js';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 // Validate required environment variables at startup
 const required = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'JWT_SECRET', 'FRONTEND_URL'];
