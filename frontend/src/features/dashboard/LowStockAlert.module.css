@@ -1,0 +1,56 @@
+.card {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  transition: box-shadow var(--transition-normal);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--color-surface-container);
+  padding-bottom: 0.75rem;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.titleIcon {
+  color: var(--color-error);
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.productName {
+  font-weight: 600;
+  color: var(--color-on-surface);
+}
+
+.stockBadge {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 600;
+}
+
+.adjustBtn {
+  font-weight: 500;
+}
