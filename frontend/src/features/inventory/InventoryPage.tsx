@@ -122,7 +122,7 @@ export default function InventoryPage() {
       render: (p) => (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', opacity: !p.is_active ? 0.5 : 1 }}>
           <span className={styles.price}>{formatCurrency(p.price)}</span>
-          <PriceAgeBadge priceUpdatedAt={p.price_updated_at} />
+          <PriceAgeBadge priceUpdatedAt={p.price_updated_at} categoryName={p.category_name} />
         </div>
       ),
     },
