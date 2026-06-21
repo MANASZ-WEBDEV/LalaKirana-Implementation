@@ -1,0 +1,313 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1250px;
+  margin: 0 auto;
+  padding-bottom: 40px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid var(--color-outline-variant);
+  padding-bottom: 16px;
+}
+
+.title {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-on-surface);
+  margin: 0 0 4px 0;
+}
+
+.subtitle {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: var(--color-on-surface-variant);
+  margin: 0;
+}
+
+.controlBar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+@media (min-width: 900px) {
+  .controlBar {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+}
+
+.dateSelectorCard {
+  background-color: var(--color-surface-container);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 320px;
+  position: relative;
+}
+
+.dateLabel {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+}
+
+.dateInput {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: var(--color-on-surface);
+  background-color: var(--color-white);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.dateInput:focus {
+  border-color: var(--color-primary);
+}
+
+.fetchingBadge {
+  position: absolute;
+  right: 20px;
+  top: 16px;
+  font-size: 11px;
+  color: var(--color-primary);
+  font-weight: 500;
+  animation: pulse 1.5s infinite;
+}
+
+.searchCard {
+  flex: 1;
+  max-width: 560px;
+}
+
+.searchInputContainer {
+  position: relative;
+  width: 100%;
+}
+
+.searchResultsList {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  max-height: 280px;
+  overflow-y: auto;
+  z-index: 10;
+  list-style: none;
+  padding: 6px 0;
+  margin: 0;
+}
+
+.searchResultItem {
+  width: 100%;
+}
+
+.searchResultBtn {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 10px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.searchResultBtn:hover:not(:disabled) {
+  background-color: var(--color-surface);
+}
+
+.searchResultBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.searchProdName {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-on-surface);
+}
+
+.searchProdStock {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--color-on-surface-variant);
+}
+
+.noResultsDropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 12px 16px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--color-on-surface-variant);
+  z-index: 10;
+  text-align: center;
+}
+
+.summaryBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  background-color: var(--color-surface-container);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 12px;
+  padding: 16px 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.statLabel {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-on-surface-variant);
+}
+
+.statValue {
+  font-family: 'DM Mono', monospace;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.statDivider {
+  width: 1px;
+  height: 28px;
+  background-color: var(--color-outline-variant);
+}
+
+.actionButtons {
+  display: flex;
+  gap: 12px;
+}
+
+.tableCard {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+  overflow: hidden;
+}
+
+.loadingContainer,
+.emptyContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.loadingSpinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--color-surface-container);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s infinite linear;
+  margin-bottom: 16px;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.thead {
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-outline-variant);
+}
+
+.th {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+  padding: 14px 16px;
+  letter-spacing: 0.5px;
+}
+
+.alignRight {
+  text-align: right;
+}
+
+.tbody {
+  font-family: 'DM Sans', sans-serif;
+}
+
+.tbody tr:not(:last-child) {
+  border-bottom: 1px solid var(--color-outline-variant);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
