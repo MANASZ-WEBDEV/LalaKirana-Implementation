@@ -27,7 +27,7 @@ export default function InventoryPage() {
   // Queries
   const { data: products, isLoading: productsLoading } = useProducts();
   const { data: categories, isLoading: categoriesLoading } = useCategories();
-  
+
   // Mutations
   const deactivateMutation = useSoftDeleteProduct();
 
@@ -35,7 +35,7 @@ export default function InventoryPage() {
   const stockFilter = (searchParams.get('status') as 'all' | 'in' | 'low' | 'out') || 'all';
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   const setStockFilter = (val: string) => {
     setSearchParams((prev) => {
       if (val === 'all') {
@@ -72,7 +72,7 @@ export default function InventoryPage() {
   const filteredProducts = (products || []).filter((p) => {
     const matchesCategory = !selectedCategory || p.category_id === selectedCategory;
     const matchesSearch = !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     let matchesStock = true;
     if (stockFilter === 'out') {
       matchesStock = p.stock_qty === 0;
@@ -81,7 +81,7 @@ export default function InventoryPage() {
     } else if (stockFilter === 'in') {
       matchesStock = p.stock_qty > p.low_stock_threshold;
     }
-    
+
     return matchesCategory && matchesSearch && matchesStock;
   });
 
@@ -210,7 +210,7 @@ export default function InventoryPage() {
       </div>
 
       {isLoading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div className={styles.loadingWrapper}>
           <Skeleton width="100%" height={50} />
           <Skeleton width="100%" height={300} />
         </div>

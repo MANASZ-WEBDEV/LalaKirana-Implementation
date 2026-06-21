@@ -128,7 +128,8 @@ export default function EODEntryPage() {
 
   // Submit EOD entries to backend
   const handleSave = async () => {
-    if (stats.itemsCount === 0 || stats.hasErrors) return;
+    const hasExisting = existingEntries && existingEntries.length > 0;
+    if ((stats.itemsCount === 0 && !hasExisting) || stats.hasErrors) return;
 
     try {
       await submitEODMutation.mutateAsync({
@@ -229,7 +230,11 @@ export default function EODEntryPage() {
           <Button
             variant="primary"
             onClick={handleSave}
-            disabled={stats.itemsCount === 0 || stats.hasErrors || submitEODMutation.isPending}
+            disabled={
+              ((stats.itemsCount === 0 && (!existingEntries || existingEntries.length === 0)) ||
+                stats.hasErrors ||
+                submitEODMutation.isPending)
+            }
             loading={submitEODMutation.isPending}
           >
             Confirm Entry

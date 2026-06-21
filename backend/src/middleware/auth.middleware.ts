@@ -48,17 +48,14 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     }
 
     // 3. Update session last_seen asynchronously
-    supabase
+    void supabase
       .from('sessions')
       .update({ last_seen: new Date().toISOString() })
       .eq('token_jti', decoded.jti)
-      .then(({ error }) => {
+      .then(({ error }: { error: any }) => {
         if (error) {
           console.error(`Failed to update session last_seen: ${error.message}`);
         }
-      })
-      .catch((err) => {
-        console.error(`Failed to update session last_seen: ${err.message}`);
       });
 
     // 4. Attach user payload to request

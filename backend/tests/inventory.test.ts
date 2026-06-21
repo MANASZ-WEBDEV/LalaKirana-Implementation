@@ -195,5 +195,44 @@ describe('Inventory & EOD Endpoints', () => {
       expect(res.body[0].product_id).toBe(testProductId);
       expect(res.body[0].qty_sold).toBe(8);
     }, 20000);
+
+    it('should delete EOD entry and restore stock when submitting an empty list or omitting a product', async () => {
+      const res = await request(app)
+        .post('/api/v1/inventory/eod')
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({
+          entry_date: entryDate,
+          items: [] // Empty list to clear all entries for the date
+        });
+
+      expect(res.status).toBe(201);
+      expect(res.body.count).toBe(0);
+
+      // Verify product stock is restored back to 20
+      const { data: prod } = await supabase
+        .from('products')
+        .select('stock_qty')
+        .eq('id', testProductId)
+        .single();
+      expect(prod!.stock_qty).toBe(20);
+
+      // Verify EOD entry is deleted
+      const { data: eodEntries } = await supabase
+        .from('eod_entries')
+        .select('*')
+        .eq('product_id', testProductId)
+        .eq('entry_date', entryDate);
+      expect(eodEntries!.length).toBe(0);
+
+      // Verify stock log contains the restoration (+8)
+      const { data: logs } = await supabase
+        .from('stock_log')
+        .select('*')
+        .eq('product_id', testProductId)
+        .eq('reason', 'eod_entry')
+        .order('created_at', { ascending: false });
+
+      expect(logs![0].change_qty).toBe(8); // +8 returned to stock
+    }, 20000);
   });
 });

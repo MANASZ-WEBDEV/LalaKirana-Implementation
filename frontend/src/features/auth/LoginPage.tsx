@@ -80,6 +80,7 @@ export default function LoginPage() {
               placeholder="owner@lalakirana.in"
               required
               autoFocus
+              autoComplete="email"
             />
 
             <div className={styles.passwordWrapper}>
@@ -91,6 +92,7 @@ export default function LoginPage() {
                 error={passwordError}
                 placeholder="••••••"
                 required
+                autoComplete="current-password"
               />
               <button
                 type="button"

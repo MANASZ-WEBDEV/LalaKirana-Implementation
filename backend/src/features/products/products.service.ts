@@ -63,6 +63,7 @@ export const productsService = {
     name: string;
     category_id?: string | null;
     price: number;
+    cost_price?: number;
     stock_qty?: number;
     low_stock_threshold?: number;
     unit?: string;
@@ -86,6 +87,7 @@ export const productsService = {
       name?: string;
       category_id?: string | null;
       price?: number;
+      cost_price?: number;
       stock_qty?: number;
       low_stock_threshold?: number;
       unit?: string;

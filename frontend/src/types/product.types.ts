@@ -9,6 +9,7 @@ export interface Product {
   name: string;
   category_id: string | null;
   price: number;
+  cost_price: number;
   stock_qty: number;
   low_stock_threshold: number;
   unit: 'kg' | 'g' | 'litre' | 'ml' | 'pcs';

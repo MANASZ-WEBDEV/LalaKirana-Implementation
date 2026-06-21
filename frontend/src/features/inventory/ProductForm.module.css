@@ -35,3 +35,13 @@
     padding: 1.5rem;
   }
 }
+
+@media (max-width: 400px) {
+  .actions {
+    flex-direction: column-reverse;
+  }
+  .actions button {
+    width: 100%;
+  }
+}
+

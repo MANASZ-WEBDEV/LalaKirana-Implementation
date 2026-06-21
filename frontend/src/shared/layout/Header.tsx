@@ -1,4 +1,4 @@
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/shared/store/authStore';
 import styles from './Header.module.css';
 
@@ -15,6 +15,7 @@ export function Header({ onMenuClick }: HeaderProps) {
     if (path.startsWith('/dashboard')) return 'Dashboard';
     if (path.startsWith('/inventory')) return 'Inventory Catalog';
     if (path.startsWith('/pricing')) return 'Bulk Price Editor';
+    if (path.startsWith('/analytics')) return 'Analytics';
     if (path.startsWith('/eod')) return 'Daily Sales Entry';
     if (path.startsWith('/settings')) return 'Settings';
     return 'LalaKirana';
@@ -22,7 +23,7 @@ export function Header({ onMenuClick }: HeaderProps) {
 
   return (
     <header className={styles.header}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+      <div className={styles.leftContainer}>
         <button className={styles.menuBtn} onClick={onMenuClick} aria-label="Toggle Navigation Menu">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -30,6 +31,10 @@ export function Header({ onMenuClick }: HeaderProps) {
             <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
         </button>
+        <Link to="/" className={styles.logoLink}>
+          LK
+        </Link>
+        <span className={styles.logoSeparator}>/</span>
         <h1 className={styles.title}>{getPageTitle()}</h1>
       </div>
       

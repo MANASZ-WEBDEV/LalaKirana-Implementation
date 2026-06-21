@@ -44,7 +44,7 @@ export default function ProductFormPage() {
           <Skeleton width={200} height={36} />
           <Skeleton width={320} height={20} />
         </div>
-        <div style={{ width: '100%', maxWidth: '600px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div className={styles.skeletonContainer}>
           <Skeleton height={50} />
           <Skeleton height={80} />
           <Skeleton height={80} />

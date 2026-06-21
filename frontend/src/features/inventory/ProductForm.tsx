@@ -12,6 +12,7 @@ interface ProductFormProps {
     name: string;
     category_id: string | null;
     price: number;
+    cost_price: number;
     stock_qty?: number;
     low_stock_threshold: number;
     unit: 'kg' | 'g' | 'litre' | 'ml' | 'pcs';
@@ -28,6 +29,7 @@ export function ProductForm({ initialData, onSubmit, loading, onCancel }: Produc
   const [name, setName] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [price, setPrice] = useState<string>('0');
+  const [costPrice, setCostPrice] = useState<string>('');
   const [stockQty, setStockQty] = useState<string>('0');
   const [lowStockThreshold, setLowStockThreshold] = useState<string>('5');
   const [unit, setUnit] = useState<'kg' | 'g' | 'litre' | 'ml' | 'pcs'>('pcs');
@@ -41,6 +43,7 @@ export function ProductForm({ initialData, onSubmit, loading, onCancel }: Produc
       setName(initialData.name);
       setCategoryId(initialData.category_id || '');
       setPrice(initialData.price.toString());
+      setCostPrice(initialData.cost_price?.toString() || '');
       setStockQty(initialData.stock_qty.toString());
       setLowStockThreshold(initialData.low_stock_threshold.toString());
       setUnit(initialData.unit);
@@ -59,6 +62,11 @@ export function ProductForm({ initialData, onSubmit, loading, onCancel }: Produc
     const priceNum = parseFloat(price);
     if (isNaN(priceNum) || priceNum < 0) {
       newErrors.price = 'Price must be a non-negative number';
+    }
+
+    const costPriceNum = costPrice ? parseFloat(costPrice) : Math.round(priceNum * 0.95 * 100) / 100;
+    if (isNaN(costPriceNum) || costPriceNum < 0) {
+      newErrors.cost_price = 'Cost price must be a non-negative number';
     }
 
     const stockQtyNum = parseInt(stockQty);
@@ -82,6 +90,7 @@ export function ProductForm({ initialData, onSubmit, loading, onCancel }: Produc
       name: name.trim(),
       category_id: categoryId || null,
       price: priceNum,
+      cost_price: costPriceNum,
       low_stock_threshold: thresholdNum,
       unit,
       ...(isEditMode ? {} : { stock_qty: stockQtyNum }),
@@ -133,7 +142,7 @@ export function ProductForm({ initialData, onSubmit, loading, onCancel }: Produc
         <Input
           type="number"
           step="0.01"
-          label="MRP Price (₹)"
+          label="MRP / Sell Price (₹)"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
           error={errors.price}
@@ -141,6 +150,18 @@ export function ProductForm({ initialData, onSubmit, loading, onCancel }: Produc
           required
         />
 
+        <Input
+          type="number"
+          step="0.01"
+          label="Cost Price (₹)"
+          value={costPrice}
+          onChange={(e) => setCostPrice(e.target.value)}
+          error={errors.cost_price}
+          placeholder={price ? `${(parseFloat(price) * 0.95).toFixed(2)} (auto)` : '0.00'}
+        />
+      </div>
+
+      <div className={styles.row}>
         <Input
           type="number"
           label="Low Stock Threshold"

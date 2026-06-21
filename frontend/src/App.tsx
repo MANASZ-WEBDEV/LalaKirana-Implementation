@@ -16,6 +16,7 @@ const DashboardPage = lazy(() => import('./features/dashboard/DashboardPage'));
 const InventoryPage = lazy(() => import('./features/inventory/InventoryPage'));
 const ProductFormPage = lazy(() => import('./features/inventory/ProductFormPage'));
 const BulkPricePage = lazy(() => import('./features/pricing/BulkPricePage'));
+const AnalyticsPage = lazy(() => import('./features/analytics/AnalyticsPage'));
 const EODEntryPage = lazy(() => import('./features/eod/EODEntryPage'));
 const SettingsPage = lazy(() => import('./features/settings/SettingsPage'));
 
@@ -80,6 +81,7 @@ export default function App() {
                   <Route path="inventory/new" element={<ProductFormPage />} />
                   <Route path="inventory/:id/edit" element={<ProductFormPage />} />
                   <Route path="pricing" element={<BulkPricePage />} />
+                  <Route path="analytics" element={<AnalyticsPage />} />
                   <Route path="eod" element={<EODEntryPage />} />
                   <Route path="settings" element={<SettingsPage />} />
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />

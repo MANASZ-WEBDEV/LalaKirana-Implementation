@@ -19,6 +19,6 @@ export const EODProductRowSchema = z.object({
 export const EODEntrySchema = z.object({
   body: z.object({
     entry_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format'),
-    items: z.array(EODProductRowSchema).min(1, 'At least one product must be entered'),
+    items: z.array(EODProductRowSchema),
   }),
 });

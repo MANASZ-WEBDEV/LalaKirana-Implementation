@@ -311,3 +311,40 @@
     opacity: 0.6;
   }
 }
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .dateSelectorCard,
+  .searchCard {
+    max-width: 100%;
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .summaryBar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 16px;
+    gap: 16px;
+  }
+  
+  .statDivider {
+    display: none;
+  }
+  
+  .actionButtons {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  
+  .title {
+    font-size: 24px;
+  }
+}
+

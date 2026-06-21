@@ -6,6 +6,7 @@ import authRoutes from './features/auth/auth.routes.js';
 import productRoutes from './features/products/products.routes.js';
 import inventoryRoutes from './features/inventory/inventory.routes.js';
 import reportRoutes from './features/reports/reports.routes.js';
+import analyticsRoutes from './features/analytics/analytics.routes.js';
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/products', productRoutes);
 app.use('/api/v1/inventory', inventoryRoutes);
 app.use('/api/v1/reports', reportRoutes);
+app.use('/api/v1/analytics', analyticsRoutes);
 
 app.get('/', (req: Request, res: Response) => {
   res.json({ message: 'LalaKirana API is online' });

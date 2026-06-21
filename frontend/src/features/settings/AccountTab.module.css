@@ -3,3 +3,13 @@
 .description { font-size: 14px; color: var(--color-on-surface-variant); margin: 0; line-height: 1.5; }
 .form { display: flex; flex-direction: column; gap: 16px; padding-top: 8px; }
 .formActions { display: flex; padding-top: 8px; }
+
+@media (max-width: 480px) {
+  .formActions {
+    width: 100%;
+  }
+  .formActions button {
+    width: 100%;
+  }
+}
+

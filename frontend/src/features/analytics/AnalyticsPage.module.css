@@ -1,0 +1,749 @@
+/* ─────────────────────────────────────────────────────── */
+/* AnalyticsPage — Premium Analytics Dashboard            */
+/* ─────────────────────────────────────────────────────── */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 1.5rem 0;
+  animation: fadeIn var(--transition-normal);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header */
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+}
+
+.titleArea {
+  flex: 1;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+}
+
+.subtitle {
+  color: var(--color-on-surface-variant);
+  font-size: 1rem;
+  margin-top: 0.25rem;
+}
+
+/* Date Range Controls */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.presetPillsDesktop {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.presetSelectMobile {
+  display: none;
+  padding: 0.4rem 2rem 0.4rem 0.9rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-outline-variant);
+  background: var(--color-white);
+  color: var(--color-on-surface);
+  font-size: 0.8rem;
+  font-family: var(--font-body);
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.25rem;
+  transition: all var(--transition-fast);
+}
+
+.presetSelectMobile:focus {
+  border-color: var(--color-primary);
+}
+
+.presetPill {
+  padding: 0.4rem 0.9rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-outline-variant);
+  background: var(--color-white);
+  color: var(--color-on-surface-variant);
+  font-size: 0.8rem;
+  font-family: var(--font-body);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.presetPill:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.presetPillActive {
+  background: var(--color-primary);
+  color: var(--color-white);
+  border-color: var(--color-primary);
+}
+
+.presetPillActive:hover {
+  background: var(--color-primary-container);
+  border-color: var(--color-primary-container);
+  color: var(--color-white);
+}
+
+.exportBtn {
+  padding: 0.4rem 0.9rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-primary);
+  background: transparent;
+  color: var(--color-primary);
+  font-size: 0.8rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.exportBtn:hover {
+  background: var(--color-primary);
+  color: var(--color-white);
+}
+
+/* Stat Cards Grid */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+}
+
+/* Glassmorphism Stat Cards */
+.statCard {
+  position: relative;
+  padding: 1.25rem 1.5rem;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.75));
+  border: 1px solid var(--color-outline-variant);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.statCard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.statCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.statRevenue::before {
+  background: linear-gradient(90deg, #006763, #00a89e);
+}
+
+.statOrders::before {
+  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+}
+
+.statProfit::before {
+  background: linear-gradient(90deg, #059669, #34d399);
+}
+
+.statAvg::before {
+  background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-on-surface-variant);
+  margin-bottom: 0.5rem;
+}
+
+.statValue {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+  line-height: 1.2;
+}
+
+.statDelta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-full);
+}
+
+.deltaUp {
+  background: rgba(5, 150, 105, 0.1);
+  color: #059669;
+}
+
+.deltaDown {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.deltaNeutral {
+  background: rgba(107, 114, 128, 0.1);
+  color: #6b7280;
+}
+
+.deltaLabel {
+  font-weight: 400;
+  color: var(--color-on-surface-variant);
+  margin-left: 0.15rem;
+}
+
+/* Chart Section */
+.chartSection {
+  background: var(--color-white);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.chartHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.chartTitle {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--color-on-surface);
+}
+
+.chartControlsGroup {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.divider {
+  width: 1px;
+  height: 18px;
+  background-color: var(--color-outline-variant);
+  opacity: 0.8;
+}
+
+.viewControls {
+  display: flex;
+  align-items: center;
+}
+
+.viewPillsDesktop {
+  display: flex;
+  gap: 0.25rem;
+  background: var(--color-surface);
+  border-radius: var(--radius-full);
+  padding: 0.2rem;
+}
+
+.viewSelectMobile {
+  display: none;
+  padding: 0.35rem 1.75rem 0.35rem 0.75rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-outline-variant);
+  background: var(--color-white);
+  color: var(--color-on-surface);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+  background-position: right 0.4rem center;
+  background-repeat: no-repeat;
+  background-size: 1.1rem;
+  transition: all var(--transition-fast);
+}
+
+.viewSelectMobile:focus {
+  border-color: var(--color-primary);
+}
+
+.viewBtn {
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--radius-full);
+  border: none;
+  background: transparent;
+  color: var(--color-on-surface-variant);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.viewBtn:hover {
+  color: var(--color-primary);
+}
+
+.viewBtnActive {
+  background: var(--color-primary);
+  color: var(--color-white);
+}
+
+.viewBtnActive:hover {
+  color: var(--color-white);
+}
+
+.granularityControls {
+  display: flex;
+  align-items: center;
+}
+
+.granularityPillsDesktop {
+  display: flex;
+  gap: 0.25rem;
+  background: var(--color-surface);
+  border-radius: var(--radius-full);
+  padding: 0.2rem;
+}
+
+.granularitySelectMobile {
+  display: none;
+  padding: 0.35rem 1.75rem 0.35rem 0.75rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-outline-variant);
+  background: var(--color-white);
+  color: var(--color-on-surface);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+  background-position: right 0.4rem center;
+  background-repeat: no-repeat;
+  background-size: 1.1rem;
+  transition: all var(--transition-fast);
+}
+
+.granularitySelectMobile:focus {
+  border-color: var(--color-primary);
+}
+
+.granularityBtn {
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--radius-full);
+  border: none;
+  background: transparent;
+  color: var(--color-on-surface-variant);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.granularityBtn:hover {
+  color: var(--color-primary);
+}
+
+.granularityBtnActive {
+  background: var(--color-primary);
+  color: var(--color-white);
+}
+
+.granularityBtnActive:hover {
+  color: var(--color-white);
+}
+
+.chartContainer {
+  width: 100%;
+  height: 320px;
+}
+
+/* Bottom Grid: Top Products + Category Donut */
+.bottomGrid {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.card {
+  background: var(--color-white);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.cardTitle {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--color-on-surface);
+  margin-bottom: 1rem;
+}
+
+/* Top Products Table */
+.topProductsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.productHeaderRow {
+  display: grid;
+  grid-template-columns: 2rem 1fr 6.5rem 5.5rem;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.5rem;
+  border-bottom: 2px solid var(--color-outline-variant);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.25rem;
+}
+
+.productRow {
+  display: grid;
+  grid-template-columns: 2rem 1fr 6.5rem 5.5rem;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.75rem 0.5rem;
+  border-bottom: 1px solid var(--color-surface-container);
+  transition: background var(--transition-fast);
+}
+
+.productRow:last-child {
+  border-bottom: none;
+}
+
+.productRow:hover {
+  background: var(--color-surface);
+}
+
+.productRank {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: var(--color-on-surface-variant);
+  text-align: center;
+}
+
+.productInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.productName {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-on-surface);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.productCategory {
+  font-size: 0.7rem;
+  color: var(--color-on-surface-variant);
+}
+
+.productRevenue {
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: var(--color-on-surface);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.productProfit {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.productProfitPositive {
+  color: #059669;
+}
+
+.productProfitNegative {
+  color: #ef4444;
+}
+
+/* Category Donut */
+.donutContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.donutChart {
+  width: 100%;
+  height: 220px;
+}
+
+.categoryLegend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legendName {
+  flex: 1;
+  color: var(--color-on-surface);
+  font-weight: 500;
+}
+
+.legendValue {
+  font-weight: 600;
+  color: var(--color-on-surface);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+.legendPercent {
+  font-size: 0.7rem;
+  color: var(--color-on-surface-variant);
+  font-family: var(--font-mono);
+  width: 3rem;
+  text-align: right;
+}
+
+/* Empty state */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  color: var(--color-on-surface-variant);
+  text-align: center;
+  gap: 0.5rem;
+}
+
+.emptyIcon {
+  font-size: 2.5rem;
+  opacity: 0.5;
+}
+
+.emptyText {
+  font-size: 0.9rem;
+  max-width: 300px;
+}
+
+/* Owner-only guard */
+.guardContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 1rem;
+  color: var(--color-on-surface-variant);
+  text-align: center;
+}
+
+.guardIcon {
+  font-size: 3rem;
+  opacity: 0.4;
+}
+
+.guardTitle {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-on-surface);
+}
+
+.guardText {
+  font-size: 0.9rem;
+  max-width: 380px;
+}
+
+/* Skeleton states */
+.skeletonGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+}
+
+.skeletonCard {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* ─────────────────────────────────────────────────────── */
+/* Responsive                                              */
+/* ─────────────────────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+
+  .statsGrid,
+  .skeletonGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .bottomGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+
+  .statsGrid,
+  .skeletonGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .title {
+    font-size: 1.75rem;
+  }
+
+  .chartContainer {
+    height: 250px;
+  }
+
+  .chartHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .chartControlsGroup {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .viewPillsDesktop {
+    display: none;
+  }
+
+  .viewSelectMobile {
+    display: block;
+  }
+
+  .divider {
+    display: none;
+  }
+
+  .productHeaderRow,
+  .productRow {
+    grid-template-columns: 1.5rem 1fr auto;
+    gap: 0.5rem;
+  }
+
+  .productProfit {
+    display: none;
+  }
+
+  .controls {
+    gap: 0.35rem;
+    width: 100%;
+  }
+
+  .presetPillsDesktop {
+    display: none;
+  }
+
+  .presetSelectMobile {
+    display: block;
+    flex-grow: 1;
+  }
+
+  .granularityPillsDesktop {
+    display: none;
+  }
+
+  .granularitySelectMobile {
+    display: block;
+  }
+
+  .presetPill {
+    font-size: 0.72rem;
+    padding: 0.35rem 0.65rem;
+  }
+
+  .statValue {
+    font-size: 1.4rem;
+  }
+}

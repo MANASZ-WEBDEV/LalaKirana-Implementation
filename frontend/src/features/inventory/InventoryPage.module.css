@@ -125,6 +125,12 @@
   min-width: 200px;
 }
 
+.loadingWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 @media (max-width: 640px) {
   .header {
     flex-direction: column;
@@ -140,3 +146,4 @@
     width: 100%;
   }
 }
+

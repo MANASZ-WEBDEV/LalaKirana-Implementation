@@ -116,16 +116,71 @@ export const inventoryService = {
 
     const updatedRows: any[] = [];
 
-    // Loop sequentially to handle stock deduction and inserts
+    // 2. Identify removed entries (exist in DB but not in the new submitted items list)
+    const submittedProductIds = new Set(items.map((i) => i.product_id));
+    const removedEntries = existingEntries?.filter((e) => e.product_id && !submittedProductIds.has(e.product_id)) || [];
+
+    // Restore stock and delete removed entries
+    for (const removed of removedEntries) {
+      const { data: product, error: prodError } = await supabase
+        .from('products')
+        .select('name, stock_qty, unit')
+        .eq('id', removed.product_id)
+        .single();
+
+      if (prodError || !product) {
+        // If product was deleted entirely, just delete the EOD entry
+        await supabase.from('eod_entries').delete().eq('id', removed.id);
+        continue;
+      }
+
+      const currentStock = Number(product.stock_qty);
+      const newStock = currentStock + Number(removed.qty_sold);
+
+      // Restore stock quantity
+      const { error: updateError } = await supabase
+        .from('products')
+        .update({ stock_qty: newStock })
+        .eq('id', removed.product_id);
+
+      if (updateError) {
+        throw new Error(`Failed to restore product stock: ${updateError.message}`);
+      }
+
+      // Log stock restoration
+      const { error: logError } = await supabase.from('stock_log').insert({
+        product_id: removed.product_id,
+        change_qty: Number(removed.qty_sold),
+        reason: 'eod_entry',
+        note: `EOD sales entry removed for ${entry_date}`,
+        created_by: userId,
+      });
+
+      if (logError) {
+        throw new Error(`Failed to write stock log: ${logError.message}`);
+      }
+
+      // Delete EOD entry
+      const { error: deleteError } = await supabase
+        .from('eod_entries')
+        .delete()
+        .eq('id', removed.id);
+
+      if (deleteError) {
+        throw new Error(`Failed to delete EOD entry: ${deleteError.message}`);
+      }
+    }
+
+    // 3. Loop sequentially to handle stock deduction and inserts/updates for active items
     for (const item of items) {
       const existing = existingEntries?.find((e) => e.product_id === item.product_id);
       const oldQty = existing ? Number(existing.qty_sold) : 0;
       const diff = item.qty_sold - oldQty;
 
-      // Fetch current product to check name and stock
+      // Fetch current product to check name, stock, and prices for snapshot
       const { data: product, error: prodError } = await supabase
         .from('products')
-        .select('name, stock_qty, unit')
+        .select('name, stock_qty, unit, price, cost_price')
         .eq('id', item.product_id)
         .single();
 
@@ -198,6 +253,8 @@ export const inventoryService = {
             product_id: item.product_id,
             product_name: product.name,
             qty_sold: item.qty_sold,
+            unit_price: Number(product.price) || 0,
+            cost_price: Number(product.cost_price) || 0,
             created_by: userId,
           })
           .select()

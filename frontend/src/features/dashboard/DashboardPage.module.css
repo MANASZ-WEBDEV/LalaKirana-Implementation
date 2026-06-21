@@ -116,7 +116,7 @@
 }
 
 @media (max-width: 1024px) {
-  .statsGrid {
+  .statsGrid, .skeletonGrid {
     grid-template-columns: repeat(2, 1fr);
   }
   .mainGrid {
@@ -125,7 +125,7 @@
 }
 
 @media (max-width: 640px) {
-  .statsGrid {
+  .statsGrid, .skeletonGrid {
     grid-template-columns: 1fr;
   }
   .title {

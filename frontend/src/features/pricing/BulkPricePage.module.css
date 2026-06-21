@@ -207,3 +207,46 @@
     transform: rotate(360deg);
   }
 }
+
+@media (max-width: 768px) {
+  .filters {
+    flex-direction: column;
+    max-width: 100%;
+  }
+  
+  .filterSelect,
+  .filterInput {
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 600px) {
+  .statsCard {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 16px;
+    gap: 16px;
+  }
+  
+  .statGroup {
+    justify-content: space-between;
+    width: 100%;
+  }
+  
+  .actionButtons {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  
+  .title {
+    font-size: 24px;
+  }
+}
+
