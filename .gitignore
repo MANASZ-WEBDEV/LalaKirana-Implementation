@@ -37,3 +37,10 @@ lerna-debug.log*
 # Documents & Text dumps
 *.docx
 *.txt
+
+# Local Scratch & Test Results
+backend/scratch_verify.js
+docs/walkthrough_8&9
+frontend/test-results/
+playwright-report/
+
