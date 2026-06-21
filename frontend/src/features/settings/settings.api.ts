@@ -1,0 +1,35 @@
+import { api } from '@/shared/api/axios';
+import type { User, Session } from '@/types/auth.types';
+
+export interface CreateUserInput {
+  name: string;
+  email: string;
+  password: string;
+  role: 'owner' | 'staff';
+}
+
+export const settingsApi = {
+  getUsers: () =>
+    api.get<User[]>('/auth/users').then((r) => r.data),
+
+  createUser: (data: CreateUserInput) =>
+    api.post<User>('/auth/users', data).then((r) => r.data),
+
+  resetUserPassword: (userId: string, newPassword: string) =>
+    api.put<{ message: string }>(`/auth/users/${userId}/reset-password`, { newPassword }).then((r) => r.data),
+
+  deactivateUser: (userId: string) =>
+    api.delete<{ message: string }>(`/auth/users/${userId}`).then((r) => r.data),
+
+  getSessions: () =>
+    api.get<Session[]>('/auth/sessions').then((r) => r.data),
+
+  deleteSession: (id: string) =>
+    api.delete<{ message: string }>(`/auth/sessions/${id}`).then((r) => r.data),
+
+  deleteAllSessions: () =>
+    api.delete<{ message: string }>('/auth/sessions/all').then((r) => r.data),
+
+  changePassword: (currentPassword: string, newPassword: string) =>
+    api.put<{ message: string }>('/auth/change-password', { currentPassword, newPassword }).then((r) => r.data),
+};

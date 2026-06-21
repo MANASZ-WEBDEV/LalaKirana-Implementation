@@ -1,0 +1,5 @@
+.container { display: flex; flex-direction: column; gap: 20px; max-width: 480px; }
+.sectionTitle { font-family: var(--font-body); font-size: 18px; font-weight: 600; color: var(--color-on-surface); margin: 0; }
+.description { font-size: 14px; color: var(--color-on-surface-variant); margin: 0; line-height: 1.5; }
+.form { display: flex; flex-direction: column; gap: 16px; padding-top: 8px; }
+.formActions { display: flex; padding-top: 8px; }
