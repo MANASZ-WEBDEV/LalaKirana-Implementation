@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useProducts, useCategories, useSoftDeleteProduct } from './inventory.queries';
 import { CategoryTabs } from './CategoryTabs';
 import { ProductActionMenu } from './ProductActionMenu';
@@ -7,6 +7,7 @@ import { PriceAgeBadge } from './PriceAgeBadge';
 import { PriceHistoryModal } from './PriceHistoryModal';
 import { Button } from '@/shared/ui/Button';
 import { Input } from '@/shared/ui/Input';
+import { Select } from '@/shared/ui/Select';
 import { Badge } from '@/shared/ui/Badge';
 import { Skeleton } from '@/shared/ui/Skeleton';
 import { EmptyState } from '@/shared/ui/EmptyState';
@@ -20,6 +21,7 @@ import styles from './InventoryPage.module.css';
 
 export default function InventoryPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const addToast = useToastStore((s) => s.addToast);
 
   // Queries
@@ -29,10 +31,22 @@ export default function InventoryPage() {
   // Mutations
   const deactivateMutation = useSoftDeleteProduct();
 
-  // State
+  // State / URL Params
+  const stockFilter = (searchParams.get('status') as 'all' | 'in' | 'low' | 'out') || 'all';
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState('');
   
+  const setStockFilter = (val: string) => {
+    setSearchParams((prev) => {
+      if (val === 'all') {
+        prev.delete('status');
+      } else {
+        prev.set('status', val);
+      }
+      return prev;
+    });
+  };
+
   // Action overlays state
   const [deactivatingProduct, setDeactivatingProduct] = useState<Product | null>(null);
   const [adjustingProduct, setAdjustingProduct] = useState<Product | null>(null);
@@ -58,7 +72,17 @@ export default function InventoryPage() {
   const filteredProducts = (products || []).filter((p) => {
     const matchesCategory = !selectedCategory || p.category_id === selectedCategory;
     const matchesSearch = !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+    
+    let matchesStock = true;
+    if (stockFilter === 'out') {
+      matchesStock = p.stock_qty === 0;
+    } else if (stockFilter === 'low') {
+      matchesStock = p.stock_qty > 0 && p.stock_qty <= p.low_stock_threshold;
+    } else if (stockFilter === 'in') {
+      matchesStock = p.stock_qty > p.low_stock_threshold;
+    }
+    
+    return matchesCategory && matchesSearch && matchesStock;
   });
 
   const isLoading = productsLoading || categoriesLoading;
@@ -171,6 +195,18 @@ export default function InventoryPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
+        <div className={styles.filterWrapper}>
+          <Select
+            value={stockFilter}
+            onChange={(e) => setStockFilter(e.target.value)}
+            options={[
+              { value: 'all', label: 'All Stock Levels' },
+              { value: 'in', label: 'In Stock' },
+              { value: 'low', label: 'Low Stock' },
+              { value: 'out', label: 'Out of Stock' },
+            ]}
+          />
+        </div>
       </div>
 
       {isLoading ? (
@@ -195,15 +231,16 @@ export default function InventoryPage() {
                 <EmptyState
                   heading="No Products Found"
                   subtext={
-                    searchQuery || selectedCategory
-                      ? "Try clearing your search query or category filters."
+                    searchQuery || selectedCategory || stockFilter !== 'all'
+                      ? "Try clearing your search query, category, or stock status filters."
                       : "Start seeding products into the database store catalog."
                   }
-                  actionText={searchQuery || selectedCategory ? "Reset Filters" : "Add Product"}
+                  actionText={searchQuery || selectedCategory || stockFilter !== 'all' ? "Reset Filters" : "Add Product"}
                   onAction={() => {
-                    if (searchQuery || selectedCategory) {
+                    if (searchQuery || selectedCategory || stockFilter !== 'all') {
                       setSearchQuery('');
                       setSelectedCategory(undefined);
+                      setStockFilter('all');
                     } else {
                       navigate('/inventory/new');
                     }

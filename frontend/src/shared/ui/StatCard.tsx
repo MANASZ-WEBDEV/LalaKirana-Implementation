@@ -10,6 +10,7 @@ interface StatCardProps {
     label?: string;
   };
   className?: string;
+  onClick?: () => void;
 }
 
 export function StatCard({
@@ -17,6 +18,7 @@ export function StatCard({
   value,
   delta,
   className = '',
+  onClick,
 }: StatCardProps) {
   const getDeltaClass = () => {
     if (!delta) return '';
@@ -25,8 +27,21 @@ export function StatCard({
     return styles.neutral;
   };
 
+  const cardClasses = `${styles.card} ${onClick ? styles.cardClickable : ''} ${className}`;
+
   return (
-    <div className={`${styles.card} ${className}`}>
+    <div
+      className={cardClasses}
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      } : undefined}
+    >
       <span className={styles.label}>{label}</span>
       <span className={styles.value}>{value}</span>
       {delta && (

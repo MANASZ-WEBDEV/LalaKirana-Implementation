@@ -84,11 +84,13 @@ export default function DashboardPage() {
           label="Low Stock Alerts"
           value={stats?.lowStockCount ?? 0}
           className={stats && stats.lowStockCount > 0 ? 'border-warn' : ''}
+          onClick={() => navigate('/inventory?status=low')}
         />
         <StatCard
           label="Out of Stock"
           value={stats?.outOfStockCount ?? 0}
           className={stats && stats.outOfStockCount > 0 ? 'border-error' : ''}
+          onClick={() => navigate('/inventory?status=out')}
         />
         <StatCard
           label="Inventory Value"

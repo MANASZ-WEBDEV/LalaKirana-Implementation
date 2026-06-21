@@ -121,6 +121,10 @@
   margin-top: 1rem;
 }
 
+.filterWrapper {
+  min-width: 200px;
+}
+
 @media (max-width: 640px) {
   .header {
     flex-direction: column;
@@ -130,6 +134,9 @@
     width: 100%;
   }
   .searchWrapper {
+    width: 100%;
+  }
+  .filterWrapper {
     width: 100%;
   }
 }
