@@ -126,8 +126,8 @@ LalaKirana uses PostgreSQL migrations to define schemas and seed initial data.
 
 To log in for the first time, use the seeded owner account:
 
-*   **Email**: `owner@lalakirana.in`
-*   **Password**: `changeme123`
+*   **Email**: `*******************`
+*   **Password**: `***********`
 
 > [!WARNING]
 > Change this password immediately in the **Settings** menu after your first login.
