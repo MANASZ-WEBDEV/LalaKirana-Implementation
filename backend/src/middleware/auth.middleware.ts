@@ -56,6 +56,9 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
         if (error) {
           console.error(`Failed to update session last_seen: ${error.message}`);
         }
+      })
+      .catch((err) => {
+        console.error(`Failed to update session last_seen: ${err.message}`);
       });
 
     // 4. Attach user payload to request
