@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { useToastStore } from '../store/toastStore';
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1';
 
@@ -23,6 +24,54 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    const { config } = error;
+
+    // Check if network error (offline)
+    const isNetworkError = !error.response && (!navigator.onLine || error.code === 'ERR_NETWORK' || error.message?.includes('Network Error'));
+    const isWriteRequest = config && ['post', 'put', 'delete'].includes(config.method?.toLowerCase() || '');
+
+    if (isNetworkError && isWriteRequest) {
+      try {
+        const queue = JSON.parse(localStorage.getItem('lk_offline_queue') || '[]');
+        
+        // Prevent duplicate queueing of identical request within last 2 seconds
+        const isDuplicate = queue.some(
+          (item: any) =>
+            item.url === config.url &&
+            item.method === config.method &&
+            JSON.stringify(item.data) === JSON.stringify(config.data) &&
+            Date.now() - item.timestamp < 2000
+        );
+
+        if (!isDuplicate) {
+          queue.push({
+            url: config.url,
+            method: config.method,
+            data: typeof config.data === 'string' ? JSON.parse(config.data) : config.data,
+            timestamp: Date.now(),
+          });
+          localStorage.setItem('lk_offline_queue', JSON.stringify(queue));
+          
+          // Show toast alert
+          useToastStore.getState().addToast(
+            'warn',
+            'You are offline. Changes saved locally and will sync when connection returns.'
+          );
+        }
+
+        // Resolve with simulated success response
+        return Promise.resolve({
+          data: { message: 'Changes saved locally (offline)', success: true, offline: true },
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+        });
+      } catch (e) {
+        console.error('Failed to queue offline request:', e);
+      }
+    }
+
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('lk_token');
       localStorage.removeItem('lk_user');
@@ -34,3 +83,4 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+

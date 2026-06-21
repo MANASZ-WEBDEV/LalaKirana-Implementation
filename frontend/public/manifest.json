@@ -1,0 +1,29 @@
+{
+  "name": "LalaKirana — Inventory Manager",
+  "short_name": "LalaKirana",
+  "description": "Kirana store inventory management — track products, prices, and stock in real-time.",
+  "theme_color": "#006763",
+  "background_color": "#F6FAFD",
+  "display": "standalone",
+  "orientation": "portrait",
+  "start_url": "/",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "pwa-192x192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "pwa-512x512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "pwa-512x512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

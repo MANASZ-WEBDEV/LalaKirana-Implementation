@@ -110,6 +110,16 @@
   background-color: #ffebee;
 }
 
+.closeBtn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--color-on-surface-variant);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: var(--radius-sm);
+}
+
 @media (max-width: 1024px) {
   .logoText {
     display: none;
@@ -141,4 +151,85 @@
   .sidebar {
     display: none;
   }
+  
+  .sidebarOpen {
+    display: flex !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 240px;
+    z-index: 1000;
+    box-shadow: var(--shadow-lg);
+    background-color: var(--color-surface-container);
+    animation: slideIn 200ms ease-out forwards;
+  }
+
+  .sidebarOpen .brand {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem 2rem 1.5rem;
+    width: 100%;
+  }
+
+  .sidebarOpen .logoText {
+    display: block !important;
+  }
+
+  .sidebarOpen .logoIcon {
+    display: none !important;
+  }
+
+  .sidebarOpen .navLink span {
+    display: block !important;
+  }
+
+  .sidebarOpen .navLink {
+    justify-content: flex-start;
+    padding: 0.75rem 1.5rem;
+  }
+
+  .sidebarOpen .logoutBtn span {
+    display: block !important;
+  }
+
+  .sidebarOpen .logoutBtn {
+    justify-content: flex-start;
+    padding: 0.75rem;
+  }
+
+  .closeBtn {
+    display: block;
+  }
+
+  .backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 999;
+    animation: fadeIn 200ms ease-out forwards;
+  }
 }
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
