@@ -26,21 +26,23 @@ export default function EODEntryPage() {
 
   // 2. Fetch all products and EOD entries for selected date
   const { data: products = [], isLoading: productsLoading } = useEODProducts();
-  const { data: existingEntries = [], isLoading: entryLoading, isFetching: entryFetching } = useEODEntry(entryDate);
+  const { data: existingEntries, isLoading: entryLoading, isFetching: entryFetching } = useEODEntry(entryDate);
   const submitEODMutation = useSubmitEOD();
 
   // 3. Pre-fill rows when existing entries are loaded for the date
   useEffect(() => {
-    if (existingEntries && existingEntries.length > 0) {
-      const initialRows: Record<string, string> = {};
-      existingEntries.forEach((entry) => {
-        if (entry.product_id) {
-          initialRows[entry.product_id] = String(entry.qty_sold);
-        }
-      });
-      setRows(initialRows);
-    } else {
-      setRows({});
+    if (existingEntries) {
+      if (existingEntries.length > 0) {
+        const initialRows: Record<string, string> = {};
+        existingEntries.forEach((entry) => {
+          if (entry.product_id) {
+            initialRows[entry.product_id] = String(entry.qty_sold);
+          }
+        });
+        setRows(initialRows);
+      } else {
+        setRows({});
+      }
     }
   }, [existingEntries, entryDate]);
 
