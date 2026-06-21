@@ -25,6 +25,11 @@ export const authController = {
         return res.status(401).json({ message: 'Invalid email or password' });
       }
 
+      // Check if user is deactivated
+      if (user.is_active === false) {
+        return res.status(401).json({ message: 'Your account has been deactivated. Please contact the owner.' });
+      }
+
       // Check lockout
       if (user.locked_until && new Date(user.locked_until) > new Date()) {
         const remainingMinutes = Math.ceil(
@@ -349,6 +354,182 @@ export const authController = {
     } catch (err: any) {
       console.error('Delete session error:', err);
       return res.status(500).json({ message: err.message || 'Internal Server Error' });
+    }
+  },
+
+  deleteAllSessions: async (req: Request, res: Response) => {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    try {
+      const currentJti = req.user.jti;
+
+      // Fetch all sessions for this user except the current one
+      const { data: sessions } = await supabase
+        .from('sessions')
+        .select('token_jti, user_id')
+        .eq('user_id', req.user.id)
+        .neq('token_jti', currentJti || '');
+
+      if (sessions && sessions.length > 0) {
+        const defaultExp = new Date(Date.now() + 8 * 60 * 60 * 1000);
+        const blocklistItems = sessions.map((s: any) => ({
+          token_jti: s.token_jti,
+          user_id: s.user_id,
+          expires_at: defaultExp.toISOString(),
+        }));
+
+        await supabase.from('token_blocklist').insert(blocklistItems);
+        await supabase
+          .from('sessions')
+          .delete()
+          .eq('user_id', req.user.id)
+          .neq('token_jti', currentJti || '');
+      }
+
+      return res.json({ message: `Terminated ${sessions?.length || 0} other sessions` });
+    } catch (err: any) {
+      console.error('Delete all sessions error:', err);
+      return res.status(500).json({ message: err.message || 'Internal Server Error' });
+    }
+  },
+
+  // --- User Management (Owner only) ---
+
+  getUsers: async (req: Request, res: Response) => {
+    try {
+      const { data: users, error } = await supabase
+        .from('users')
+        .select('id, name, email, role, is_active, created_at')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw new Error(`Failed to fetch users: ${error.message}`);
+      }
+
+      return res.json(users);
+    } catch (err: any) {
+      console.error('Get users error:', err);
+      return res.status(500).json({ message: err.message || 'Failed to fetch users' });
+    }
+  },
+
+  createUser: async (req: Request, res: Response) => {
+    const { name, email, password, role } = req.body;
+
+    try {
+      // Check if email already exists
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', email)
+        .maybeSingle();
+
+      if (existingUser) {
+        return res.status(409).json({ message: 'A user with this email already exists' });
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 12);
+
+      const { data: user, error } = await supabase
+        .from('users')
+        .insert({ name, email, password: hashedPassword, role })
+        .select('id, name, email, role, is_active, created_at')
+        .single();
+
+      if (error) {
+        throw new Error(`Failed to create user: ${error.message}`);
+      }
+
+      return res.status(201).json(user);
+    } catch (err: any) {
+      console.error('Create user error:', err);
+      return res.status(400).json({ message: err.message || 'Failed to create user' });
+    }
+  },
+
+  resetUserPassword: async (req: Request, res: Response) => {
+    const userId = req.params.id;
+    const { newPassword } = req.body;
+
+    try {
+      const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+      const { error } = await supabase
+        .from('users')
+        .update({ password: hashedPassword, failed_attempts: 0, locked_until: null })
+        .eq('id', userId);
+
+      if (error) {
+        throw new Error(`Failed to reset password: ${error.message}`);
+      }
+
+      // Revoke all sessions for this user
+      const { data: userSessions } = await supabase
+        .from('sessions')
+        .select('token_jti')
+        .eq('user_id', userId);
+
+      if (userSessions && userSessions.length > 0) {
+        const defaultExp = new Date(Date.now() + 8 * 60 * 60 * 1000);
+        const blocklistItems = userSessions.map((session: any) => ({
+          token_jti: session.token_jti,
+          user_id: userId,
+          expires_at: defaultExp.toISOString(),
+        }));
+
+        await supabase.from('token_blocklist').insert(blocklistItems);
+        await supabase.from('sessions').delete().eq('user_id', userId);
+      }
+
+      return res.json({ message: 'Password reset successfully and all sessions terminated' });
+    } catch (err: any) {
+      console.error('Reset user password error:', err);
+      return res.status(400).json({ message: err.message || 'Failed to reset password' });
+    }
+  },
+
+  deactivateUser: async (req: Request, res: Response) => {
+    const userId = req.params.id;
+
+    try {
+      // Cannot deactivate self
+      if (userId === req.user?.id) {
+        return res.status(400).json({ message: 'Cannot deactivate your own account' });
+      }
+
+      const { error } = await supabase
+        .from('users')
+        .update({ is_active: false })
+        .eq('id', userId);
+
+      if (error) {
+        throw new Error(`Failed to deactivate user: ${error.message}`);
+      }
+
+      // Revoke all sessions for deactivated user
+      const { data: userSessions } = await supabase
+        .from('sessions')
+        .select('token_jti')
+        .eq('user_id', userId);
+
+      if (userSessions && userSessions.length > 0) {
+        const defaultExp = new Date(Date.now() + 8 * 60 * 60 * 1000);
+        const blocklistItems = userSessions.map((session: any) => ({
+          token_jti: session.token_jti,
+          user_id: userId,
+          expires_at: defaultExp.toISOString(),
+        }));
+
+        await supabase.from('token_blocklist').insert(blocklistItems);
+        await supabase.from('sessions').delete().eq('user_id', userId);
+      }
+
+      return res.json({ message: 'User deactivated and all sessions terminated' });
+    } catch (err: any) {
+      console.error('Deactivate user error:', err);
+      return res.status(400).json({ message: err.message || 'Failed to deactivate user' });
     }
   },
 };
