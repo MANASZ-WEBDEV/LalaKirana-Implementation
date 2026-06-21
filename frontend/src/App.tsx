@@ -19,6 +19,7 @@ const BulkPricePage = lazy(() => import('./features/pricing/BulkPricePage'));
 const AnalyticsPage = lazy(() => import('./features/analytics/AnalyticsPage'));
 const EODEntryPage = lazy(() => import('./features/eod/EODEntryPage'));
 const SettingsPage = lazy(() => import('./features/settings/SettingsPage'));
+const NotFoundPage = lazy(() => import('./features/error/NotFoundPage'));
 
 // Protected Route Guard
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -84,8 +85,9 @@ export default function App() {
                   <Route path="analytics" element={<AnalyticsPage />} />
                   <Route path="eod" element={<EODEntryPage />} />
                   <Route path="settings" element={<SettingsPage />} />
-                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                  <Route path="*" element={<NotFoundPage />} />
                 </Route>
+                <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </Suspense>
             <Toast />
