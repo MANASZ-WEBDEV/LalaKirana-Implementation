@@ -1,0 +1,51 @@
+.modalBody {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem 0;
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+}
+
+.date {
+  color: var(--color-on-surface-variant);
+  font-size: 0.875rem;
+}
+
+.priceContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.oldPrice {
+  text-decoration: line-through;
+  color: var(--color-outline);
+  font-size: 0.875rem;
+}
+
+.arrow {
+  color: var(--color-outline);
+}
+
+.newPrice {
+  font-weight: 600;
+}
+
+.up {
+  color: var(--color-error);
+}
+
+.down {
+  color: var(--color-primary);
+}
+
+.user {
+  font-weight: 500;
+}

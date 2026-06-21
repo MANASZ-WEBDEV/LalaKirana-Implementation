@@ -1,0 +1,75 @@
+.drawerForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1rem 0;
+}
+
+.productDetail {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+}
+
+.productDetailRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.productDetailRow:last-child {
+  margin-bottom: 0;
+}
+
+.productDetailValue {
+  font-weight: 600;
+}
+
+.radioGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.radioLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--color-on-surface);
+  cursor: pointer;
+}
+
+.radioInput {
+  accent-color: var(--color-primary);
+  width: 18px;
+  height: 18px;
+}
+
+.preview {
+  background-color: #f0f7f7;
+  border: 1px dashed var(--color-primary-container);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-primary);
+}
+
+.previewValue {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+}
+
+.drawerActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}
