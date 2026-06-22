@@ -64,7 +64,10 @@ export function ProductForm({ initialData, onSubmit, loading, onCancel }: Produc
       newErrors.price = 'Price must be a non-negative number';
     }
 
-    const costPriceNum = costPrice ? parseFloat(costPrice) : Math.round(priceNum * 0.95 * 100) / 100;
+    if (!costPrice.trim()) {
+      newErrors.cost_price = 'Cost price is required';
+    }
+    const costPriceNum = parseFloat(costPrice);
     if (isNaN(costPriceNum) || costPriceNum < 0) {
       newErrors.cost_price = 'Cost price must be a non-negative number';
     }
@@ -181,7 +184,8 @@ export function ProductForm({ initialData, onSubmit, loading, onCancel }: Produc
           value={costPrice}
           onChange={(e) => setCostPrice(e.target.value)}
           error={errors.cost_price}
-          placeholder={price ? `${(parseFloat(price) * 0.95).toFixed(2)} (auto)` : '0.00'}
+          placeholder="0.00"
+          required
         />
       </div>
 

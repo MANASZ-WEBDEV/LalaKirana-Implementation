@@ -22,6 +22,7 @@ test.describe('Inventory Flow', () => {
     const uniqueProductName = `E2E Auto Oil ${Math.floor(Math.random() * 10000)}`;
     await page.getByLabel('Product Name').fill(uniqueProductName);
     await page.getByLabel('MRP / Sell Price (₹)').fill('175.50');
+    await page.getByLabel('Cost Price (₹)').fill('150.00');
     await page.getByLabel('Low Stock Threshold').fill('10');
     await page.getByLabel('Initial Stock Quantity').fill('50');
 

@@ -128,6 +128,7 @@ describe('Products Endpoints', () => {
           name: 'Supertest Oats 500g',
           category_id: testCategoryId,
           price: 90.0,
+          cost_price: 85.5,
           stock_qty: 10,
           low_stock_threshold: 5,
           unit: 'g',

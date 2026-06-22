@@ -63,23 +63,14 @@ export const productsService = {
     name: string;
     category_id?: string | null;
     price: number;
-    cost_price?: number | null;
+    cost_price: number;
     stock_qty?: number;
     low_stock_threshold?: number;
     unit?: string;
   }) => {
-    const cost_price = (productData.cost_price !== undefined && productData.cost_price !== null && productData.cost_price !== 0)
-      ? productData.cost_price
-      : Math.round(productData.price * 0.95 * 100) / 100;
-
-    const dataToInsert = {
-      ...productData,
-      cost_price,
-    };
-
     const { data, error } = await supabase
       .from('products')
-      .insert([dataToInsert])
+      .insert([productData])
       .select()
       .single();
 
@@ -96,7 +87,7 @@ export const productsService = {
       name?: string;
       category_id?: string | null;
       price?: number;
-      cost_price?: number | null;
+      cost_price?: number;
       stock_qty?: number;
       low_stock_threshold?: number;
       unit?: string;
@@ -104,22 +95,9 @@ export const productsService = {
     },
     userId: string
   ) => {
-    let cost_price = updateData.cost_price;
-    if (cost_price === 0 || cost_price === null) {
-      const targetPrice = updateData.price !== undefined
-        ? updateData.price
-        : await productsService.getProductById(id).then((p) => Number(p.price));
-      cost_price = Math.round(targetPrice * 0.95 * 100) / 100;
-    }
-
-    const dataToUpdate = {
-      ...updateData,
-      ...(cost_price !== undefined ? { cost_price } : {}),
-    };
-
     const { data, error } = await supabase
       .from('products')
-      .update(dataToUpdate)
+      .update(updateData)
       .eq('id', id)
       .select()
       .single();
