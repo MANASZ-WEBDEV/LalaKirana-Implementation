@@ -44,3 +44,6 @@ docs/walkthrough_8&9
 frontend/test-results/
 playwright-report/
 
+# Non-repository project documentation
+project_overview.md
+
