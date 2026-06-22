@@ -11,6 +11,60 @@ import type { Customer } from '@/types/khata.types';
 import type { Bill } from '@/types/billing.types';
 import styles from './BillConfirmDrawer.module.css';
 
+/**
+ * Generates smart cash received suggestions based on the bill total.
+ * - Always includes the exact rounded total.
+ * - Filters out obsolete denominations like single ₹2000 note.
+ * - Dedupes suggestions.
+ * - Provides relevant next-larger denominations or combination rounded amounts.
+ */
+function getCashSuggestions(total: number): number[] {
+  const roundedTotal = Math.ceil(total);
+  if (roundedTotal <= 0) return [];
+
+  const candidates = new Set<number>();
+  candidates.add(roundedTotal);
+
+  // Active Indian standard banknote denominations (excluding discontinued 2000)
+  const standardNotes = [10, 20, 50, 100, 200, 500];
+  for (const note of standardNotes) {
+    if (note >= roundedTotal) {
+      candidates.add(note);
+    }
+  }
+
+  // Suggest dynamic rounded combinations based on scale
+  if (roundedTotal < 50) {
+    candidates.add(Math.ceil(roundedTotal / 10) * 10);
+    candidates.add(50);
+    candidates.add(100);
+  } else if (roundedTotal < 100) {
+    candidates.add(Math.ceil(roundedTotal / 10) * 10);
+    candidates.add(100);
+    candidates.add(200);
+  } else if (roundedTotal < 200) {
+    candidates.add(Math.ceil(roundedTotal / 50) * 50);
+    candidates.add(200);
+    candidates.add(500);
+  } else if (roundedTotal < 500) {
+    candidates.add(Math.ceil(roundedTotal / 100) * 100);
+    candidates.add(500);
+    candidates.add(1000);
+  } else {
+    // total >= 500
+    candidates.add(Math.ceil(roundedTotal / 500) * 500);
+    candidates.add((Math.floor(roundedTotal / 500) + 1) * 500);
+    candidates.add(Math.ceil(roundedTotal / 1000) * 1000);
+    candidates.add((Math.floor(roundedTotal / 1000) + 1) * 1000);
+  }
+
+  // Filter candidates to ensure they are >= total, sort in ascending order, and limit to 4 options
+  return Array.from(candidates)
+    .filter((amt) => amt >= roundedTotal)
+    .sort((a, b) => a - b)
+    .slice(0, 4);
+}
+
 interface BillConfirmDrawerProps {
   isOpen: boolean;
   onClose: () => void;
@@ -198,17 +252,15 @@ export function BillConfirmDrawer({ isOpen, onClose, statusMode }: BillConfirmDr
                   />
                   {/* Quick cash selector buttons */}
                   <div className={styles.quickCashGrid}>
-                    {[total, 100, 200, 500, 2000].map((amt) => {
-                      const roundedAmt = Math.ceil(amt);
-                      if (roundedAmt < total) return null;
+                    {getCashSuggestions(total).map((amt) => {
                       return (
                         <button
                           key={amt}
                           type="button"
                           className={styles.quickCashBtn}
-                          onClick={() => setCashReceived(roundedAmt.toString())}
+                          onClick={() => setCashReceived(amt.toString())}
                         >
-                          ₹{roundedAmt}
+                          ₹{amt}
                         </button>
                       );
                     })}
