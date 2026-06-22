@@ -1,0 +1,160 @@
+.searchContainer {
+  position: relative;
+  width: 100%;
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: var(--color-white);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  padding: 0 0.85rem;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.inputWrapper:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 103, 99, 0.15);
+}
+
+.searchIcon {
+  font-size: 0.95rem;
+  color: var(--color-on-surface-variant);
+  margin-right: 0.5rem;
+  user-select: none;
+}
+
+.searchInput {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  padding: 0.75rem 0;
+  color: var(--color-on-surface);
+}
+
+.searchInput::placeholder {
+  color: var(--color-outline);
+}
+
+.clearBtn {
+  background: transparent;
+  border: none;
+  font-size: 0.85rem;
+  color: var(--color-outline);
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.clearBtn:hover {
+  background: var(--color-surface-container);
+  color: var(--color-on-surface);
+}
+
+.resultsList {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--color-white);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 100;
+  max-height: 300px;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem 0;
+}
+
+.loadingState,
+.noResults {
+  padding: 1rem;
+  color: var(--color-on-surface-variant);
+  font-size: 0.9rem;
+  text-align: center;
+  font-family: var(--font-body);
+}
+
+.resultItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 1rem;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.resultItem:last-child {
+  border-bottom: none;
+}
+
+.activeItem {
+  background-color: var(--color-surface-container);
+}
+
+.productInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.productName {
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: var(--color-on-surface);
+}
+
+.productCategory {
+  font-size: 0.75rem;
+  color: var(--color-on-surface-variant);
+}
+
+.productMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+  text-align: right;
+}
+
+.productPrice {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--color-primary);
+}
+
+.productStock {
+  font-size: 0.75rem;
+  color: var(--color-outline);
+}
+
+.lowStockText {
+  color: #b06000;
+  font-weight: 500;
+}
+
+.outOfStockText {
+  color: var(--color-error);
+  font-weight: 600;
+}
+
+.lowStockItem {
+  border-left: 3px solid #ffb000;
+}
+
+.outOfStockItem {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

@@ -1,0 +1,118 @@
+.slotCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 0.85rem 1rem;
+  background: var(--color-white);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  user-select: none;
+  gap: 0.5rem;
+}
+
+.slotCard:hover {
+  border-color: var(--color-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.activeSlot {
+  border-color: var(--color-primary);
+  border-left: 4px solid var(--color-primary);
+  background-color: rgba(0, 103, 99, 0.02);
+  box-shadow: var(--shadow-sm);
+}
+
+.slotHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.slotLabel {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: var(--color-outline);
+}
+
+.modeBadge {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.4rem;
+  border-radius: var(--radius-full);
+}
+
+.fullBadge {
+  background-color: rgba(0, 103, 99, 0.1);
+  color: var(--color-primary);
+}
+
+.quickBadge {
+  background-color: rgba(98, 94, 86, 0.1);
+  color: var(--color-secondary);
+}
+
+.slotBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.customerName {
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: var(--color-on-surface);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 85%;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.itemCount {
+  font-size: 0.75rem;
+  color: var(--color-outline);
+}
+
+.totalAmount {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--color-primary);
+}
+
+/* Close Button styling */
+.closeBtn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: transparent;
+  border: none;
+  font-size: 0.75rem;
+  color: var(--color-outline);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.slotCard:hover .closeBtn {
+  opacity: 1;
+}
+
+.closeBtn:hover {
+  background: var(--color-surface-container);
+  color: var(--color-on-surface);
+}

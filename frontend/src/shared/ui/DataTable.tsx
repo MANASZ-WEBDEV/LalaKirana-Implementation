@@ -14,6 +14,7 @@ interface DataTableProps<T> {
   data: T[];
   emptyState?: ReactNode;
   rowKey: (row: T) => string | number;
+  onRowClick?: (row: T) => void;
 }
 
 export function DataTable<T>({
@@ -21,6 +22,7 @@ export function DataTable<T>({
   data,
   emptyState,
   rowKey,
+  onRowClick,
 }: DataTableProps<T>) {
   if (data.length === 0) {
     return <>{emptyState}</>;
@@ -47,7 +49,12 @@ export function DataTable<T>({
         </thead>
         <tbody className={styles.tbody}>
           {data.map((row) => (
-            <tr key={rowKey(row)} className={styles.tr}>
+            <tr
+              key={rowKey(row)}
+              className={`${styles.tr} ${onRowClick ? styles.clickableTr : ''}`}
+              onClick={() => onRowClick?.(row)}
+              style={onRowClick ? { cursor: 'pointer' } : undefined}
+            >
               {columns.map((col) => (
                 <td
                   key={col.key}

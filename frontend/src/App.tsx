@@ -19,6 +19,11 @@ const BulkPricePage = lazy(() => import('./features/pricing/BulkPricePage'));
 const AnalyticsPage = lazy(() => import('./features/analytics/AnalyticsPage'));
 const EODEntryPage = lazy(() => import('./features/eod/EODEntryPage'));
 const SettingsPage = lazy(() => import('./features/settings/SettingsPage'));
+const BillingPage = lazy(() => import('./features/billing/BillingPage'));
+const KhataPage = lazy(() => import('./features/khata/KhataPage'));
+const CustomerProfile = lazy(() => import('./features/khata/CustomerProfile'));
+const PurchasesPage = lazy(() => import('./features/purchases/PurchasesPage'));
+const NewPurchaseForm = lazy(() => import('./features/purchases/NewPurchaseForm'));
 const NotFoundPage = lazy(() => import('./features/error/NotFoundPage'));
 
 // Protected Route Guard
@@ -84,6 +89,11 @@ export default function App() {
                   <Route path="pricing" element={<BulkPricePage />} />
                   <Route path="analytics" element={<AnalyticsPage />} />
                   <Route path="eod" element={<EODEntryPage />} />
+                  <Route path="billing" element={<BillingPage />} />
+                  <Route path="khata" element={<KhataPage />} />
+                  <Route path="khata/:id" element={<CustomerProfile />} />
+                  <Route path="purchases" element={<PurchasesPage />} />
+                  <Route path="purchases/new" element={<NewPurchaseForm />} />
                   <Route path="settings" element={<SettingsPage />} />
                   <Route path="*" element={<NotFoundPage />} />
                 </Route>

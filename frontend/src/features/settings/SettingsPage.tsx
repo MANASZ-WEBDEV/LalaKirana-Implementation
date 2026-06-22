@@ -4,9 +4,10 @@ import { StaffTab } from './StaffTab';
 import { SessionsTab } from './SessionsTab';
 import { CategoriesTab } from './CategoriesTab';
 import { AccountTab } from './AccountTab';
+import { ReceiptTab } from './ReceiptTab';
 import styles from './SettingsPage.module.css';
 
-type TabId = 'staff' | 'sessions' | 'categories' | 'account';
+type TabId = 'staff' | 'sessions' | 'categories' | 'account' | 'receipt';
 
 interface TabDef {
   id: TabId;
@@ -19,6 +20,7 @@ const tabs: TabDef[] = [
   { id: 'sessions', label: 'Sessions', ownerOnly: false },
   { id: 'categories', label: 'Categories', ownerOnly: true },
   { id: 'account', label: 'Account', ownerOnly: false },
+  { id: 'receipt', label: 'Receipt Settings', ownerOnly: true },
 ];
 
 export default function SettingsPage() {
@@ -38,6 +40,8 @@ export default function SettingsPage() {
         return <CategoriesTab />;
       case 'account':
         return <AccountTab />;
+      case 'receipt':
+        return <ReceiptTab />;
       default:
         return null;
     }

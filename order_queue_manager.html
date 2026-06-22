@@ -1,0 +1,459 @@
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --mint:#006763;--mint2:#00837e;--mint-l:#e0f2f1;--mint-dim:#004d4a;
+  --ice:#f6fafd;--surf:#eaeef2;--card:#fff;
+  --text:#171c1f;--text2:#3d4948;--outl:#6d7a78;--outlv:#bcc9c7;
+  --err:#ba1a1a;--err-l:#fdecea;--ok:#166534;--ok-l:#dcfce7;
+  --warn:#92400e;--warn-l:#fef3c7;--khata:#5c4b2a;--khata-l:#fdf3dc;
+  --paid-bg:#dcfce7;--paid-t:#166534;
+  --draft-bg:#eaeef2;--draft-t:#3d4948;
+  --khata-bg:#fdf3dc;--khata-t:#5c4b2a;
+  --quick-bg:#e0f2f1;--quick-t:#004d4a;
+  --r:8px;--rs:6px
+}
+body{font-family:system-ui,sans-serif;font-size:14px;color:var(--text);background:var(--ice)}
+.shell{display:grid;grid-template-columns:220px 1fr;height:600px;border:0.5px solid var(--outlv);border-radius:12px;overflow:hidden;background:var(--card)}
+
+/* SLOT SIDEBAR */
+.sidebar{background:#f0f4f8;border-right:0.5px solid var(--outlv);display:flex;flex-direction:column;overflow:hidden}
+.sidebar-top{padding:12px 12px 8px;border-bottom:0.5px solid var(--outlv);display:flex;align-items:center;justify-content:space-between}
+.sidebar-label{font-size:11px;font-weight:500;color:var(--outl);text-transform:uppercase;letter-spacing:.05em}
+.add-btn{width:26px;height:26px;border-radius:50%;background:var(--mint);color:#fff;border:none;cursor:pointer;font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.add-btn:hover{background:var(--mint2)}
+.slots{flex:1;overflow-y:auto;padding:8px 8px}
+.slot{border-radius:var(--r);padding:10px 10px;margin-bottom:6px;cursor:pointer;border:1.5px solid transparent;transition:all .15s;position:relative;background:var(--card)}
+.slot:hover{border-color:var(--outlv);background:#fff}
+.slot.active{border-color:var(--mint);background:#fff;box-shadow:0 0 0 3px var(--mint-l)}
+.slot-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.slot-name{font-weight:500;font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px}
+.slot-status{font-size:10px;font-weight:500;padding:2px 6px;border-radius:20px}
+.s-draft{background:var(--draft-bg);color:var(--draft-t)}
+.s-ready{background:#dbeafe;color:#1e40af}
+.s-paid{background:var(--paid-bg);color:var(--paid-t)}
+.s-khata{background:var(--khata-bg);color:var(--khata-t)}
+.s-quick{background:var(--quick-bg);color:var(--quick-t)}
+.slot-meta{display:flex;align-items:center;justify-content:space-between}
+.slot-items{font-size:11px;color:var(--outl)}
+.slot-total{font-size:13px;font-weight:500;color:var(--mint);font-variant-numeric:tabular-nums}
+.slot-cancel{position:absolute;top:6px;right:6px;width:16px;height:16px;border-radius:50%;background:var(--surf);border:none;cursor:pointer;font-size:10px;color:var(--outl);display:none;align-items:center;justify-content:center;line-height:1}
+.slot:hover .slot-cancel{display:flex}
+.slot.active .slot-cancel{display:flex}
+
+/* MAIN PANEL */
+.main{display:flex;flex-direction:column;overflow:hidden}
+.panel-header{padding:12px 16px;border-bottom:0.5px solid var(--outlv);display:flex;align-items:center;gap:10px;flex-shrink:0;background:var(--card)}
+.customer-input{flex:1;height:32px;border:0.5px solid var(--outlv);border-radius:var(--rs);padding:0 10px;font-size:13px;color:var(--text);background:var(--ice)}
+.customer-input:focus{outline:none;border-color:var(--mint);box-shadow:0 0 0 2px var(--mint-l)}
+.mode-toggle{display:flex;border:0.5px solid var(--outlv);border-radius:var(--rs);overflow:hidden;flex-shrink:0}
+.mode-btn{padding:0 12px;height:32px;border:none;background:transparent;font-size:12px;font-weight:500;cursor:pointer;color:var(--outl);transition:all .15s}
+.mode-btn.active{background:var(--mint);color:#fff}
+.mode-btn:not(.active):hover{background:var(--surf)}
+
+/* FULL BILL PANEL */
+.bill-body{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.search-bar{padding:10px 16px;border-bottom:0.5px solid var(--outlv);flex-shrink:0}
+.search-wrap{position:relative}
+.search-input{width:100%;height:34px;border:0.5px solid var(--outlv);border-radius:var(--rs);padding:0 10px 0 32px;font-size:13px;background:var(--ice);color:var(--text)}
+.search-input:focus{outline:none;border-color:var(--mint);box-shadow:0 0 0 2px var(--mint-l)}
+.search-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--outl);font-size:16px}
+.search-results{position:absolute;top:38px;left:0;right:0;background:var(--card);border:0.5px solid var(--outlv);border-radius:var(--r);z-index:10;box-shadow:0 4px 12px rgba(0,0,0,.08);max-height:200px;overflow-y:auto}
+.sr-item{padding:8px 12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-bottom:0.5px solid var(--outlv)}
+.sr-item:last-child{border-bottom:none}
+.sr-item:hover{background:var(--mint-l)}
+.sr-name{font-size:13px;color:var(--text)}
+.sr-price{font-size:13px;font-weight:500;color:var(--mint);font-variant-numeric:tabular-nums}
+.sr-cat{font-size:11px;color:var(--outl)}
+.cart{flex:1;overflow-y:auto;padding:8px 16px}
+.cart-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--outl);gap:8px}
+.cart-empty i{font-size:32px;opacity:.4}
+.cart-empty p{font-size:13px}
+.cart-item{display:grid;grid-template-columns:1fr auto auto auto;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--outlv)}
+.cart-item:last-child{border-bottom:none}
+.ci-name{font-size:13px;color:var(--text);font-weight:500}
+.ci-cat{font-size:11px;color:var(--outl)}
+.qty-ctrl{display:flex;align-items:center;gap:4px}
+.qty-btn{width:24px;height:24px;border-radius:50%;border:0.5px solid var(--outlv);background:var(--surf);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;color:var(--text);line-height:1}
+.qty-btn:hover{background:var(--mint-l);border-color:var(--mint);color:var(--mint)}
+.qty-num{width:28px;text-align:center;font-size:13px;font-weight:500;font-variant-numeric:tabular-nums}
+.ci-price{font-size:13px;font-weight:500;color:var(--text);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ci-remove{width:20px;height:20px;border-radius:50%;border:none;background:transparent;cursor:pointer;color:var(--outl);font-size:14px;display:flex;align-items:center;justify-content:center}
+.ci-remove:hover{background:var(--err-l);color:var(--err)}
+
+/* FOOTER */
+.bill-footer{border-top:0.5px solid var(--outlv);padding:12px 16px;background:var(--card);flex-shrink:0}
+.total-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.total-label{font-size:13px;color:var(--text2)}
+.total-amount{font-size:22px;font-weight:500;color:var(--text);font-variant-numeric:tabular-nums}
+.footer-actions{display:flex;gap:8px}
+.btn{height:36px;border-radius:var(--rs);border:none;cursor:pointer;font-size:13px;font-weight:500;padding:0 16px;transition:all .15s}
+.btn-ghost{background:transparent;border:0.5px solid var(--outlv);color:var(--text2)}
+.btn-ghost:hover{background:var(--surf)}
+.btn-khata{background:var(--khata-l);color:var(--khata);border:0.5px solid #d4a85a}
+.btn-khata:hover{background:#f5e5b0}
+.btn-paid{background:var(--mint);color:#fff;flex:1}
+.btn-paid:hover{background:var(--mint2)}
+.btn-paid:disabled{background:var(--outlv);cursor:not-allowed}
+
+/* QUICK BILL PANEL */
+.quick-panel{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:16px}
+.quick-label{font-size:12px;color:var(--outl);text-align:center}
+.quick-amount{font-size:48px;font-weight:500;color:var(--text);text-align:center;letter-spacing:-1px;font-variant-numeric:tabular-nums;min-height:56px}
+.quick-prefix{font-size:24px;font-weight:400;color:var(--outl)}
+.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:220px}
+.np-btn{height:48px;border-radius:var(--r);border:0.5px solid var(--outlv);background:var(--card);font-size:18px;font-weight:500;cursor:pointer;color:var(--text);transition:all .1s}
+.np-btn:hover{background:var(--mint-l);border-color:var(--mint);color:var(--mint)}
+.np-btn:active{transform:scale(.96)}
+.np-btn.np-del{font-size:14px;color:var(--outl)}
+.np-btn.np-zero{grid-column:span 1}
+.quick-note{width:100%;max-width:280px;height:32px;border:0.5px solid var(--outlv);border-radius:var(--rs);padding:0 10px;font-size:13px;color:var(--text);background:var(--ice)}
+.quick-note:focus{outline:none;border-color:var(--mint)}
+.quick-footer{width:100%;max-width:280px;display:flex;gap:8px}
+
+/* EMPTY SLOT */
+.empty-slot{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--outl);gap:10px;padding:24px}
+.empty-slot i{font-size:40px;opacity:.3}
+.empty-slot p{font-size:13px;text-align:center;max-width:200px;line-height:1.5}
+
+/* TOAST */
+.toast{position:absolute;bottom:16px;right:16px;background:var(--ok-l);border:0.5px solid var(--ok);border-left:3px solid var(--ok);border-radius:var(--r);padding:10px 14px;font-size:13px;color:var(--ok);display:none;z-index:100;max-width:240px}
+</style>
+
+<div style="padding:1rem 0">
+<h2 class="sr-only">Order Queue Manager — LalaKirana billing screen mockup</h2>
+
+<div class="shell" style="position:relative" id="app">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-top">
+      <span class="sidebar-label">Orders</span>
+      <button class="add-btn" onclick="addSlot()" title="New order" aria-label="Add new order slot">+</button>
+    </div>
+    <div class="slots" id="slots-list"></div>
+  </div>
+
+  <!-- MAIN PANEL -->
+  <div class="main" id="main-panel">
+    <div class="empty-slot" id="empty-state">
+      <i class="ti ti-shopping-cart" aria-hidden="true"></i>
+      <p>No orders yet. Click + to start a new order slot.</p>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap">
+  <button onclick="sendPrompt('Walk me through how the Order Queue Manager handles 6 customers arriving at once at a kirana counter')" style="font-size:13px;padding:6px 14px;border-radius:6px;border:0.5px solid var(--outlv,#bcc9c7);background:transparent;cursor:pointer;color:var(--text,#171c1f)">How to handle 6 customers at once ↗</button>
+  <button onclick="sendPrompt('What happens when I click Mark as Khata in the Order Queue Manager?')" style="font-size:13px;padding:6px 14px;border-radius:6px;border:0.5px solid var(--outlv,#bcc9c7);background:transparent;cursor:pointer;color:var(--text,#171c1f)">Khata flow explained ↗</button>
+  <button onclick="sendPrompt('Start building the Order Queue Manager — give me the full React component code')" style="font-size:13px;padding:6px 14px;border-radius:6px;border:0.5px solid var(--outlv,#bcc9c7);background:transparent;cursor:pointer;color:var(--text,#171c1f)">Start building this ↗</button>
+</div>
+</div>
+
+<script>
+const PRODUCTS=[
+  {id:1,name:'Turmeric 200g',category:'Spices',price:48},
+  {id:2,name:'Basmati Rice 1kg',category:'Grains',price:120},
+  {id:3,name:'Tata Tea 250g',category:'Tea & Coffee',price:95},
+  {id:4,name:'Haldiram Sev 200g',category:'Snacks',price:35},
+  {id:5,name:'Red Label 250g',category:'Tea & Coffee',price:88},
+  {id:6,name:'Moong Dal 500g',category:'Grains',price:75},
+  {id:7,name:'Surf Excel 1kg',category:'Household',price:145},
+  {id:8,name:'Colgate 150g',category:'Household',price:62},
+  {id:9,name:'Cumin Seeds 100g',category:'Spices',price:32},
+  {id:10,name:'Quaker Oats 500g',category:'Oats',price:110},
+  {id:11,name:'KitKat 4F',category:'Chocolates',price:30},
+  {id:12,name:'Balaji Mixture 200g',category:'Snacks',price:20},
+];
+
+let slots=[];
+let activeId=null;
+let slotCounter=0;
+
+function uid(){return++slotCounter}
+
+function addSlot(){
+  const id=uid();
+  slots.push({id,name:`Order ${id}`,mode:'full',status:'draft',items:[],quickAmount:'',quickNote:'',customer:''});
+  setActive(id);
+  renderSidebar();
+  renderMain();
+}
+
+function setActive(id){
+  activeId=id;
+  renderSidebar();
+  renderMain();
+}
+
+function removeSlot(id,e){
+  e&&e.stopPropagation();
+  slots=slots.filter(s=>s.id!==id);
+  if(activeId===id) activeId=slots.length?slots[slots.length-1].id:null;
+  renderSidebar();
+  renderMain();
+}
+
+function getSlot(id){return slots.find(s=>s.id===id)}
+
+function slotTotal(slot){
+  if(slot.mode==='quick') return parseFloat(slot.quickAmount)||0;
+  return slot.items.reduce((a,i)=>a+i.price*i.qty,0);
+}
+
+function statusLabel(slot){
+  if(slot.status==='paid') return '<span class="slot-status s-paid">Paid</span>';
+  if(slot.status==='khata') return '<span class="slot-status s-khata">Khata</span>';
+  if(slot.mode==='quick') return '<span class="slot-status s-quick">Quick</span>';
+  const t=slotTotal(slot);
+  if(t>0) return '<span class="slot-status s-ready">Ready</span>';
+  return '<span class="slot-status s-draft">Draft</span>';
+}
+
+function renderSidebar(){
+  const el=document.getElementById('slots-list');
+  if(!slots.length){el.innerHTML='<div style="text-align:center;padding:24px 8px;font-size:12px;color:var(--outl)">No active orders.<br>Press + to begin.</div>';return}
+  el.innerHTML=slots.map(s=>{
+    const t=slotTotal(s);
+    const cnt=s.mode==='quick'?(s.quickAmount?'quick bill':'—'):`${s.items.length} item${s.items.length!==1?'s':''}`;
+    return`<div class="slot${s.id===activeId?' active':''}" onclick="setActive(${s.id})">
+      <div class="slot-header">
+        <span class="slot-name">${s.name||`Order ${s.id}`}</span>
+        ${statusLabel(s)}
+      </div>
+      <div class="slot-meta">
+        <span class="slot-items">${cnt}</span>
+        <span class="slot-total">${t>0?'₹'+t.toFixed(2):''}</span>
+      </div>
+      <button class="slot-cancel" onclick="removeSlot(${s.id},event)" aria-label="Remove slot">×</button>
+    </div>`
+  }).join('');
+}
+
+function renderMain(){
+  const panel=document.getElementById('main-panel');
+  const slot=activeId?getSlot(activeId):null;
+  if(!slot){
+    panel.innerHTML=`<div class="empty-slot"><i class="ti ti-shopping-cart" aria-hidden="true"></i><p>No orders yet. Click + to start a new order slot.</p></div>`;
+    return;
+  }
+  if(slot.status==='paid'||slot.status==='khata'){
+    const bg=slot.status==='paid'?'var(--ok-l)':'var(--khata-l)';
+    const col=slot.status==='paid'?'var(--ok)':'var(--khata)';
+    const icon=slot.status==='paid'?'ti-circle-check':'ti-book';
+    const msg=slot.status==='paid'?'Bill confirmed and marked as paid.':'Bill added to customer khata.';
+    panel.innerHTML=`
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;background:${bg}">
+        <i class="ti ${icon}" style="font-size:40px;color:${col}" aria-hidden="true"></i>
+        <p style="font-size:15px;font-weight:500;color:${col}">${msg}</p>
+        <p style="font-size:13px;color:${col};opacity:.8">Total: ₹${slotTotal(slot).toFixed(2)}</p>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn btn-ghost" onclick="printBill(${slot.id})">Print bill</button>
+          <button class="btn btn-ghost" onclick="removeSlot(${slot.id})">Close slot</button>
+        </div>
+      </div>`;
+    return;
+  }
+  if(slot.mode==='quick'){renderQuick(panel,slot);return;}
+  renderFull(panel,slot);
+}
+
+function renderFull(panel,slot){
+  const cartHtml=slot.items.length?slot.items.map(item=>`
+    <div class="cart-item">
+      <div><div class="ci-name">${item.name}</div><div class="ci-cat">${item.category}</div></div>
+      <div class="qty-ctrl">
+        <button class="qty-btn" onclick="changeQty(${slot.id},${item.id},-1)" aria-label="Decrease quantity">−</button>
+        <span class="qty-num">${item.qty}</span>
+        <button class="qty-btn" onclick="changeQty(${slot.id},${item.id},1)" aria-label="Increase quantity">+</button>
+      </div>
+      <div class="ci-price">₹${(item.price*item.qty).toFixed(2)}</div>
+      <button class="ci-remove" onclick="removeItem(${slot.id},${item.id})" aria-label="Remove item">×</button>
+    </div>`).join(''):
+    `<div class="cart-empty"><i class="ti ti-basket" aria-hidden="true"></i><p>Search a product above to add it to this order.</p></div>`;
+  const total=slotTotal(slot);
+  panel.innerHTML=`
+    <div class="panel-header">
+      <input class="customer-input" placeholder="Customer name (optional)" value="${slot.customer}" oninput="updateCustomer(${slot.id},this.value)" />
+      <div class="mode-toggle">
+        <button class="mode-btn active" onclick="setMode(${slot.id},'full')">Full bill</button>
+        <button class="mode-btn" onclick="setMode(${slot.id},'quick')">Quick</button>
+      </div>
+    </div>
+    <div class="bill-body">
+      <div class="search-bar">
+        <div class="search-wrap">
+          <i class="ti ti-search search-icon" aria-hidden="true"></i>
+          <input class="search-input" id="search-${slot.id}" placeholder="Search product by name…" oninput="handleSearch(${slot.id},this.value)" autocomplete="off" />
+          <div class="search-results" id="sr-${slot.id}" style="display:none"></div>
+        </div>
+      </div>
+      <div class="cart">${cartHtml}</div>
+    </div>
+    <div class="bill-footer">
+      <div class="total-row">
+        <span class="total-label">${slot.items.length} item${slot.items.length!==1?'s':''} · Total</span>
+        <span class="total-amount">₹${total.toFixed(2)}</span>
+      </div>
+      <div class="footer-actions">
+        <button class="btn btn-ghost" onclick="clearSlot(${slot.id})" ${!slot.items.length?'disabled':''}>Clear</button>
+        <button class="btn btn-khata" onclick="confirmSlot(${slot.id},'khata')" ${!slot.items.length?'disabled':''}>Khata</button>
+        <button class="btn btn-paid" onclick="confirmSlot(${slot.id},'paid')" ${!slot.items.length?'disabled':''}>Mark as paid ₹${total.toFixed(2)}</button>
+      </div>
+    </div>`;
+}
+
+function renderQuick(panel,slot){
+  const amount=slot.quickAmount||'';
+  panel.innerHTML=`
+    <div class="panel-header">
+      <input class="customer-input" placeholder="Customer name (optional)" value="${slot.customer}" oninput="updateCustomer(${slot.id},this.value)" />
+      <div class="mode-toggle">
+        <button class="mode-btn" onclick="setMode(${slot.id},'full')">Full bill</button>
+        <button class="mode-btn active" onclick="setMode(${slot.id},'quick')">Quick</button>
+      </div>
+    </div>
+    <div class="quick-panel">
+      <div class="quick-label">Enter total amount</div>
+      <div class="quick-amount"><span class="quick-prefix">₹</span><span id="qa-display">${amount||'0'}</span></div>
+      <div class="numpad" id="numpad-${slot.id}">
+        ${['1','2','3','4','5','6','7','8','9','.',  '0','⌫'].map(k=>`
+          <button class="np-btn${k==='⌫'?' np-del':''}" onclick="numpad(${slot.id},'${k}')">${k}</button>`).join('')}
+      </div>
+      <input class="quick-note" id="qnote-${slot.id}" placeholder="What was sold? (optional)" value="${slot.quickNote||''}" oninput="updateNote(${slot.id},this.value)" />
+      <div class="quick-footer">
+        <button class="btn btn-ghost" style="flex:1" onclick="setMode(${slot.id},'full')">Switch to full bill</button>
+        <button class="btn btn-khata" onclick="confirmSlot(${slot.id},'khata')" ${!amount?'disabled':''}>Khata</button>
+        <button class="btn btn-paid" onclick="confirmSlot(${slot.id},'paid')" ${!amount?'disabled':''}>Paid</button>
+      </div>
+    </div>`;
+}
+
+function handleSearch(slotId,val){
+  const sr=document.getElementById(`sr-${slotId}`);
+  if(!val.trim()){sr.style.display='none';return}
+  const results=PRODUCTS.filter(p=>p.name.toLowerCase().includes(val.toLowerCase())).slice(0,6);
+  if(!results.length){sr.style.display='none';return}
+  sr.innerHTML=results.map(p=>`
+    <div class="sr-item" onclick="addItem(${slotId},${p.id})">
+      <div><div class="sr-name">${p.name}</div><div class="sr-cat">${p.category}</div></div>
+      <div class="sr-price">₹${p.price}</div>
+    </div>`).join('');
+  sr.style.display='block';
+}
+
+function addItem(slotId,productId){
+  const slot=getSlot(slotId);
+  const prod=PRODUCTS.find(p=>p.id===productId);
+  if(!slot||!prod) return;
+  const existing=slot.items.find(i=>i.id===productId);
+  if(existing) existing.qty++;
+  else slot.items.push({...prod,qty:1});
+  const si=document.getElementById(`search-${slotId}`);
+  if(si) si.value='';
+  const sr=document.getElementById(`sr-${slotId}`);
+  if(sr) sr.style.display='none';
+  renderSidebar();
+  renderMain();
+}
+
+function changeQty(slotId,itemId,delta){
+  const slot=getSlot(slotId);
+  if(!slot) return;
+  const item=slot.items.find(i=>i.id===itemId);
+  if(!item) return;
+  item.qty=Math.max(1,item.qty+delta);
+  renderSidebar();
+  renderMain();
+}
+
+function removeItem(slotId,itemId){
+  const slot=getSlot(slotId);
+  if(!slot) return;
+  slot.items=slot.items.filter(i=>i.id!==itemId);
+  renderSidebar();
+  renderMain();
+}
+
+function clearSlot(slotId){
+  const slot=getSlot(slotId);
+  if(slot){slot.items=[];renderSidebar();renderMain();}
+}
+
+function setMode(slotId,mode){
+  const slot=getSlot(slotId);
+  if(slot){slot.mode=mode;renderSidebar();renderMain();}
+}
+
+function updateCustomer(slotId,val){
+  const slot=getSlot(slotId);
+  if(slot){
+    slot.customer=val;
+    slot.name=val.trim()||`Order ${slotId}`;
+    renderSidebar();
+  }
+}
+
+function updateNote(slotId,val){
+  const slot=getSlot(slotId);
+  if(slot) slot.quickNote=val;
+}
+
+function numpad(slotId,key){
+  const slot=getSlot(slotId);
+  if(!slot) return;
+  let v=slot.quickAmount||'';
+  if(key==='⌫') v=v.slice(0,-1);
+  else if(key==='.' && v.includes('.')) return;
+  else if(v.length<8) v+=key;
+  if(v==='.') v='0.';
+  slot.quickAmount=v;
+  const d=document.getElementById('qa-display');
+  if(d) d.textContent=v||'0';
+  const payBtn=document.querySelector('.btn-paid');
+  const khBtn=document.querySelector('.btn-khata');
+  if(payBtn) payBtn.disabled=!v;
+  if(khBtn) khBtn.disabled=!v;
+}
+
+function confirmSlot(slotId,type){
+  const slot=getSlot(slotId);
+  if(!slot) return;
+  slot.status=type;
+  renderSidebar();
+  renderMain();
+  showToast(type==='paid'?`₹${slotTotal(slot).toFixed(2)} — marked as paid`:`Added to ${slot.customer||'customer'} khata`);
+}
+
+function printBill(slotId){
+  showToast('Print dialog would open here');
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.style.display='block';
+  setTimeout(()=>t.style.display='none',3000);
+}
+
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.search-wrap')){
+    document.querySelectorAll('.search-results').forEach(el=>el.style.display='none');
+  }
+});
+
+addSlot();
+const s=getSlot(1);
+s.name='Ramesh';s.customer='Ramesh';
+s.items=[{id:2,name:'Basmati Rice 1kg',category:'Grains',price:120,qty:2},{id:3,name:'Tata Tea 250g',category:'Tea & Coffee',price:95,qty:1}];
+addSlot();
+const s2=getSlot(2);
+s2.status='paid';s2.name='Sunita';s2.customer='Sunita';
+s2.items=[{id:4,name:'Haldiram Sev 200g',category:'Snacks',price:35,qty:1}];
+addSlot();
+const s3=getSlot(3);
+s3.mode='quick';s3.name='Order 3';s3.quickAmount='30';
+renderSidebar();
+renderMain();
+</script>

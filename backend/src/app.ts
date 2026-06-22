@@ -7,6 +7,10 @@ import productRoutes from './features/products/products.routes.js';
 import inventoryRoutes from './features/inventory/inventory.routes.js';
 import reportRoutes from './features/reports/reports.routes.js';
 import analyticsRoutes from './features/analytics/analytics.routes.js';
+import billingRoutes from './features/billing/billing.routes.js';
+import khataRoutes from './features/khata/khata.routes.js';
+import purchaseRoutes from './features/purchases/purchases.routes.js';
+import storeSettingsRoutes from './features/settings/settings.routes.js';
 
 const app = express();
 
@@ -23,6 +27,10 @@ app.use('/api/v1/products', productRoutes);
 app.use('/api/v1/inventory', inventoryRoutes);
 app.use('/api/v1/reports', reportRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
+app.use('/api/v1/billing', billingRoutes);
+app.use('/api/v1/customers', khataRoutes);
+app.use('/api/v1/purchases', purchaseRoutes);
+app.use('/api/v1/settings', storeSettingsRoutes);
 
 app.get('/', (req: Request, res: Response) => {
   res.json({ message: 'LalaKirana API is online' });

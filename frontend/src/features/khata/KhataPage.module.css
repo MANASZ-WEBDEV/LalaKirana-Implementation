@@ -1,0 +1,204 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  gap: 1.5rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.titleSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 2rem;
+  color: var(--color-primary);
+}
+
+.subtitle {
+  font-size: 0.9rem;
+  color: var(--color-on-surface-variant);
+}
+
+/* Summary Outstanding Card */
+.summaryCard {
+  background: linear-gradient(135deg, rgba(186, 26, 26, 0.03) 0%, rgba(186, 26, 26, 0.08) 100%);
+  border: 1px solid rgba(186, 26, 26, 0.15);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  max-width: 400px;
+}
+
+.summaryLabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #ba1a1a;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summaryVal {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #ba1a1a;
+  font-family: var(--font-body);
+}
+
+.summarySub {
+  font-size: 0.75rem;
+  color: var(--color-on-surface-variant);
+}
+
+.controls {
+  display: flex;
+  width: 100%;
+}
+
+.searchWrapper {
+  width: 100%;
+  max-width: 400px;
+}
+
+/* Table styling */
+.tableCard {
+  background: var(--color-white);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.loader {
+  padding: 3rem;
+  text-align: center;
+  color: var(--color-outline);
+}
+
+.customerNameCol {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.customerName {
+  font-weight: 500;
+  color: var(--color-on-surface);
+}
+
+.customerPhone {
+  font-size: 0.75rem;
+  color: var(--color-outline);
+}
+
+.balance {
+  font-weight: 500;
+}
+
+.hasBalance {
+  color: #ba1a1a;
+  font-weight: 600;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--color-outline-variant);
+}
+
+.pageBtn {
+  background: var(--color-white);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.8rem;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: var(--color-on-surface);
+}
+
+.pageBtn:hover:not(:disabled) {
+  background-color: var(--color-surface-container);
+}
+
+.pageBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pageLabel {
+  font-size: 0.85rem;
+  color: var(--color-outline);
+}
+
+/* Modal Form styling */
+.addForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0.5rem 0;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.formLabel {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-on-surface-variant);
+}
+
+.formInput {
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  outline: none;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  background: var(--color-white);
+  color: var(--color-on-surface);
+}
+
+.formInput:focus {
+  border-color: var(--color-primary);
+}
+
+.formTextarea {
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  outline: none;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  resize: none;
+  background: var(--color-white);
+  color: var(--color-on-surface);
+}
+
+.formTextarea:focus {
+  border-color: var(--color-primary);
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}

@@ -7,6 +7,7 @@ export const settingsKeys = {
   users: ['settings', 'users'] as const,
   sessions: ['settings', 'sessions'] as const,
   categories: ['inventory', 'categories'] as const,
+  store: ['settings', 'store'] as const,
 };
 
 export function useUsers() {
@@ -91,6 +92,24 @@ export function useCreateCategory() {
     mutationFn: (name: string) => api.post<Category>('/products/categories', { name }).then((r) => r.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: settingsKeys.categories });
+    },
+  });
+}
+
+export function useStoreSettings() {
+  return useQuery({
+    queryKey: settingsKeys.store,
+    queryFn: settingsApi.getStoreSettings,
+    staleTime: 600000, // 10 minutes cache
+  });
+}
+
+export function useUpdateStoreSettings() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: settingsApi.updateStoreSettings,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: settingsKeys.store });
     },
   });
 }

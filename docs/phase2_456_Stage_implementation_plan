@@ -1,0 +1,125 @@
+# Phase 2 Frontend Implementation Plan — Billing, Khata, Purchases & Polish
+
+This plan covers Stages 4, 5, and 6 of Phase 2, building the complete frontend layers for **Billing** (customer invoicing), **Khata** (credit ledger), **Purchases** (supplier stock-in), **Expenses**, and overall **Polish** (item history tab, settings receipt, keyboard shortcuts).
+
+---
+
+## User Review Required
+
+> [!IMPORTANT]
+> - **Print Layouts**: Receipts will be formatted using CSS `@media print` layout so standard paper rolls (thermal/A4) can be printed cleanly using native browser print (`window.print()`).
+> - **Keyboard Shortcuts**: Global hooks will be bound to keys (`Ctrl+N`, `Ctrl+1-10`, `F2`, `Enter`, `Escape`) to allow high-speed retail checkout.
+> - **State Persistence**: The local billing slots (up to 10 slots) will be managed via a Zustand store with localStorage persistence for crash/page-refresh recovery.
+
+---
+
+## Proposed Changes
+
+### 1. Feature: Billing Component (Stage 4)
+
+#### [NEW] [billing.api.ts](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/billing/billing.api.ts)
+Expose API methods and TanStack Query hooks (`useConfirmBill`, `useCancelBill`, `useBillsHistory`, `useBillDetail`).
+
+#### [NEW] [billingStore.ts](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/billing/billingStore.ts)
+Zustand store with `persist` middleware to handle up to 10 active billing tabs/slots in localStorage (Full/Quick checkout modes, item list, quick amount, selected customer).
+
+#### [NEW] [BillingPage.tsx](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/billing/BillingPage.tsx) & [BillingPage.module.css](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/billing/BillingPage.module.css)
+Main dashboard-like layout with slot sidebar on the left and active checkout panel on the right.
+
+#### [NEW] [OrderSlot.tsx](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/billing/OrderSlot.tsx) & [OrderSlot.module.css](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/billing/OrderSlot.module.css)
+Sidebar checkout slot selection tab with badge indicators for total items and bill amount.
+
+#### [NEW] [FullBillMode.tsx](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/billing/FullBillMode.tsx) & [FullBillMode.module.css](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/billing/FullBillMode.module.css)
+Interactive search-to-cart layout, quantity controls, price snapshots, and confirmation workflow.
+
+#### [NEW] [QuickBillMode.tsx](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/billing/QuickBillMode.tsx) & [QuickBillMode.module.css](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/billing/QuickBillMode.module.css)
+Fast keypad billing for non-inventoried items, note field, and cash/credit options.
+
+#### [NEW] [BillConfirmDrawer.tsx](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/billing/BillConfirmDrawer.tsx) & [BillConfirmDrawer.module.css](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/billing/BillConfirmDrawer.module.css)
+Overlay drawer for summary review, linking customer accounts, showing cash change calculation, and rendering receipt previews.
+
+#### [NEW] [BillHistoryDrawer.tsx](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/billing/BillHistoryDrawer.tsx) & [BillHistoryDrawer.module.css](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/billing/BillHistoryDrawer.module.css)
+View past bills, filter by date, payment status, customer name, reprint receipts, and cancel bills (restricted to Owner).
+
+---
+
+### 2. Feature: Khata Component (Stage 5)
+
+#### [NEW] [khata.api.ts](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/khata/khata.api.ts)
+Expose TanStack Query hooks (`useCustomers`, `useCreateCustomer`, `useCustomerProfile`, `useKhataEntries`, `useLogRepayment`, `useMonthlyStatement`).
+
+#### [NEW] [KhataPage.tsx](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/khata/KhataPage.tsx) & [KhataPage.module.css](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/khata/KhataPage.module.css)
+Customer accounts ledger management with outstanding balance totals, smart search, and quick customer creation.
+
+#### [NEW] [CustomerProfile.tsx](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/khata/CustomerProfile.tsx) & [CustomerProfile.module.css](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/khata/CustomerProfile.module.css)
+Ledger view showing transaction statements (purchases vs repayments) with filters, repayments logger, and statement export/print.
+
+#### [NEW] [RepaymentDrawer.tsx](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/khata/RepaymentDrawer.tsx) & [RepaymentDrawer.module.css](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/khata/RepaymentDrawer.module.css)
+Log payment collected from customers, with notes.
+
+#### [NEW] [KhataStatement.tsx](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/khata/KhataStatement.tsx) & [KhataStatement.module.css](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/khata/KhataStatement.module.css)
+Printable monthly statement rendering details, opening/closing balance, and ledger.
+
+---
+
+### 3. Feature: Purchases & Expenses Component (Stage 5)
+
+#### [NEW] [purchases.api.ts](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/purchases/purchases.api.ts)
+Query hooks (`useSuppliers`, `useCreateSupplier`, `useConfirmPurchase`, `usePurchaseOrders`, `usePurchaseDetail`, `useCreateExpense`, `useExpenses`, `useSupplierRepayment`).
+
+#### [NEW] [PurchasesPage.tsx](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/purchases/PurchasesPage.tsx) & [PurchasesPage.module.css](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/purchases/PurchasesPage.module.css)
+Tabs interface displaying:
+- **Stock-In**: purchase log, order details, cancel orders (owner only)
+- **Expenses**: shop utilities, transport, and custom expenses
+- **Suppliers**: supplier list, amount owed, log repayments to suppliers
+
+#### [NEW] [NewPurchaseForm.tsx](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/purchases/NewPurchaseForm.tsx) & [NewPurchaseForm.module.css](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/purchases/NewPurchaseForm.module.css)
+Inbound purchase order entry form (supplier select, item addition, cost vs sell price, markup/margin calculation).
+
+#### [NEW] [NewExpenseForm.tsx](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/purchases/NewExpenseForm.tsx) & [NewExpenseForm.module.css](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/purchases/NewExpenseForm.module.css)
+Form to record shop utilities, transport, maintenance, or packaging expenses.
+
+---
+
+### 4. Polish & Shared Components (Stage 6)
+
+#### [NEW] [ProductSearch.tsx](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/shared/ui/ProductSearch.tsx) & [ProductSearch.module.css](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/shared/ui/ProductSearch.module.css)
+Debounced typeahead selector showing product match list, quantities, units, and price snapshots.
+
+#### [NEW] [CustomerSearch.tsx](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/shared/ui/CustomerSearch.tsx) & [CustomerSearch.module.css](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/shared/ui/CustomerSearch.module.css)
+Typeahead search for customer profiles with an inline Option to trigger the customer creation form.
+
+#### [NEW] [ReceiptPreview.tsx](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/shared/ui/ReceiptPreview.tsx) & [ReceiptPreview.module.css](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/shared/ui/ReceiptPreview.module.css)
+Component to render shop info header, item list, grand total, tax/change calculations, and footer with `@media print` clean layout.
+
+#### [NEW] [useKeyboardShortcuts.ts](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/shared/hooks/useKeyboardShortcuts.ts)
+Central hook to capture keystrokes and execute key actions in billing.
+
+#### [MODIFY] [InventoryPage.tsx](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/inventory/InventoryPage.tsx)
+Integrate "Supplier History" tab in the product details modal displaying past suppliers, cost prices, and avg margins.
+
+#### [MODIFY] [SettingsPage.tsx](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/settings/SettingsPage.tsx)
+Add editable section to update receipt headers/footers (`store_name`, `store_address`, `store_phone`, `receipt_footer`).
+
+#### [MODIFY] [Sidebar.tsx](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/shared/layout/Sidebar.tsx)
+Substitute placeholders with real paths (`/billing`, `/khata`, `/purchases`).
+
+#### [MODIFY] [App.tsx](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/App.tsx)
+Mount the routing definitions for the new pages.
+
+---
+
+## Verification Plan
+
+### Automated Tests
+Backend testing:
+```bash
+cd backend && npm test
+```
+
+### Manual Verification
+- Validate local slot caching.
+- Checkout Full Bill and Quick Bill. Ensure stock quantities decremented.
+- Generate Invoice print preview (`window.print()`).
+- Inbound stock purchases → ensure stock increments and average purchase cost tracks correctly.
+- Add payment reps in Khata profile → check total balance adjusts dynamically.

@@ -8,6 +8,8 @@ export const inventoryKeys = {
   categories: () => [...inventoryKeys.all, 'categories'] as const,
   product: (id: string) => [...inventoryKeys.all, 'product', id] as const,
   priceHistory: (id: string) => [...inventoryKeys.all, 'priceHistory', id] as const,
+  purchaseHistory: (id: string) => [...inventoryKeys.all, 'purchaseHistory', id] as const,
+  supplierSummary: (id: string) => [...inventoryKeys.all, 'supplierSummary', id] as const,
 };
 
 export function useProducts(filters?: ProductFilters) {
@@ -80,5 +82,21 @@ export function useAdjustStock() {
     onSuccess: () => {
       queryClient.invalidateQueries();
     },
+  });
+}
+
+export function useProductPurchaseHistory(id: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: inventoryKeys.purchaseHistory(id),
+    queryFn: () => inventoryApi.getProductPurchaseHistory(id),
+    ...options,
+  });
+}
+
+export function useProductSupplierSummary(id: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: inventoryKeys.supplierSummary(id),
+    queryFn: () => inventoryApi.getProductSupplierSummary(id),
+    ...options,
   });
 }

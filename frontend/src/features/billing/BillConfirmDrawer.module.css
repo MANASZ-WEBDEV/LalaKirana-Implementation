@@ -1,0 +1,259 @@
+.drawerBody {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.successView {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1rem 0;
+}
+
+.successHeader {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.successIcon {
+  font-size: 3rem;
+}
+
+.receiptWrapper {
+  width: 100%;
+  max-height: 450px;
+  overflow-y: auto;
+  padding: 0.5rem;
+  border-top: 1px dashed var(--color-outline-variant);
+  border-bottom: 1px dashed var(--color-outline-variant);
+}
+
+.doneBtnWrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.doneBtn {
+  width: 100%;
+  max-width: 320px;
+  background-color: var(--color-primary) !important;
+}
+
+/* Confirm Flow Styles */
+.confirmFlow {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-bottom: 2rem;
+}
+
+.summaryCard {
+  background-color: var(--color-surface-container);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.summaryHeader {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-primary);
+  border-bottom: 1px solid var(--color-outline-variant);
+  padding-bottom: 0.5rem;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+}
+
+.summaryItems {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-height: 120px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+
+.summaryItemRow {
+  display: flex;
+  justify-content: space-between;
+  color: var(--color-on-surface-variant);
+}
+
+.summaryRowTotal {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 1.1rem;
+  border-top: 1px dashed var(--color-outline-variant);
+  padding-top: 0.75rem;
+  color: var(--color-primary);
+}
+
+.capitalize {
+  text-transform: capitalize;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sectionLabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.selectedCustomerCard {
+  background: rgba(0, 103, 99, 0.03);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.selectedCustomerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.subtext {
+  font-size: 0.75rem;
+  color: var(--color-on-surface-variant);
+}
+
+.balanceText {
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  border-top: 1px solid var(--color-outline-variant);
+  padding-top: 0.25rem;
+}
+
+.balanceText span {
+  font-weight: 600;
+  color: var(--color-error);
+}
+
+/* Calculator & Cash Input */
+.calculator {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background-color: var(--color-surface-container);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+}
+
+.changeDueRow {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--color-outline-variant);
+}
+
+.changeActive {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.quickCashGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.quickCashBtn {
+  background: var(--color-white);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  transition: all var(--transition-fast);
+}
+
+.quickCashBtn:hover {
+  border-color: var(--color-primary);
+  background-color: rgba(0, 103, 99, 0.02);
+}
+
+.customerLinkWrapper {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.linkedCustomerTag {
+  background: var(--color-surface-container);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.unlinkBtn {
+  background: transparent;
+  border: none;
+  color: var(--color-outline);
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+
+.unlinkBtn:hover {
+  color: var(--color-error);
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.cancelBtn {
+  flex: 1;
+}
+
+.confirmBtn {
+  flex: 1.5;
+  background-color: var(--color-primary) !important;
+}
+
+.confirmBtn:hover {
+  background-color: var(--color-primary-container) !important;
+}

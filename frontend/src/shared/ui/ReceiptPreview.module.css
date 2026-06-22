@@ -1,0 +1,225 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.printActionArea {
+  margin-bottom: 1.5rem;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.printBtn {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: var(--shadow-sm);
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.printBtn:hover {
+  background-color: var(--color-primary-container);
+  transform: translateY(-1px);
+}
+
+.loading {
+  padding: 2rem;
+  text-align: center;
+  font-family: var(--font-body);
+  color: var(--color-on-surface-variant);
+}
+
+/* Receipt Screen Preview Card */
+.receipt {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-outline-variant);
+  box-shadow: var(--shadow-md);
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 320px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: #000;
+  line-height: 1.4;
+  border-radius: var(--radius-md);
+}
+
+.header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.storeName {
+  font-family: var(--font-body);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #000;
+  margin-bottom: 0.15rem;
+}
+
+.storeDetail {
+  font-size: 0.75rem;
+  color: #333;
+}
+
+.divider {
+  text-align: center;
+  letter-spacing: -1px;
+  margin: 0.5rem 0;
+  color: #555;
+  user-select: none;
+}
+
+.metaGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.metaRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+}
+
+.bold {
+  font-weight: 700;
+}
+
+.capitalize {
+  text-transform: capitalize;
+}
+
+.customerSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* Items Table Layout */
+.itemsHeader,
+.itemRow {
+  display: grid;
+  grid-template-columns: 2.2fr 0.6fr 0.8fr 0.8fr;
+  align-items: start;
+  gap: 0.25rem;
+}
+
+.itemsHeader {
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.itemsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.itemRow {
+  font-size: 0.8rem;
+}
+
+.itemColName {
+  word-break: break-word;
+}
+
+.qtyCol {
+  text-align: center;
+}
+
+.rateCol,
+.totalCol {
+  text-align: right;
+}
+
+.quickBillRow {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+/* Totals */
+.totalSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+}
+
+.grandTotalRow {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border-top: 1px dashed #000;
+  border-bottom: 1px dashed #000;
+  padding: 0.5rem 0;
+}
+
+.grandTotal {
+  font-size: 1.05rem;
+}
+
+.footer {
+  text-align: center;
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.footerText {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.footerSub {
+  font-size: 0.65rem;
+  color: #666;
+}
+
+/* PRINT MEDIA CSS RULES */
+@media print {
+  /* Hide every single element in the DOM */
+  body * {
+    visibility: hidden;
+  }
+  
+  /* Make the print container visible and position it */
+  #receipt-print-area,
+  #receipt-print-area * {
+    visibility: visible;
+  }
+  
+  #receipt-print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .printActionArea {
+    display: none !important;
+  }
+}

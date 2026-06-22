@@ -1,0 +1,250 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  background-color: var(--color-surface-container);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+}
+
+.pickers {
+  display: flex;
+  gap: 1rem;
+}
+
+.printBtn {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: background-color var(--transition-fast);
+}
+
+.printBtn:hover {
+  background-color: var(--color-primary-container);
+}
+
+.loading,
+.error {
+  padding: 3rem;
+  text-align: center;
+  color: var(--color-outline);
+  font-family: var(--font-body);
+}
+
+/* Printable Statement Sheet Styles */
+.sheet {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-outline-variant);
+  box-shadow: var(--shadow-sm);
+  padding: 2rem;
+  font-family: var(--font-body);
+  color: var(--color-on-surface);
+  border-radius: var(--radius-lg);
+  line-height: 1.5;
+}
+
+.sheetHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.storeName {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.75rem;
+  color: var(--color-primary);
+}
+
+.storeSub {
+  font-size: 0.85rem;
+  color: var(--color-on-surface-variant);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sheetMeta {
+  text-align: right;
+  font-size: 0.85rem;
+  color: var(--color-on-surface-variant);
+}
+
+.divider {
+  border-top: 1px solid var(--color-outline-variant);
+  margin: 1rem 0;
+}
+
+.accountInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+}
+
+/* Summary Grid Box styling */
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.summaryBox {
+  background-color: var(--color-surface-container);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.boxLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-outline);
+  text-transform: uppercase;
+}
+
+.boxVal {
+  font-weight: 700;
+  font-size: 1.15rem;
+}
+
+.closingBox {
+  background: rgba(186, 26, 26, 0.03);
+  border-color: rgba(186, 26, 26, 0.15);
+}
+
+.closingBox .boxLabel {
+  color: #ba1a1a;
+}
+
+.closingBox .boxVal {
+  color: #ba1a1a;
+}
+
+.tableTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-on-surface);
+  margin-bottom: 0.75rem;
+}
+
+/* Ledger table styling */
+.ledgerTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.ledgerTable th,
+.ledgerTable td {
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid var(--color-outline-variant);
+}
+
+.ledgerTable th {
+  background-color: var(--color-surface-container);
+  color: var(--color-on-surface-variant);
+  font-weight: 600;
+  text-align: left;
+}
+
+.rightAlign {
+  text-align: right !important;
+}
+
+.bold {
+  font-weight: 700;
+}
+
+.emptyRow {
+  text-align: center;
+  padding: 2rem !important;
+  color: var(--color-outline);
+}
+
+.openingRow,
+.closingRow {
+  background-color: rgba(0, 0, 0, 0.02);
+  font-weight: 600;
+}
+
+.purchaseText {
+  color: #ba1a1a;
+  font-weight: 600;
+}
+
+.repayText {
+  color: #006763;
+  font-weight: 600;
+}
+
+/* Signature footer */
+.sheetFooter {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 3.5rem;
+  padding: 0 1rem;
+}
+
+.signatureBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  width: 150px;
+}
+
+.sigLine {
+  border-top: 1px solid var(--color-outline);
+  width: 100%;
+}
+
+.signatureBox span {
+  font-size: 0.75rem;
+  color: var(--color-outline);
+}
+
+/* PRINT LAYOUT OVERRIDES */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #statement-print-area,
+  #statement-print-area * {
+    visibility: visible;
+  }
+
+  #statement-print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+  }
+
+  .controls {
+    display: none !important;
+  }
+}

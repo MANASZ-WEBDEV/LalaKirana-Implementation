@@ -1,0 +1,194 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 5rem); /* Adjust for App Layout margins */
+  padding: 1.5rem;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-shrink: 0;
+}
+
+.titleSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 2rem;
+  color: var(--color-primary);
+}
+
+.subtitle {
+  font-size: 0.9rem;
+  color: var(--color-on-surface-variant);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+}
+
+/* Workspace Grid Layout */
+.workspace {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 1.5rem;
+  flex: 1;
+  min-height: 0; /* Important for flex child scrolling */
+}
+
+/* Sidebar Styling */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-surface-container);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  min-height: 0;
+  gap: 1rem;
+}
+
+.sidebarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--color-outline-variant);
+  padding-bottom: 0.5rem;
+}
+
+.sidebarTitle {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--color-on-surface);
+}
+
+.sidebarCount {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-outline);
+}
+
+.slotsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.addSlotBtn {
+  background-color: var(--color-white);
+  border: 1px dashed var(--color-outline);
+  border-radius: var(--radius-md);
+  padding: 0.75rem;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.85rem;
+  color: var(--color-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.addSlotBtn:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background-color: rgba(0, 103, 99, 0.02);
+}
+
+.addSlotBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Main Content Panel */
+.mainContent {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.activePanel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.modeTabs {
+  display: flex;
+  border-bottom: 1px solid var(--color-outline-variant);
+  background-color: var(--color-surface-container);
+}
+
+.modeTab {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 1rem 0;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: var(--color-on-surface-variant);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: center;
+  border-right: 1px solid var(--color-outline-variant);
+}
+
+.modeTab:last-child {
+  border-right: none;
+}
+
+.modeTab:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.modeTabActive {
+  background-color: var(--color-white);
+  color: var(--color-primary);
+  font-weight: 600;
+  border-bottom: 2px solid var(--color-primary);
+}
+
+.checkoutModeWrapper {
+  flex: 1;
+  min-height: 0;
+}
+
+.noActiveSlot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--color-outline);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+}
+@media (max-width: 768px) {
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    display: none; /* simple responsive fallback */
+  }
+}

@@ -1,9 +1,10 @@
+import { useState } from 'react';
 import { Modal } from '@/shared/ui/Modal';
 import { DataTable } from '@/shared/ui/DataTable';
 import type { ColumnConfig } from '@/shared/ui/DataTable';
 import { Skeleton } from '@/shared/ui/Skeleton';
 import { EmptyState } from '@/shared/ui/EmptyState';
-import { usePriceHistory } from './inventory.queries';
+import { usePriceHistory, useProductPurchaseHistory, useProductSupplierSummary } from './inventory.queries';
 import type { PriceHistoryEntry } from '@/types/product.types';
 import styles from './PriceHistoryModal.module.css';
 
@@ -14,15 +15,23 @@ interface PriceHistoryModalProps {
   onClose: () => void;
 }
 
+type TabId = 'prices' | 'suppliers';
+
 export function PriceHistoryModal({
   productId,
   productName,
   isOpen,
   onClose,
 }: PriceHistoryModalProps) {
-  const { data: history, isLoading } = usePriceHistory(productId, { enabled: isOpen });
+  const [activeTab, setActiveTab] = useState<TabId>('prices');
 
-  const columns: ColumnConfig<PriceHistoryEntry>[] = [
+  // Queries
+  const { data: priceHistory, isLoading: isPriceHistoryLoading } = usePriceHistory(productId, { enabled: isOpen && activeTab === 'prices' });
+  const { data: purchaseHistory = [], isLoading: isPurchaseHistoryLoading } = useProductPurchaseHistory(productId, { enabled: isOpen && activeTab === 'suppliers' });
+  const { data: supplierSummary = [], isLoading: isSupplierSummaryLoading } = useProductSupplierSummary(productId, { enabled: isOpen && activeTab === 'suppliers' });
+
+  // Column definitions for Price History
+  const priceColumns: ColumnConfig<PriceHistoryEntry>[] = [
     {
       key: 'changed_at',
       header: 'Date & Time',
@@ -61,20 +70,77 @@ export function PriceHistoryModal({
     },
   ];
 
+  // Column definitions for Supplier History
+  const purchaseColumns: ColumnConfig<any>[] = [
+    {
+      key: 'date',
+      header: 'Date',
+      render: (entry) => <span>{new Date(entry.date).toLocaleDateString('en-IN')}</span>,
+    },
+    {
+      key: 'supplier_name',
+      header: 'Supplier',
+      render: (entry) => <strong>{entry.supplier_name}</strong>,
+    },
+    {
+      key: 'qty',
+      header: 'Qty Inbound',
+      align: 'right',
+      render: (entry) => <span>{entry.qty}</span>,
+    },
+    {
+      key: 'cost_price',
+      header: 'Inbound Cost',
+      align: 'right',
+      render: (entry) => <strong>₹{entry.cost_price.toFixed(2)}</strong>,
+    },
+    {
+      key: 'sell_price',
+      header: 'New Sell Snap',
+      align: 'right',
+      render: (entry) => (
+        <span>
+          {entry.sell_price ? `₹${entry.sell_price.toFixed(2)}` : <span style={{ opacity: 0.5 }}>-</span>}
+        </span>
+      ),
+    },
+  ];
+
+  const isLoading = isPriceHistoryLoading || isPurchaseHistoryLoading || isSupplierSummaryLoading;
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={`Price History: ${productName}`}>
+    <Modal isOpen={isOpen} onClose={onClose} title={`Product Audit Logs: ${productName}`} maxWidth="650px">
       <div className={styles.modalBody}>
+        {/* Tab Header Selector */}
+        <div className={styles.modalTabs}>
+          <button
+            type="button"
+            className={`${styles.modalTab} ${activeTab === 'prices' ? styles.tabActive : ''}`}
+            onClick={() => setActiveTab('prices')}
+          >
+            🏷️ Price History
+          </button>
+          <button
+            type="button"
+            className={`${styles.modalTab} ${activeTab === 'suppliers' ? styles.tabActive : ''}`}
+            onClick={() => setActiveTab('suppliers')}
+          >
+            🚚 Supplier stock-in history
+          </button>
+        </div>
+
+        {/* Tab Body */}
         {isLoading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
             <Skeleton width="100%" height={40} />
-            <Skeleton width="100%" height={40} />
+            <Skeleton width="100%" height={100} />
             <Skeleton width="100%" height={40} />
           </div>
-        ) : (
+        ) : activeTab === 'prices' ? (
           <div className={styles.tableWrapper}>
             <DataTable
-              columns={columns}
-              data={history || []}
+              columns={priceColumns}
+              data={priceHistory || []}
               rowKey={(entry) => entry.id}
               emptyState={
                 <EmptyState
@@ -83,6 +149,49 @@ export function PriceHistoryModal({
                 />
               }
             />
+          </div>
+        ) : (
+          <div className={styles.suppliersTab}>
+            {/* Supplier Group Summary Card */}
+            {supplierSummary.length > 0 && (
+              <div className={styles.summarySection}>
+                <h4>Supplier Summary Statistics</h4>
+                <div className={styles.summaryGrid}>
+                  {supplierSummary.map((s: any, idx: number) => (
+                    <div key={idx} className={styles.summaryCard}>
+                      <span className={styles.summaryCardTitle}>{s.supplier_name}</span>
+                      <div className={styles.summaryCardMetrics}>
+                        <div>
+                          <span>Orders:</span> <strong>{s.order_count}</strong>
+                        </div>
+                        <div>
+                          <span>Total Qty:</span> <strong>{s.total_qty}</strong>
+                        </div>
+                        <div>
+                          <span>Avg Cost:</span> <strong>₹{s.avg_cost.toFixed(2)}</strong>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Inbound Purchases log */}
+            <div className={styles.tableWrapper}>
+              <h4>Purchase Log History</h4>
+              <DataTable
+                columns={purchaseColumns}
+                data={purchaseHistory}
+                rowKey={(entry: any) => `${entry.date}-${entry.supplier_name}-${entry.qty}-${entry.cost_price}`}
+                emptyState={
+                  <EmptyState
+                    heading="No Purchase Logs"
+                    subtext="No supplier purchase history recorded for this product."
+                  />
+                }
+              />
+            </div>
           </div>
         )}
       </div>

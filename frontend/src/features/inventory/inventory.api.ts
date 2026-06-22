@@ -36,4 +36,10 @@ export const inventoryApi = {
     };
   }) =>
     api.post<{ message: string; product: Product }>(`/inventory/${productId}/adjust`, data).then((r) => r.data),
+
+  getProductPurchaseHistory: (productId: string) =>
+    api.get<any[]>(`/products/${productId}/purchase-history`).then((r) => r.data),
+
+  getProductSupplierSummary: (productId: string) =>
+    api.get<any>(`/products/${productId}/supplier-summary`).then((r) => r.data),
 };

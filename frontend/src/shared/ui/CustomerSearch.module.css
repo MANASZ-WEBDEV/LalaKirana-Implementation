@@ -1,0 +1,238 @@
+.searchContainer {
+  position: relative;
+  width: 100%;
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: var(--color-white);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  padding: 0 0.85rem;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.inputWrapper:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 103, 99, 0.15);
+}
+
+.searchIcon {
+  font-size: 0.95rem;
+  color: var(--color-on-surface-variant);
+  margin-right: 0.5rem;
+  user-select: none;
+}
+
+.searchInput {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  padding: 0.75rem 0;
+  color: var(--color-on-surface);
+}
+
+.searchInput::placeholder {
+  color: var(--color-outline);
+}
+
+.clearBtn {
+  background: transparent;
+  border: none;
+  font-size: 0.85rem;
+  color: var(--color-outline);
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.clearBtn:hover {
+  background: var(--color-surface-container);
+  color: var(--color-on-surface);
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--color-white);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 100;
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+.resultsList {
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem 0;
+}
+
+.loadingState,
+.noResults {
+  padding: 1rem;
+  color: var(--color-on-surface-variant);
+  font-size: 0.9rem;
+  text-align: center;
+  font-family: var(--font-body);
+}
+
+.resultItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 1rem;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.resultItem:last-child {
+  border-bottom: none;
+}
+
+.activeItem {
+  background-color: var(--color-surface-container);
+}
+
+.customerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.customerName {
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: var(--color-on-surface);
+}
+
+.customerPhone {
+  font-size: 0.75rem;
+  color: var(--color-on-surface-variant);
+}
+
+.customerMeta {
+  text-align: right;
+}
+
+.customerBalance {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--color-on-surface-variant);
+}
+
+.hasBalance {
+  color: #ba1a1a; /* Khata/Due balance shown in red */
+  font-weight: 600;
+}
+
+.addNewOption {
+  color: var(--color-primary);
+  font-weight: 500;
+  background-color: rgba(0, 103, 99, 0.03);
+}
+
+.addNewOption:hover {
+  background-color: rgba(0, 103, 99, 0.08);
+}
+
+/* Add Customer Form inside Dropdown */
+.addForm {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background-color: var(--color-surface);
+}
+
+.addFormHeader {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-primary);
+  border-bottom: 1px solid var(--color-outline-variant);
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.formLabel {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-on-surface-variant);
+}
+
+.formInput {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  outline: none;
+  background: var(--color-white);
+  color: var(--color-on-surface);
+}
+
+.formInput:focus {
+  border-color: var(--color-primary);
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.cancelBtn {
+  background: transparent;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.8rem;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: var(--color-on-surface-variant);
+}
+
+.cancelBtn:hover {
+  background: var(--color-surface-container);
+}
+
+.submitBtn {
+  background-color: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.8rem;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: var(--color-white);
+  font-weight: 500;
+}
+
+.submitBtn:hover:not(:disabled) {
+  background-color: var(--color-primary-container);
+}
+
+.submitBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

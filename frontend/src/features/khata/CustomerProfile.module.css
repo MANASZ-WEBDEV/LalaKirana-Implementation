@@ -1,0 +1,272 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  gap: 1.5rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.backBtn {
+  background: transparent;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-outline);
+  cursor: pointer;
+  padding: 0.5rem;
+  transition: color var(--transition-fast);
+}
+
+.backBtn:hover {
+  color: var(--color-primary);
+}
+
+.headerActions {
+  display: flex;
+  gap: 1rem;
+}
+
+/* Profile Card Styling */
+.profileSection {
+  background: var(--color-white);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.profileCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.profileInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.customerName {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.75rem;
+  color: var(--color-primary);
+}
+
+.profileText {
+  font-size: 0.9rem;
+  color: var(--color-on-surface-variant);
+}
+
+.editBtn {
+  background: transparent;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.8rem;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  color: var(--color-on-surface-variant);
+}
+
+.editBtn:hover {
+  background-color: var(--color-surface-container);
+  color: var(--color-on-surface);
+}
+
+/* Edit profile form inside card */
+.editForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.editGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.textareaWrapper {
+  grid-column: span 2;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.textareaLabel {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-on-surface-variant);
+}
+
+.textarea {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  outline: none;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  resize: none;
+  background: var(--color-white);
+  color: var(--color-on-surface);
+}
+
+.textarea:focus {
+  border-color: var(--color-primary);
+}
+
+.editActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+/* Stats dashboard */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.statCard {
+  background: var(--color-white);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-outline);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.statVal {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+}
+
+.statValSub {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-on-surface);
+  padding: 0.25rem 0;
+}
+
+.outstandingCard {
+  background: linear-gradient(135deg, rgba(186, 26, 26, 0.02) 0%, rgba(186, 26, 26, 0.06) 100%);
+  border-color: rgba(186, 26, 26, 0.15);
+}
+
+.outstandingCard .statLabel {
+  color: #ba1a1a;
+}
+
+.outstandingCard .statVal {
+  color: #ba1a1a;
+}
+
+/* Table Area */
+.tableCard {
+  background: var(--color-white);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tableTitle {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--color-on-surface);
+}
+
+.purchaseAmt {
+  color: #ba1a1a; /* purchases in red (adds to debt) */
+  font-weight: 600;
+}
+
+.repayAmt {
+  color: #006763; /* repayments in green (subtracts from debt) */
+  font-weight: 600;
+}
+
+.loader,
+.emptyLedger,
+.errorView {
+  padding: 3rem;
+  text-align: center;
+  color: var(--color-outline);
+}
+
+.errorView {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--color-outline-variant);
+}
+
+.pageBtn {
+  background: var(--color-white);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.8rem;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: var(--color-on-surface);
+}
+
+.pageBtn:hover:not(:disabled) {
+  background-color: var(--color-surface-container);
+}
+
+.pageBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pageLabel {
+  font-size: 0.85rem;
+  color: var(--color-outline);
+}
+@media (max-width: 768px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .editGrid {
+    grid-template-columns: 1fr;
+  }
+  .textareaWrapper {
+    grid-column: span 1;
+  }
+}

@@ -47,6 +47,10 @@
   background-color: var(--color-surface);
 }
 
+.clickableTr:hover {
+  background-color: var(--color-surface-container);
+}
+
 .td {
   padding: 0.875rem 1rem;
   color: var(--color-on-surface);

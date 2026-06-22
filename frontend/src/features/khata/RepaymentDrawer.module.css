@@ -1,0 +1,99 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.customerSummary {
+  background-color: var(--color-surface-container);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: var(--color-on-surface-variant);
+}
+
+.outstandingAmt {
+  font-weight: 700;
+  color: var(--color-error);
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.formLabel {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-on-surface-variant);
+}
+
+.textarea {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  outline: none;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  resize: none;
+  background: var(--color-white);
+  color: var(--color-on-surface);
+}
+
+.textarea:focus {
+  border-color: var(--color-primary);
+}
+
+/* Balance Preview */
+.balancePreview {
+  border-top: 1px solid var(--color-outline-variant);
+  padding-top: 1rem;
+}
+
+.previewRow {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.balanceDue {
+  color: var(--color-error);
+  font-weight: 700;
+}
+
+.balanceCleared {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.cancelBtn {
+  flex: 1;
+}
+
+.submitBtn {
+  flex: 1.5;
+  background-color: var(--color-primary) !important;
+}
+
+.submitBtn:hover:not(:disabled) {
+  background-color: var(--color-primary-container) !important;
+}
