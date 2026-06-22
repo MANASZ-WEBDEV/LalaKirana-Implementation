@@ -45,3 +45,23 @@
   }
 }
 
+.editNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  color: var(--color-on-surface-variant);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.noticeIcon {
+  color: var(--color-primary);
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+
