@@ -7,7 +7,7 @@ export const CreateProductSchema = z.object({
     name: z.string().min(1, 'Product name is required'),
     category_id: z.string().regex(uuidRegex, 'Invalid category ID').optional().nullable(),
     price: z.number().min(0, 'Price must be non-negative'),
-    cost_price: z.number().min(0, 'Cost price must be non-negative').default(0),
+    cost_price: z.number().min(0, 'Cost price must be non-negative').optional().nullable(),
     stock_qty: z.number().int().min(0, 'Stock quantity must be non-negative').default(0),
     low_stock_threshold: z.number().int().min(0, 'Threshold must be non-negative').default(5),
     unit: z.enum(['kg', 'g', 'litre', 'ml', 'pcs']).default('pcs'),
