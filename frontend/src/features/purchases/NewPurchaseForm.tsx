@@ -77,7 +77,12 @@ export function NewPurchaseForm() {
       prev.map((item) => {
         if (item.product_id !== productId) return item;
 
-        let parsedVal: number | null = parseFloat(value);
+        let cleanValue = value;
+        if (field === 'qty') {
+          cleanValue = value.replace(/^0+(?=\d)/, '');
+        }
+
+        let parsedVal: number | null = parseFloat(cleanValue);
         if (isNaN(parsedVal)) {
           parsedVal = field === 'sell_price' ? null : 0;
         }
