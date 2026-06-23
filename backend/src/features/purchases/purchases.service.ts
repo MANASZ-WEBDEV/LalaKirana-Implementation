@@ -18,8 +18,10 @@ export const purchasesService = {
    * Get paginated supplier list with search.
    */
   getSuppliers: async (query: SupplierQuery) => {
-    const { page, limit, search, active_only } = query;
-    const offset = (page - 1) * limit;
+    const pageNum = Number(query.page) || 1;
+    const limitNum = Number(query.limit) || 50;
+    const { search, active_only } = query;
+    const offset = (pageNum - 1) * limitNum;
 
     let dbQuery = supabase
       .from('suppliers')
@@ -34,7 +36,7 @@ export const purchasesService = {
 
     const { data, error, count } = await dbQuery
       .order('name', { ascending: true })
-      .range(offset, offset + limit - 1);
+      .range(offset, offset + limitNum - 1);
 
     if (error) {
       throw new Error(`Failed to fetch suppliers: ${error.message}`);
@@ -46,8 +48,8 @@ export const purchasesService = {
         total_balance: Number(s.total_balance),
       })),
       total: count || 0,
-      page,
-      limit,
+      page: pageNum,
+      limit: limitNum,
     };
   },
 
@@ -210,8 +212,10 @@ export const purchasesService = {
    * Get paginated purchase orders with filters.
    */
   getPurchaseOrders: async (query: PurchaseQuery) => {
-    const { page, limit, supplier_id, date_from, date_to, payment_status, status } = query;
-    const offset = (page - 1) * limit;
+    const pageNum = Number(query.page) || 1;
+    const limitNum = Number(query.limit) || 15;
+    const { supplier_id, date_from, date_to, payment_status, status } = query;
+    const offset = (pageNum - 1) * limitNum;
 
     let dbQuery = supabase
       .from('purchase_orders')
@@ -225,7 +229,7 @@ export const purchasesService = {
 
     const { data, error, count } = await dbQuery
       .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+      .range(offset, offset + limitNum - 1);
 
     if (error) {
       throw new Error(`Failed to fetch purchase orders: ${error.message}`);
@@ -234,9 +238,9 @@ export const purchasesService = {
     return {
       purchaseOrders: data || [],
       total: count || 0,
-      page,
-      limit,
-      totalPages: Math.ceil((count || 0) / limit),
+      page: pageNum,
+      limit: limitNum,
+      totalPages: Math.ceil((count || 0) / limitNum),
     };
   },
 
@@ -377,8 +381,10 @@ export const purchasesService = {
    * Get paginated expense list with filters.
    */
   getExpenses: async (query: ExpenseQuery) => {
-    const { page, limit, category, date_from, date_to } = query;
-    const offset = (page - 1) * limit;
+    const pageNum = Number(query.page) || 1;
+    const limitNum = Number(query.limit) || 20;
+    const { category, date_from, date_to } = query;
+    const offset = (pageNum - 1) * limitNum;
 
     let dbQuery = supabase
       .from('expenses')
@@ -390,7 +396,7 @@ export const purchasesService = {
 
     const { data, error, count } = await dbQuery
       .order('expense_date', { ascending: false })
-      .range(offset, offset + limit - 1);
+      .range(offset, offset + limitNum - 1);
 
     if (error) {
       throw new Error(`Failed to fetch expenses: ${error.message}`);
@@ -399,9 +405,9 @@ export const purchasesService = {
     return {
       expenses: data || [],
       total: count || 0,
-      page,
-      limit,
-      totalPages: Math.ceil((count || 0) / limit),
+      page: pageNum,
+      limit: limitNum,
+      totalPages: Math.ceil((count || 0) / limitNum),
     };
   },
 };

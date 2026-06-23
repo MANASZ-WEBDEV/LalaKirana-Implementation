@@ -244,7 +244,7 @@ export const productsService = {
     const billsMap = new Map<string, string>();
     const poMap = new Map<string, string>();
 
-    const fetchPromises: Promise<any>[] = [];
+    const fetchPromises: PromiseLike<any>[] = [];
 
     if (billIds.length > 0) {
       fetchPromises.push(
