@@ -122,7 +122,11 @@ export function ProductSearch({
               <li
                 key={product.id}
                 className={`${styles.resultItem} ${index === activeIndex ? styles.activeItem : ''} ${
-                  product.stock_qty <= product.low_stock_threshold ? styles.lowStockItem : ''
+                  product.stock_qty > 0 && product.stock_qty <= product.low_stock_threshold
+                    ? styles.lowStockItem
+                    : ''
+                } ${
+                  product.stock_qty <= 0 ? styles.outOfStockBorder : ''
                 } ${!allowOutOfStock && product.stock_qty <= 0 ? styles.outOfStockItem : ''}`}
                 onClick={() => selectProduct(product)}
                 onMouseEnter={() => setActiveIndex(index)}
