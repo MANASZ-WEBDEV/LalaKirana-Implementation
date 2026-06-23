@@ -15,16 +15,16 @@ export function useKeyboardShortcuts({ onConfirm, onEscape }: ShortcutActions = 
       if (e.ctrlKey && !e.shiftKey && !e.altKey) {
         if (e.key >= '1' && e.key <= '9') {
           e.preventDefault();
-          const slotNum = parseInt(e.key, 10);
-          // Check if slot exists
-          if (slots.some((s) => s.id === slotNum)) {
-            setActiveSlotId(slotNum);
+          const slotIndex = parseInt(e.key, 10) - 1;
+          // Check if slot exists at this index
+          if (slotIndex >= 0 && slotIndex < slots.length) {
+            setActiveSlotId(slots[slotIndex].id);
           }
         } else if (e.key === '0') {
           e.preventDefault();
           // Digit 0 represents slot 10
-          if (slots.some((s) => s.id === 10)) {
-            setActiveSlotId(10);
+          if (slots.length >= 10) {
+            setActiveSlotId(slots[9].id);
           }
         }
       }

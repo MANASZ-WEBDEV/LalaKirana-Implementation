@@ -5,9 +5,10 @@ interface OrderSlotProps {
   id: number;
   isActive: boolean;
   onSelect: () => void;
+  displayNumber: number;
 }
 
-export function OrderSlot({ id, isActive, onSelect }: OrderSlotProps) {
+export function OrderSlot({ id, isActive, onSelect, displayNumber }: OrderSlotProps) {
   const { slots, removeSlot } = useBillingStore();
   const slot = slots.find((s) => s.id === id);
 
@@ -33,7 +34,7 @@ export function OrderSlot({ id, isActive, onSelect }: OrderSlotProps) {
       onClick={onSelect}
     >
       <div className={styles.slotHeader}>
-        <span className={styles.slotLabel}>Slot {id}</span>
+        <span className={styles.slotLabel}>Slot {displayNumber}</span>
         <span className={`${styles.modeBadge} ${isFull ? styles.fullBadge : styles.quickBadge}`}>
           {isFull ? 'Full' : 'Quick'}
         </span>
@@ -53,7 +54,7 @@ export function OrderSlot({ id, isActive, onSelect }: OrderSlotProps) {
           onClick={handleClose}
           className={styles.closeBtn}
           title="Close slot"
-          aria-label={`Close Slot ${id}`}
+          aria-label={`Close Slot ${displayNumber}`}
         >
           ✕
         </button>

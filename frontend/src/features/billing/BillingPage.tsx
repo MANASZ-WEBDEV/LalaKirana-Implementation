@@ -73,10 +73,11 @@ export default function BillingPage() {
           </div>
 
           <div className={styles.slotsList}>
-            {slots.map((slot) => (
+            {slots.map((slot, index) => (
               <OrderSlot
                 key={slot.id}
                 id={slot.id}
+                displayNumber={index + 1}
                 isActive={slot.id === activeSlotId}
                 onSelect={() => setActiveSlotId(slot.id)}
               />
