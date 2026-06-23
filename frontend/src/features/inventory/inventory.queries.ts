@@ -10,6 +10,7 @@ export const inventoryKeys = {
   priceHistory: (id: string) => [...inventoryKeys.all, 'priceHistory', id] as const,
   purchaseHistory: (id: string) => [...inventoryKeys.all, 'purchaseHistory', id] as const,
   supplierSummary: (id: string) => [...inventoryKeys.all, 'supplierSummary', id] as const,
+  stockLog: (id: string) => [...inventoryKeys.all, 'stockLog', id] as const,
 };
 
 export function useProducts(filters?: ProductFilters) {
@@ -97,6 +98,14 @@ export function useProductSupplierSummary(id: string, options?: { enabled?: bool
   return useQuery({
     queryKey: inventoryKeys.supplierSummary(id),
     queryFn: () => inventoryApi.getProductSupplierSummary(id),
+    ...options,
+  });
+}
+
+export function useProductStockLog(id: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: inventoryKeys.stockLog(id),
+    queryFn: () => inventoryApi.getProductStockLog(id),
     ...options,
   });
 }

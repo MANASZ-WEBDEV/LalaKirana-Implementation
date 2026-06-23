@@ -1,5 +1,5 @@
 import { api } from '@/shared/api/axios';
-import type { Product, Category, PriceHistoryEntry, ProductFilters } from '@/types/product.types';
+import type { Product, Category, PriceHistoryEntry, ProductFilters, StockLogEntry } from '@/types/product.types';
 
 export const inventoryApi = {
   getProducts: (filters?: ProductFilters) =>
@@ -42,4 +42,7 @@ export const inventoryApi = {
 
   getProductSupplierSummary: (productId: string) =>
     api.get<any>(`/products/${productId}/supplier-summary`).then((r) => r.data),
+
+  getProductStockLog: (productId: string) =>
+    api.get<StockLogEntry[]>(`/products/${productId}/stock-log`).then((r) => r.data),
 };

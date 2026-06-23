@@ -34,3 +34,18 @@ export interface ProductFilters {
   search?: string;
   low_stock?: boolean;
 }
+
+export interface StockLogEntry {
+  id: string;
+  product_id: string;
+  change_qty: number;
+  reason: 'bill_confirm' | 'eod_entry' | 'manual_adjust' | 'damage' | 'audit' | 'returned' | 'purchase_order' | 'bill_cancel' | 'purchase_cancel';
+  bill_id: string | null;
+  bill_number: string | null;
+  purchase_order_id: string | null;
+  po_reference: string | null;
+  note: string | null;
+  created_by: string | null;
+  created_by_name: string | null;
+  created_at: string;
+}

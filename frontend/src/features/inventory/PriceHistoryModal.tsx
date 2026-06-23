@@ -4,8 +4,13 @@ import { DataTable } from '@/shared/ui/DataTable';
 import type { ColumnConfig } from '@/shared/ui/DataTable';
 import { Skeleton } from '@/shared/ui/Skeleton';
 import { EmptyState } from '@/shared/ui/EmptyState';
-import { usePriceHistory, useProductPurchaseHistory, useProductSupplierSummary } from './inventory.queries';
-import type { PriceHistoryEntry } from '@/types/product.types';
+import {
+  usePriceHistory,
+  useProductPurchaseHistory,
+  useProductSupplierSummary,
+  useProductStockLog,
+} from './inventory.queries';
+import type { PriceHistoryEntry, StockLogEntry } from '@/types/product.types';
 import styles from './PriceHistoryModal.module.css';
 
 interface PriceHistoryModalProps {
@@ -15,7 +20,7 @@ interface PriceHistoryModalProps {
   onClose: () => void;
 }
 
-type TabId = 'prices' | 'suppliers';
+type TabId = 'prices' | 'stock' | 'suppliers';
 
 export function PriceHistoryModal({
   productId,
@@ -27,6 +32,7 @@ export function PriceHistoryModal({
 
   // Queries
   const { data: priceHistory, isLoading: isPriceHistoryLoading } = usePriceHistory(productId, { enabled: isOpen && activeTab === 'prices' });
+  const { data: stockHistory = [], isLoading: isStockHistoryLoading } = useProductStockLog(productId, { enabled: isOpen && activeTab === 'stock' });
   const { data: purchaseHistory = [], isLoading: isPurchaseHistoryLoading } = useProductPurchaseHistory(productId, { enabled: isOpen && activeTab === 'suppliers' });
   const { data: supplierSummary = [], isLoading: isSupplierSummaryLoading } = useProductSupplierSummary(productId, { enabled: isOpen && activeTab === 'suppliers' });
 
@@ -70,6 +76,72 @@ export function PriceHistoryModal({
     },
   ];
 
+  // Column definitions for Stock Log
+  const stockColumns: ColumnConfig<StockLogEntry>[] = [
+    {
+      key: 'created_at',
+      header: 'Date & Time',
+      render: (entry) => {
+        const date = new Date(entry.created_at);
+        return (
+          <span className={styles.date}>
+            {date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}{' '}
+            {date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}
+          </span>
+        );
+      },
+    },
+    {
+      key: 'change_qty',
+      header: 'Change Qty',
+      align: 'right',
+      render: (entry) => {
+        const isPositive = entry.change_qty > 0;
+        return (
+          <span className={isPositive ? styles.qtyPositive : styles.qtyNegative}>
+            {isPositive ? `+${entry.change_qty}` : entry.change_qty}
+          </span>
+        );
+      },
+    },
+    {
+      key: 'reason',
+      header: 'Reason',
+      render: (entry) => {
+        const reasonLabels: Record<string, string> = {
+          bill_confirm: 'POS Checkout',
+          bill_cancel: 'Bill Cancelled',
+          eod_entry: 'EOD Sync',
+          manual_adjust: 'Manual Adjustment',
+          damage: 'Damaged / Defective',
+          audit: 'Audit Correction',
+          returned: 'Returned Items',
+          purchase_order: 'Inbound Stock (PO)',
+          purchase_cancel: 'PO Cancelled',
+        };
+        return <span className={styles.reasonBadge}>{reasonLabels[entry.reason] || entry.reason}</span>;
+      },
+    },
+    {
+      key: 'note',
+      header: 'Reference / Note',
+      render: (entry) => {
+        if (entry.bill_number) {
+          return <span className={styles.reference}>Bill #{entry.bill_number}</span>;
+        }
+        if (entry.po_reference) {
+          return <span className={styles.reference}>PO Ref: {entry.po_reference}</span>;
+        }
+        return <span className={styles.note}>{entry.note || <span style={{ opacity: 0.5 }}>-</span>}</span>;
+      },
+    },
+    {
+      key: 'created_by_name',
+      header: 'Handled By',
+      render: (entry) => <span className={styles.user}>{entry.created_by_name || 'System'}</span>,
+    },
+  ];
+
   // Column definitions for Supplier History
   const purchaseColumns: ColumnConfig<any>[] = [
     {
@@ -106,7 +178,11 @@ export function PriceHistoryModal({
     },
   ];
 
-  const isLoading = isPriceHistoryLoading || isPurchaseHistoryLoading || isSupplierSummaryLoading;
+  const isLoading =
+    isPriceHistoryLoading ||
+    isStockHistoryLoading ||
+    isPurchaseHistoryLoading ||
+    isSupplierSummaryLoading;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={`Product Audit Logs: ${productName}`} maxWidth="650px">
@@ -119,6 +195,13 @@ export function PriceHistoryModal({
             onClick={() => setActiveTab('prices')}
           >
             🏷️ Price History
+          </button>
+          <button
+            type="button"
+            className={`${styles.modalTab} ${activeTab === 'stock' ? styles.tabActive : ''}`}
+            onClick={() => setActiveTab('stock')}
+          >
+            📈 Stock Logs
           </button>
           <button
             type="button"
@@ -146,6 +229,20 @@ export function PriceHistoryModal({
                 <EmptyState
                   heading="No Price Logs"
                   subtext="No price updates have been recorded for this product yet."
+                />
+              }
+            />
+          </div>
+        ) : activeTab === 'stock' ? (
+          <div className={styles.tableWrapper}>
+            <DataTable
+              columns={stockColumns}
+              data={stockHistory || []}
+              rowKey={(entry) => entry.id}
+              emptyState={
+                <EmptyState
+                  heading="No Stock Logs"
+                  subtext="No stock movements have been recorded for this product yet."
                 />
               }
             />
