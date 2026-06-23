@@ -145,7 +145,7 @@ export function ReceiptPreview({ bill }: ReceiptPreviewProps) {
         {/* Footer */}
         <div className={styles.footer}>
           <p className={styles.footerText}>{footerMessage}</p>
-          <p className={styles.footerSub}>LalaKirana shop tracker</p>
+          <p className={styles.footerSub}>LalaKirana Khandwa, Madhya Pradesh</p>
         </div>
       </div>
     </div>

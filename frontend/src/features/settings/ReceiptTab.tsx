@@ -213,7 +213,7 @@ function ReceiptPreviewOverride({ bill, overrideSettings }: { bill: any; overrid
 
         <div className={styles.footer}>
           <p className={styles.footerText}>{overrideSettings.receipt_footer || 'Thank you! Visit again'}</p>
-          <p className={styles.footerSub}>LalaKirana shop tracker</p>
+          <p className={styles.footerSub}>LalaKirana Khandwa, Madhya Pradesh</p>
         </div>
       </div>
     </div>
