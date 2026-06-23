@@ -80,7 +80,7 @@ export function ProductActionMenu({
             className={styles.menuItem}
             role="menuitem"
           >
-            📋 Price History
+            📋 Price & Audit History
           </button>
           {isOwner && (
             <button
