@@ -69,6 +69,9 @@ SELECT stock_qty FROM products WHERE id = v_product_id FOR UPDATE;
 * **If Status is `'paid'`**: The cash drawer expected balance is updated immediately. No customer record is mandatory.
 * **If Status is `'khata'`**: The customer account is locked (`FOR UPDATE`). A `khata_entries` row of type `'purchase'` is added, and the customer's `total_balance` is incremented.
 
+> [!TIP]
+> **Viewing Stock Log Movements in the UI**: Store owners and staff can view the audit trail of every stock movement directly in the app. Go to the **Inventory** page, click the actions button (`···`) next to any product, select **"View Price & Audit History"**, and navigate to the **"Stock Logs"** tab inside the modal. This lists dates, quantity changes (+/-), reason categories (e.g., POS Checkout, EOD Sync, Manual Adjustment, Inbound Purchase), reference numbers (Bill # or PO Ref), and the handling cashier's username.
+
 #### 2. Atomic Bill Cancellation (`cancel_bill_transaction`)
 Only store `owners` can cancel confirmed bills. Cancelling triggers an atomic restoration script:
 * Reverts bill status to `'cancelled'`.
