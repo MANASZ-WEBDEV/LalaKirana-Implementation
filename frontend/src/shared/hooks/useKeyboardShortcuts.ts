@@ -26,12 +26,14 @@ export function useKeyboardShortcuts({ onConfirm, onEscape }: ShortcutActions = 
           if (slots.some((s) => s.id === 10)) {
             setActiveSlotId(10);
           }
-        } else if (e.key.toLowerCase() === 'n') {
-          // Ctrl+N: Add new slot
-          e.preventDefault();
-          if (slots.length < 10) {
-            addSlot();
-          }
+        }
+      }
+
+      // Alt+N: Add new slot (avoiding Ctrl+N browser hijack)
+      if (e.altKey && !e.ctrlKey && !e.shiftKey && e.key.toLowerCase() === 'n') {
+        e.preventDefault();
+        if (slots.length < 10) {
+          addSlot();
         }
       }
 

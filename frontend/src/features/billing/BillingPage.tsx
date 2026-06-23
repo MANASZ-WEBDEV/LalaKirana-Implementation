@@ -88,7 +88,7 @@ export default function BillingPage() {
             className={styles.addSlotBtn}
             onClick={addSlot}
             disabled={slots.length >= 10}
-            title="Create new slot (Ctrl+N)"
+            title="Create new slot (Alt+N)"
           >
             ➕ New Order Slot
           </button>
