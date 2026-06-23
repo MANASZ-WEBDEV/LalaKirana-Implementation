@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDashboardStats, useLowStockProducts, useRecentPriceChanges } from './dashboard.queries';
 import { StatCard } from '@/shared/ui/StatCard';
@@ -6,8 +5,6 @@ import { LowStockAlert } from './LowStockAlert';
 import { RecentPriceChanges } from './RecentPriceChanges';
 import { Skeleton } from '@/shared/ui/Skeleton';
 import { Button } from '@/shared/ui/Button';
-import { StockAdjustDrawer } from '../inventory/StockAdjustDrawer';
-import type { LowStockProduct } from '@/types/dashboard.types';
 import styles from './DashboardPage.module.css';
 
 export default function DashboardPage() {
@@ -15,9 +12,6 @@ export default function DashboardPage() {
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
   const { data: lowStock, isLoading: lowStockLoading } = useLowStockProducts();
   const { data: priceChanges, isLoading: priceChangesLoading } = useRecentPriceChanges(8);
-
-  // Drawer state for adjusting stock
-  const [adjustingProduct, setAdjustingProduct] = useState<LowStockProduct | null>(null);
 
   const isLoading = statsLoading || lowStockLoading || priceChangesLoading;
 
@@ -101,19 +95,12 @@ export default function DashboardPage() {
       <div className={styles.mainGrid}>
         <LowStockAlert
           products={lowStock || []}
-          onAdjustStock={(p) => setAdjustingProduct(p)}
+          onRestock={(p) => navigate(`/purchases/new?restockProductId=${p.id}`)}
         />
         <RecentPriceChanges
           changes={priceChanges || []}
         />
       </div>
-
-      {/* Adjust Stock Drawer */}
-      <StockAdjustDrawer
-        isOpen={adjustingProduct !== null}
-        onClose={() => setAdjustingProduct(null)}
-        product={adjustingProduct}
-      />
     </div>
   );
 }

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useConfirmPurchase } from './purchases.queries';
 import { SupplierSelect } from './SupplierSelect';
 import { ProductSearch } from '@/shared/ui/ProductSearch';
@@ -7,6 +7,7 @@ import { Input } from '@/shared/ui/Input';
 import { Select } from '@/shared/ui/Select';
 import { Button } from '@/shared/ui/Button';
 import { useToastStore } from '@/shared/store/toastStore';
+import { useProduct } from '@/features/inventory/inventory.queries';
 import type { Product } from '@/types/product.types';
 import type { Supplier } from '@/types/purchases.types';
 import styles from './NewPurchaseForm.module.css';
@@ -23,8 +24,20 @@ interface PurchaseOrderItemInput {
 
 export function NewPurchaseForm() {
   const navigate = useNavigate();
+  const location = useLocation();
   const addToast = useToastStore((s) => s.addToast);
   const confirmPurchaseMutation = useConfirmPurchase();
+
+  // Parse restock product ID from URL query parameters
+  const searchParams = new URLSearchParams(location.search);
+  const restockProductId = searchParams.get('restockProductId') || searchParams.get('productId');
+
+  // Query details if preloaded ID exists
+  const { data: preloadedProduct } = useProduct(restockProductId || '', {
+    enabled: !!restockProductId,
+  });
+
+  const [hasAddedPreloaded, setHasAddedPreloaded] = useState(false);
 
   // Form Header States
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
@@ -33,6 +46,24 @@ export function NewPurchaseForm() {
 
   // Cart/Items State
   const [items, setItems] = useState<PurchaseOrderItemInput[]>([]);
+
+  // Effect to populate item if navigated from Restock trigger
+  useEffect(() => {
+    if (preloadedProduct && !hasAddedPreloaded) {
+      setItems([
+        {
+          product_id: preloadedProduct.id,
+          product_name: preloadedProduct.name,
+          qty: 1,
+          cost_price: preloadedProduct.cost_price,
+          sell_price: null,
+          unit: preloadedProduct.unit,
+          current_sell_price: preloadedProduct.price,
+        },
+      ]);
+      setHasAddedPreloaded(true);
+    }
+  }, [preloadedProduct, hasAddedPreloaded]);
 
   // Footer/Payment States
   const [paymentStatus, setPaymentStatus] = useState<'paid' | 'credit' | 'partial'>('paid');

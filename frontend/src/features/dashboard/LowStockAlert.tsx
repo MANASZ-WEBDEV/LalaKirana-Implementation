@@ -8,10 +8,10 @@ import styles from './LowStockAlert.module.css';
 
 interface LowStockAlertProps {
   products: LowStockProduct[];
-  onAdjustStock: (product: LowStockProduct) => void;
+  onRestock: (product: LowStockProduct) => void;
 }
 
-export function LowStockAlert({ products, onAdjustStock }: LowStockAlertProps) {
+export function LowStockAlert({ products, onRestock }: LowStockAlertProps) {
   const columns: ColumnConfig<LowStockProduct>[] = [
     {
       key: 'name',
@@ -47,10 +47,10 @@ export function LowStockAlert({ products, onAdjustStock }: LowStockAlertProps) {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => onAdjustStock(p)}
+          onClick={() => onRestock(p)}
           className={styles.adjustBtn}
         >
-          Adjust Stock
+          🛒 Restock
         </Button>
       ),
     },
