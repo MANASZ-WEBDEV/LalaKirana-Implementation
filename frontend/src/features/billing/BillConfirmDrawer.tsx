@@ -187,7 +187,10 @@ export function BillConfirmDrawer({ isOpen, onClose, statusMode }: BillConfirmDr
 
   // Payment calculations
   const cashNum = parseFloat(cashReceived) || 0;
-  const changeDue = cashNum > total ? cashNum - total : 0;
+  const changeDue = cashNum - total;
+  const isPaidDisabled =
+    statusMode === 'paid' &&
+    (cashReceived.trim() === '' || isNaN(parseFloat(cashReceived)) || changeDue < 0);
 
   return (
     <Drawer
@@ -298,8 +301,18 @@ export function BillConfirmDrawer({ isOpen, onClose, statusMode }: BillConfirmDr
                   </div>
                   <div className={styles.changeDueRow}>
                     <span>Change Due:</span>
-                    <span className={changeDue > 0 ? styles.changeActive : ''}>
-                      ₹{changeDue.toFixed(2)}
+                    <span
+                      className={
+                        changeDue > 0
+                          ? styles.changeActive
+                          : changeDue < 0
+                          ? styles.changeNegative
+                          : ''
+                      }
+                    >
+                      {changeDue < 0
+                        ? `-₹${Math.abs(changeDue).toFixed(2)}`
+                        : `₹${changeDue.toFixed(2)}`}
                     </span>
                   </div>
                 </div>
@@ -337,7 +350,8 @@ export function BillConfirmDrawer({ isOpen, onClose, statusMode }: BillConfirmDr
                 onClick={handleConfirm}
                 disabled={
                   confirmBillMutation.isPending ||
-                  (statusMode === 'khata' && !selectedCustomer)
+                  (statusMode === 'khata' && !selectedCustomer) ||
+                  isPaidDisabled
                 }
                 className={styles.confirmBtn}
               >
