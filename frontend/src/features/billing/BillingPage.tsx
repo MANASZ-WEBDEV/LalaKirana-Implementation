@@ -51,7 +51,7 @@ export default function BillingPage() {
       {/* Page Header */}
       <header className={styles.header}>
         <div className={styles.titleSection}>
-          <h1 className={styles.title}>Register Checkout</h1>
+          <h1 className={styles.title}>Billing Counter</h1>
           <p className={styles.subtitle}>
             Process transactions, record ledger updates, and print customer invoices.
           </p>
