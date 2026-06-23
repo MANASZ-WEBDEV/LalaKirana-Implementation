@@ -79,8 +79,8 @@ export function SupplierSelect({ onSelect, selectedSupplier, placeholder = 'Sear
     setActiveIndex(-1);
   };
 
-  const handleCreateSupplier = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCreateSupplier = async (e?: React.FormEvent | React.MouseEvent) => {
+    if (e) e.preventDefault();
     if (!query.trim()) return;
 
     try {
@@ -98,6 +98,13 @@ export function SupplierSelect({ onSelect, selectedSupplier, placeholder = 'Sear
       setNewAddress('');
     } catch (err: any) {
       addToast('error', err.message || 'Failed to create supplier');
+    }
+  };
+
+  const handleInputKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleCreateSupplier();
     }
   };
 
@@ -140,7 +147,7 @@ export function SupplierSelect({ onSelect, selectedSupplier, placeholder = 'Sear
       {isOpen && (
         <div className={styles.dropdownMenu}>
           {showAddForm ? (
-            <form onSubmit={handleCreateSupplier} className={styles.addForm}>
+            <div className={styles.addForm}>
               <div className={styles.addFormHeader}>Add New Supplier</div>
               <div className={styles.formGroup}>
                 <label className={styles.formLabel}>Supplier Name *</label>
@@ -149,6 +156,7 @@ export function SupplierSelect({ onSelect, selectedSupplier, placeholder = 'Sear
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   className={styles.formInput}
+                  onKeyDown={handleInputKeyDown}
                   required
                 />
               </div>
@@ -159,6 +167,7 @@ export function SupplierSelect({ onSelect, selectedSupplier, placeholder = 'Sear
                   value={newPhone}
                   onChange={(e) => setNewPhone(e.target.value)}
                   className={styles.formInput}
+                  onKeyDown={handleInputKeyDown}
                   placeholder="e.g. 9876543210"
                 />
               </div>
@@ -169,6 +178,7 @@ export function SupplierSelect({ onSelect, selectedSupplier, placeholder = 'Sear
                   value={newAddress}
                   onChange={(e) => setNewAddress(e.target.value)}
                   className={styles.formInput}
+                  onKeyDown={handleInputKeyDown}
                   placeholder="Address details"
                 />
               </div>
@@ -181,14 +191,15 @@ export function SupplierSelect({ onSelect, selectedSupplier, placeholder = 'Sear
                   Cancel
                 </button>
                 <button
-                  type="submit"
+                  type="button"
+                  onClick={handleCreateSupplier}
                   disabled={createSupplierMutation.isPending}
                   className={styles.submitBtn}
                 >
                   {createSupplierMutation.isPending ? 'Saving...' : 'Create & Select'}
                 </button>
               </div>
-            </form>
+            </div>
           ) : (
             <ul className={styles.resultsList}>
               {isLoading ? (
