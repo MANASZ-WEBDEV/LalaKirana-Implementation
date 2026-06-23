@@ -90,6 +90,8 @@ export function CustomerSearch({
       console.log('CustomerSearch Enter:', { activeIndex, customersCount: customers.length });
       if (activeIndex >= 0 && activeIndex < customers.length) {
         selectCustomer(customers[activeIndex]);
+      } else if (customers.length > 0) {
+        selectCustomer(customers[0]);
       } else if (activeIndex === customers.length && query.trim()) {
         setShowAddForm(true);
       }

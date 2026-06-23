@@ -243,11 +243,12 @@ export function BillConfirmDrawer({ isOpen, onClose, statusMode }: BillConfirmDr
             {statusMode === 'khata' && (
               <div className={styles.section}>
                 <label className={styles.sectionLabel}>Select Khata Customer</label>
-                <CustomerSearch
-                  onSelect={handleSelectCustomer}
-                  placeholder="Search ledger accounts..."
-                />
-                {selectedCustomer && (
+                {!selectedCustomer ? (
+                  <CustomerSearch
+                    onSelect={handleSelectCustomer}
+                    placeholder="Search ledger accounts..."
+                  />
+                ) : (
                   <div className={styles.selectedCustomerCard}>
                     <div className={styles.selectedCustomerHeader}>
                       <strong>{selectedCustomer.name}</strong>
@@ -306,11 +307,12 @@ export function BillConfirmDrawer({ isOpen, onClose, statusMode }: BillConfirmDr
                 {/* Optional Customer Link for Paid Bills */}
                 <div className={styles.customerLinkWrapper}>
                   <label className={styles.sectionLabel}>Link Customer to Receipt (Optional)</label>
-                  <CustomerSearch
-                    onSelect={handleSelectCustomer}
-                    placeholder="Search customer name..."
-                  />
-                  {selectedCustomer && (
+                  {!selectedCustomer ? (
+                    <CustomerSearch
+                      onSelect={handleSelectCustomer}
+                      placeholder="Search customer name..."
+                    />
+                  ) : (
                     <div className={styles.linkedCustomerTag}>
                       Linked: {selectedCustomer.name}
                       <button
