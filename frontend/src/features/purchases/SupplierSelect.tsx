@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSuppliers, useCreateSupplier } from './purchases.queries';
-import { useDebounce } from '@/shared/hooks/useDebounce';
 import type { Supplier } from '@/types/purchases.types';
 import { useToastStore } from '@/shared/store/toastStore';
 import styles from './SupplierSelect.module.css';
@@ -19,23 +18,40 @@ export function SupplierSelect({ onSelect, selectedSupplier, placeholder = 'Sear
   const [newPhone, setNewPhone] = useState('');
   const [newAddress, setNewAddress] = useState('');
 
-  const debouncedQuery = useDebounce(query, 300);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const addToast = useToastStore((s) => s.addToast);
 
-  // Fetch suppliers list
+  // Fetch all active suppliers on mount (cached up to 30s)
   const { data, isLoading } = useSuppliers({
-    search: debouncedQuery.trim() || undefined,
+    limit: 100,
+    active_only: true,
   });
 
   const createSupplierMutation = useCreateSupplier();
   const suppliers = data?.suppliers || [];
 
+  // Filter suppliers in client-side, showing up to 10 matching results
+  const filteredSuppliers = suppliers
+    .filter((supplier) => {
+      const searchStr = query.toLowerCase().trim();
+      if (!searchStr) return true;
+      return (
+        supplier.name.toLowerCase().includes(searchStr) ||
+        (supplier.phone && supplier.phone.includes(searchStr))
+      );
+    })
+    .slice(0, 10);
+
   // Synchronize input query with the parent-provided selectedSupplier object
   useEffect(() => {
     setQuery(selectedSupplier?.name || '');
   }, [selectedSupplier]);
+
+  // Reset active index when the filtered list size or query changes
+  useEffect(() => {
+    setActiveIndex(-1);
+  }, [filteredSuppliers.length, query]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -54,16 +70,16 @@ export function SupplierSelect({ onSelect, selectedSupplier, placeholder = 'Sear
 
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      const maxIndex = suppliers.length;
+      const maxIndex = filteredSuppliers.length;
       setActiveIndex((prev) => (prev < maxIndex ? prev + 1 : prev));
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       setActiveIndex((prev) => (prev > 0 ? prev - 1 : prev));
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      if (activeIndex >= 0 && activeIndex < suppliers.length) {
-        selectSupplier(suppliers[activeIndex]);
-      } else if (activeIndex === suppliers.length && query.trim()) {
+      if (activeIndex >= 0 && activeIndex < filteredSuppliers.length) {
+        selectSupplier(filteredSuppliers[activeIndex]);
+      } else if (activeIndex === filteredSuppliers.length && query.trim()) {
         setShowAddForm(true);
       }
     } else if (e.key === 'Escape') {
@@ -124,7 +140,10 @@ export function SupplierSelect({ onSelect, selectedSupplier, placeholder = 'Sear
             setActiveIndex(-1);
             setShowAddForm(false);
           }}
-          onFocus={() => setIsOpen(true)}
+          onFocus={(e) => {
+            setIsOpen(true);
+            e.target.select();
+          }}
           onKeyDown={handleKeyDown}
         />
         {query && (
@@ -203,10 +222,10 @@ export function SupplierSelect({ onSelect, selectedSupplier, placeholder = 'Sear
           ) : (
             <ul className={styles.resultsList}>
               {isLoading ? (
-                <li className={styles.loadingState}>Searching suppliers...</li>
+                <li className={styles.loadingState}>Loading suppliers...</li>
               ) : (
                 <>
-                  {suppliers.map((supplier, index) => (
+                  {filteredSuppliers.map((supplier, index) => (
                     <li
                       key={supplier.id}
                       className={`${styles.resultItem} ${index === activeIndex ? styles.activeItem : ''}`}
@@ -227,16 +246,16 @@ export function SupplierSelect({ onSelect, selectedSupplier, placeholder = 'Sear
                   {query.trim().length > 0 && (
                     <li
                       className={`${styles.resultItem} ${styles.addNewOption} ${
-                        activeIndex === suppliers.length ? styles.activeItem : ''
+                        activeIndex === filteredSuppliers.length ? styles.activeItem : ''
                       }`}
                       onClick={() => setShowAddForm(true)}
-                      onMouseEnter={() => setActiveIndex(suppliers.length)}
+                      onMouseEnter={() => setActiveIndex(filteredSuppliers.length)}
                     >
                       <span>➕ Add new supplier <strong>"{query}"</strong></span>
                     </li>
                   )}
-                  {suppliers.length === 0 && !query.trim() && (
-                    <li className={styles.noResults}>Type to search suppliers...</li>
+                  {filteredSuppliers.length === 0 && !query.trim() && (
+                    <li className={styles.noResults}>No active suppliers. Type to add a new one.</li>
                   )}
                 </>
               )}
@@ -247,3 +266,4 @@ export function SupplierSelect({ onSelect, selectedSupplier, placeholder = 'Sear
     </div>
   );
 }
+
