@@ -8,9 +8,15 @@ interface ProductSearchProps {
   onSelect: (product: Product) => void;
   placeholder?: string;
   autoFocus?: boolean;
+  allowOutOfStock?: boolean;
 }
 
-export function ProductSearch({ onSelect, placeholder = 'Search product by name...', autoFocus = false }: ProductSearchProps) {
+export function ProductSearch({
+  onSelect,
+  placeholder = 'Search product by name...',
+  autoFocus = false,
+  allowOutOfStock = false,
+}: ProductSearchProps) {
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -63,7 +69,7 @@ export function ProductSearch({ onSelect, placeholder = 'Search product by name.
   };
 
   const selectProduct = (product: Product) => {
-    if (product.stock_qty <= 0) return;
+    if (!allowOutOfStock && product.stock_qty <= 0) return;
     onSelect(product);
     setQuery('');
     setIsOpen(false);

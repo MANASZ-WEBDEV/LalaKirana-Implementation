@@ -195,7 +195,7 @@ export function NewPurchaseForm() {
         {/* Add Products Selection */}
         <div className={styles.searchCard}>
           <label className={styles.fieldLabel}>Search & Add Products</label>
-          <ProductSearch onSelect={handleSelectProduct} placeholder="Type product name to add to order..." />
+          <ProductSearch onSelect={handleSelectProduct} placeholder="Type product name to add to order..." allowOutOfStock={true} />
         </div>
 
         {/* Inbound Items Table List */}
