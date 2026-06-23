@@ -236,5 +236,14 @@ describe('Products Endpoints', () => {
 
       expect(checkRes.body.some((p: any) => p.id === testProductId)).toBe(false);
     }, 20000);
+
+    it('should fetch stock log for a product successfully', async () => {
+      const res = await request(app)
+        .get(`/api/v1/products/${testProductId}/stock-log`)
+        .set('Authorization', `Bearer ${ownerToken}`);
+
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body)).toBe(true);
+    });
   });
 });

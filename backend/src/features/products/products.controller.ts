@@ -112,4 +112,15 @@ export const productsController = {
       return res.status(500).json({ message: err.message || 'Failed to load price history' });
     }
   },
+
+  getStockLog: async (req: Request, res: Response) => {
+    try {
+      const id = req.params.id as string;
+      const log = await productsService.getStockHistory(id);
+      return res.json(log);
+    } catch (err: any) {
+      console.error('Get stock log error:', err);
+      return res.status(500).json({ message: err.message || 'Failed to load stock log' });
+    }
+  },
 };

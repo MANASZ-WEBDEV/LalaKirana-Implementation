@@ -216,4 +216,76 @@ export const productsService = {
       changed_at: entry.changed_at,
     }));
   },
+
+  getStockHistory: async (productId: string) => {
+    // 1. Fetch raw stock logs
+    const { data: logs, error } = await supabase
+      .from('stock_log')
+      .select(`
+        *,
+        users:created_by ( name )
+      `)
+      .eq('product_id', productId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      throw new Error(`Failed to fetch stock log: ${error.message}`);
+    }
+
+    if (!logs || logs.length === 0) {
+      return [];
+    }
+
+    // 2. Extract bill_ids and purchase_order_ids
+    const billIds = logs.map(l => l.bill_id).filter(Boolean) as string[];
+    const poIds = logs.map(l => l.purchase_order_id).filter(Boolean) as string[];
+
+    // 3. Fetch bills and purchase orders in parallel if any exist
+    const billsMap = new Map<string, string>();
+    const poMap = new Map<string, string>();
+
+    const fetchPromises: Promise<any>[] = [];
+
+    if (billIds.length > 0) {
+      fetchPromises.push(
+        supabase
+          .from('bills')
+          .select('id, bill_number')
+          .in('id', billIds)
+          .then(({ data }) => {
+            (data || []).forEach(b => billsMap.set(b.id, b.bill_number));
+          })
+      );
+    }
+
+    if (poIds.length > 0) {
+      fetchPromises.push(
+        supabase
+          .from('purchase_orders')
+          .select('id, reference_number')
+          .in('id', poIds)
+          .then(({ data }) => {
+            (data || []).forEach(po => poMap.set(po.id, po.reference_number));
+          })
+      );
+    }
+
+    await Promise.all(fetchPromises);
+
+    // 4. Map them together
+    return logs.map((entry: any) => ({
+      id: entry.id,
+      product_id: entry.product_id,
+      change_qty: Number(entry.change_qty),
+      reason: entry.reason,
+      bill_id: entry.bill_id,
+      bill_number: entry.bill_id ? (billsMap.get(entry.bill_id) || null) : null,
+      purchase_order_id: entry.purchase_order_id,
+      po_reference: entry.purchase_order_id ? (poMap.get(entry.purchase_order_id) || null) : null,
+      note: entry.note,
+      created_by: entry.created_by,
+      created_by_name: entry.users?.name || null,
+      created_at: entry.created_at,
+    }));
+  },
 };

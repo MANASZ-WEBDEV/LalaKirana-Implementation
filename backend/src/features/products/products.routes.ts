@@ -29,6 +29,7 @@ router.get('/:id', authMiddleware, productsController.getProductById);
 router.put('/:id', authMiddleware, validateRequest(UpdateProductSchema), productsController.updateProduct);
 router.delete('/:id', authMiddleware, requireOwner, productsController.softDeleteProduct);
 router.get('/:id/price-history', authMiddleware, productsController.getPriceHistory);
+router.get('/:id/stock-log', authMiddleware, productsController.getStockLog);
 
 // Phase 2: Item History — Purchase history and supplier summary per product
 router.get(
