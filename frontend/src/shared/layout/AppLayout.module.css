@@ -20,6 +20,10 @@
   background-color: var(--color-surface);
 }
 
+.noScroll {
+  overflow: hidden !important;
+}
+
 .pageTransition {
   animation: pageFadeIn 150ms ease-out forwards;
   height: 100%;

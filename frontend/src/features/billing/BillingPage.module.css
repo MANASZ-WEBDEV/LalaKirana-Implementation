@@ -1,7 +1,7 @@
 .container {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 5rem); /* Adjust for App Layout margins */
+  height: 100%; /* Fit exactly within the parent pageTransition container */
   padding: 1.5rem;
   box-sizing: border-box;
   overflow: hidden;

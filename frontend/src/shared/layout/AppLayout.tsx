@@ -7,13 +7,14 @@ import styles from './AppLayout.module.css';
 export function AppLayout() {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const isBilling = location.pathname === '/billing';
 
   return (
     <div className={styles.layout}>
       <Sidebar isOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
       <div className={styles.mainContainer}>
         <Header onMenuClick={() => setMobileOpen(true)} />
-        <main className={styles.content}>
+        <main className={`${styles.content} ${isBilling ? styles.noScroll : ''}`}>
           <div key={location.pathname} className={styles.pageTransition}>
             <Outlet />
           </div>
