@@ -169,6 +169,7 @@ export function BillConfirmDrawer({ isOpen, onClose, statusMode }: BillConfirmDr
 
       const bill = await confirmBillMutation.mutateAsync(payload);
       addToast('success', `Bill ${bill.bill_number} confirmed!`);
+      clearSlot(slot.id);
       setConfirmedBill(bill);
     } catch (err: any) {
       addToast('error', err.message || 'Failed to confirm bill');
