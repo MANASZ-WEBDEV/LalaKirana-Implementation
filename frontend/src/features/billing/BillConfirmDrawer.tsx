@@ -73,7 +73,7 @@ interface BillConfirmDrawerProps {
 }
 
 export function BillConfirmDrawer({ isOpen, onClose, statusMode }: BillConfirmDrawerProps) {
-  const { slots, activeSlotId, clearSlot, setCustomer } = useBillingStore();
+  const { slots, activeSlotId, removeSlot, setCustomer } = useBillingStore();
   const slot = slots.find((s) => s.id === activeSlotId);
   const confirmBillMutation = useConfirmBill();
   const addToast = useToastStore((s) => s.addToast);
@@ -169,7 +169,6 @@ export function BillConfirmDrawer({ isOpen, onClose, statusMode }: BillConfirmDr
 
       const bill = await confirmBillMutation.mutateAsync(payload);
       addToast('success', `Bill ${bill.bill_number} confirmed!`);
-      clearSlot(slot.id);
       setConfirmedBill(bill);
     } catch (err: any) {
       addToast('error', err.message || 'Failed to confirm bill');
@@ -178,7 +177,7 @@ export function BillConfirmDrawer({ isOpen, onClose, statusMode }: BillConfirmDr
 
   const handleDone = () => {
     if (slot) {
-      clearSlot(slot.id);
+      removeSlot(slot.id);
     }
     setConfirmedBill(null);
     setSelectedCustomer(null);
