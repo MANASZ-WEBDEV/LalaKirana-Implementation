@@ -28,10 +28,11 @@ export function useCreateCustomer() {
   });
 }
 
-export function useCustomerProfile(id: string) {
+export function useCustomerProfile(id: string, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: khataKeys.profile(id),
     queryFn: () => khataApi.getCustomerProfile(id),
+    ...options,
   });
 }
 

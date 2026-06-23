@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Drawer } from '@/shared/ui/Drawer';
 import { CustomerSearch } from '@/shared/ui/CustomerSearch';
 import { ReceiptPreview } from '@/shared/ui/ReceiptPreview';
@@ -7,6 +7,7 @@ import { Input } from '@/shared/ui/Input';
 import { useConfirmBill } from './billing.queries';
 import { useBillingStore } from './billingStore';
 import { useToastStore } from '@/shared/store/toastStore';
+import { useCustomerProfile } from '../khata/khata.queries';
 import type { Customer } from '@/types/khata.types';
 import type { Bill } from '@/types/billing.types';
 import styles from './BillConfirmDrawer.module.css';
@@ -94,6 +95,35 @@ export function BillConfirmDrawer({ isOpen, onClose, statusMode }: BillConfirmDr
   });
   const [cashReceived, setCashReceived] = useState('');
   const [confirmedBill, setConfirmedBill] = useState<Bill | null>(null);
+
+  // Fetch real customer profile to get fresh balance if customerId is set in slot
+  const { data: customerProfile } = useCustomerProfile(slot?.customerId || '', {
+    enabled: !!slot?.customerId,
+  });
+
+  useEffect(() => {
+    if (customerProfile) {
+      setSelectedCustomer(customerProfile);
+    }
+  }, [customerProfile]);
+
+  useEffect(() => {
+    if (slot?.customerId && slot?.customerName) {
+      if (selectedCustomer?.id !== slot.customerId) {
+        setSelectedCustomer({
+          id: slot.customerId,
+          name: slot.customerName,
+          phone: '',
+          total_balance: 0,
+          address: '',
+          is_active: true,
+          created_at: '',
+        } as Customer);
+      }
+    } else {
+      setSelectedCustomer(null);
+    }
+  }, [slot?.customerId, slot?.customerName]);
 
   if (!slot) return null;
 
