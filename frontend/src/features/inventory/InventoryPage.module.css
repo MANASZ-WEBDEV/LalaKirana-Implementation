@@ -42,6 +42,11 @@
   align-items: center;
   gap: 1rem;
   flex-wrap: wrap;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
 }
 
 .searchWrapper {
@@ -50,11 +55,10 @@
 }
 
 .tableCard {
-  background-color: var(--color-white);
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-lg);
-  padding: 1rem;
-  box-shadow: var(--shadow-sm);
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
 }
 
 .productNameCol {
