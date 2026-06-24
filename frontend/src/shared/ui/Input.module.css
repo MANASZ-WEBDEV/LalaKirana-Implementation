@@ -63,3 +63,27 @@
   color: var(--color-on-surface-variant);
   margin-top: 0.125rem;
 }
+
+.passwordInput {
+  padding-right: 2.5rem;
+}
+
+.toggleBtn {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-outline);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-fast);
+}
+
+.toggleBtn:hover {
+  color: var(--color-primary);
+}
