@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useBillingStore } from './billingStore';
 import styles from './OrderSlot.module.css';
 
@@ -11,6 +12,16 @@ interface OrderSlotProps {
 export function OrderSlot({ id, isActive, onSelect, displayNumber }: OrderSlotProps) {
   const { slots, removeSlot } = useBillingStore();
   const slot = slots.find((s) => s.id === id);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isActive && cardRef.current) {
+      cardRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      });
+    }
+  }, [isActive]);
 
   if (!slot) return null;
 
@@ -30,6 +41,7 @@ export function OrderSlot({ id, isActive, onSelect, displayNumber }: OrderSlotPr
 
   return (
     <div
+      ref={cardRef}
       className={`${styles.slotCard} ${isActive ? styles.activeSlot : ''}`}
       onClick={onSelect}
     >

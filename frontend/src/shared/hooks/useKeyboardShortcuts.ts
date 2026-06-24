@@ -11,8 +11,8 @@ export function useKeyboardShortcuts({ onConfirm, onEscape }: ShortcutActions = 
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // 1. Check for Slot switches: Ctrl + [1-9, 0]
-      if (e.ctrlKey && !e.shiftKey && !e.altKey) {
+      // 1. Check for Slot switches: Ctrl + [1-9, 0] or Alt + [1-9, 0]
+      if ((e.ctrlKey || e.altKey) && !e.shiftKey) {
         if (e.key >= '1' && e.key <= '9') {
           e.preventDefault();
           const slotIndex = parseInt(e.key, 10) - 1;
