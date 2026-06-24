@@ -2,7 +2,15 @@ import { useState, useEffect } from 'react';
 import { useStoreSettings, useUpdateStoreSettings } from './settings.queries';
 import { Input } from '@/shared/ui/Input';
 import { Button } from '@/shared/ui/Button';
+import { Select } from '@/shared/ui/Select';
 import { useToastStore } from '@/shared/store/toastStore';
+import type { Language } from '@/features/billing/receiptTranslations';
+import {
+  getLabel,
+  formatStoreName,
+  formatFooterMessage,
+  formatModeStatus,
+} from '@/features/billing/receiptTranslations';
 import styles from './ReceiptTab.module.css';
 
 export function ReceiptTab() {
@@ -15,6 +23,7 @@ export function ReceiptTab() {
   const [storeAddress, setStoreAddress] = useState('');
   const [storePhone, setStorePhone] = useState('');
   const [receiptFooter, setReceiptFooter] = useState('');
+  const [receiptLanguage, setReceiptLanguage] = useState<Language>('english');
 
   // Sync state when data is loaded
   useEffect(() => {
@@ -23,6 +32,7 @@ export function ReceiptTab() {
       setStoreAddress(currentSettings.store_address || '');
       setStorePhone(currentSettings.store_phone || '');
       setReceiptFooter(currentSettings.receipt_footer || '');
+      setReceiptLanguage((currentSettings.receipt_language as Language) || 'english');
     }
   }, [currentSettings]);
 
@@ -34,6 +44,7 @@ export function ReceiptTab() {
         store_address: storeAddress.trim(),
         store_phone: storePhone.trim(),
         receipt_footer: receiptFooter.trim(),
+        receipt_language: receiptLanguage,
       });
       addToast('success', 'Receipt layout settings updated successfully.');
     } catch (err: any) {
@@ -108,6 +119,19 @@ export function ReceiptTab() {
             />
           </div>
 
+          <div className={styles.formGroup}>
+            <Select
+              label="Receipt Language"
+              value={receiptLanguage}
+              onChange={(e) => setReceiptLanguage(e.target.value as Language)}
+              options={[
+                { value: 'english', label: 'English Only' },
+                { value: 'hindi', label: 'Hindi Only (हिंदी केवल)' },
+                { value: 'bilingual', label: 'Bilingual (Hindi + English / द्विभाषी)' },
+              ]}
+            />
+          </div>
+
           <div className={styles.actions}>
             <Button type="submit" disabled={updateSettingsMutation.isPending} className={styles.saveBtn}>
               {updateSettingsMutation.isPending ? 'Saving...' : 'Save Settings'}
@@ -128,6 +152,7 @@ export function ReceiptTab() {
                 store_phone: storePhone,
                 receipt_footer: receiptFooter,
               }}
+              lang={receiptLanguage}
             />
           </div>
         </div>
@@ -137,12 +162,23 @@ export function ReceiptTab() {
 }
 
 // Wrapper to inject local state into the preview
-function ReceiptPreviewOverride({ bill, overrideSettings }: { bill: any; overrideSettings: any }) {
+function ReceiptPreviewOverride({
+  bill,
+  overrideSettings,
+  lang,
+}: {
+  bill: any;
+  overrideSettings: any;
+  lang: Language;
+}) {
+  const storeName = formatStoreName(overrideSettings.store_name || 'LalaKirana', lang);
+  const footerMessage = formatFooterMessage(overrideSettings.receipt_footer || 'Thank you! Visit again', lang);
+
   return (
     <div className={styles.previewWrapper}>
       <div className={styles.receipt}>
         <div className={styles.header}>
-          <h2 className={styles.storeName}>{overrideSettings.store_name || 'LalaKirana'}</h2>
+          <h2 className={styles.storeName}>{storeName}</h2>
           {overrideSettings.store_address && <p className={styles.storeDetail}>{overrideSettings.store_address}</p>}
           {overrideSettings.store_phone && <p className={styles.storeDetail}>Ph: {overrideSettings.store_phone}</p>}
         </div>
@@ -151,20 +187,20 @@ function ReceiptPreviewOverride({ bill, overrideSettings }: { bill: any; overrid
 
         <div className={styles.metaGrid}>
           <div className={styles.metaRow}>
-            <span>Bill No:</span>
+            <span>{getLabel('billNo', lang)}:</span>
             <span className={styles.bold}>{bill.bill_number}</span>
           </div>
           <div className={styles.metaRow}>
-            <span>Date:</span>
+            <span>{getLabel('date', lang)}:</span>
             <span>{new Date(bill.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</span>
           </div>
           <div className={styles.metaRow}>
-            <span>Cashier:</span>
+            <span>{getLabel('cashier', lang)}:</span>
             <span>{bill.created_by_name}</span>
           </div>
           <div className={styles.metaRow}>
-            <span>Mode:</span>
-            <span className={styles.capitalize}>{bill.mode} ({bill.status})</span>
+            <span>{getLabel('mode', lang)}:</span>
+            <span className={styles.capitalize}>{formatModeStatus(bill.mode, bill.status, lang)}</span>
           </div>
         </div>
 
@@ -172,11 +208,11 @@ function ReceiptPreviewOverride({ bill, overrideSettings }: { bill: any; overrid
 
         <div className={styles.customerSection}>
           <div className={styles.metaRow}>
-            <span>Customer:</span>
+            <span>{getLabel('customer', lang)}:</span>
             <span className={styles.bold}>{bill.customer_name}</span>
           </div>
           <div className={styles.metaRow}>
-            <span>Phone:</span>
+            <span>{getLabel('phone', lang)}:</span>
             <span>{bill.customer_phone}</span>
           </div>
         </div>
@@ -184,10 +220,10 @@ function ReceiptPreviewOverride({ bill, overrideSettings }: { bill: any; overrid
         <div className={styles.divider}>--------------------------------</div>
 
         <div className={styles.itemsHeader}>
-          <span className={styles.itemCol}>Item</span>
-          <span className={styles.qtyCol}>Qty</span>
-          <span className={styles.rateCol}>Rate</span>
-          <span className={styles.totalCol}>Total</span>
+          <span className={styles.itemCol}>{getLabel('item', lang)}</span>
+          <span className={styles.qtyCol}>{getLabel('qty', lang)}</span>
+          <span className={styles.rateCol}>{getLabel('rate', lang)}</span>
+          <span className={styles.totalCol}>{getLabel('total', lang)}</span>
         </div>
         <div className={styles.divider}>--------------------------------</div>
         <div className={styles.itemsList}>
@@ -204,7 +240,7 @@ function ReceiptPreviewOverride({ bill, overrideSettings }: { bill: any; overrid
 
         <div className={styles.totalSection}>
           <div className={styles.grandTotalRow}>
-            <span>GRAND TOTAL:</span>
+            <span>{getLabel('grandTotal', lang)}:</span>
             <span className={styles.grandTotal}>₹{bill.total.toFixed(2)}</span>
           </div>
         </div>
@@ -212,11 +248,12 @@ function ReceiptPreviewOverride({ bill, overrideSettings }: { bill: any; overrid
         <div className={styles.divider}>--------------------------------</div>
 
         <div className={styles.footer}>
-          <p className={styles.footerText}>{overrideSettings.receipt_footer || 'Thank you! Visit again'}</p>
+          <p className={styles.footerText}>{footerMessage}</p>
           <p className={styles.footerSub}>LalaKirana Khandwa, Madhya Pradesh</p>
         </div>
       </div>
     </div>
   );
 }
+
 export default ReceiptTab;

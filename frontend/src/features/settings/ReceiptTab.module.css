@@ -111,7 +111,7 @@
   padding: 1.5rem;
   width: 100%;
   max-width: 320px;
-  font-family: var(--font-mono);
+  font-family: 'Noto Sans Devanagari', 'Arial Unicode MS', sans-serif;
   font-size: 0.825rem;
   color: #000;
   line-height: 1.4;

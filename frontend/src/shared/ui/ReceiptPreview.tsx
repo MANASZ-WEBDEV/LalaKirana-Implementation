@@ -1,6 +1,13 @@
 import { useStoreSettings } from '@/features/settings/settings.queries';
 import type { Bill } from '@/types/billing.types';
 import styles from './ReceiptPreview.module.css';
+import type { Language } from '@/features/billing/receiptTranslations';
+import {
+  getLabel,
+  formatStoreName,
+  formatFooterMessage,
+  formatModeStatus,
+} from '@/features/billing/receiptTranslations';
 
 interface ReceiptPreviewProps {
   bill: Partial<Bill> & {
@@ -13,10 +20,11 @@ interface ReceiptPreviewProps {
 export function ReceiptPreview({ bill }: ReceiptPreviewProps) {
   const { data: storeSettings, isLoading } = useStoreSettings();
 
-  const storeName = storeSettings?.store_name || 'LalaKirana';
+  const lang = (storeSettings?.receipt_language || 'english') as Language;
+  const storeName = formatStoreName(storeSettings?.store_name || 'LalaKirana', lang);
   const storeAddress = storeSettings?.store_address || '';
   const storePhone = storeSettings?.store_phone || '';
-  const footerMessage = storeSettings?.receipt_footer || 'Thank you! Visit again';
+  const footerMessage = formatFooterMessage(storeSettings?.receipt_footer || 'Thank you! Visit again', lang);
 
   const items = bill.bill_items || [];
   const dateStr = bill.created_at
@@ -58,22 +66,22 @@ export function ReceiptPreview({ bill }: ReceiptPreviewProps) {
         {/* Bill Metadata */}
         <div className={styles.metaGrid}>
           <div className={styles.metaRow}>
-            <span>Bill No:</span>
+            <span>{getLabel('billNo', lang)}:</span>
             <span className={styles.bold}>{bill.bill_number || 'LK/XXXXX/XXXX'}</span>
           </div>
           <div className={styles.metaRow}>
-            <span>Date:</span>
+            <span>{getLabel('date', lang)}:</span>
             <span>{dateStr}</span>
           </div>
           {bill.created_by_name && (
             <div className={styles.metaRow}>
-              <span>Cashier:</span>
+              <span>{getLabel('cashier', lang)}:</span>
               <span>{bill.created_by_name}</span>
             </div>
           )}
           <div className={styles.metaRow}>
-            <span>Mode:</span>
-            <span className={styles.capitalize}>{bill.mode} ({bill.status})</span>
+            <span>{getLabel('mode', lang)}:</span>
+            <span className={styles.capitalize}>{formatModeStatus(bill.mode, bill.status, lang)}</span>
           </div>
         </div>
 
@@ -84,12 +92,12 @@ export function ReceiptPreview({ bill }: ReceiptPreviewProps) {
           <>
             <div className={styles.customerSection}>
               <div className={styles.metaRow}>
-                <span>Customer:</span>
+                <span>{getLabel('customer', lang)}:</span>
                 <span className={styles.bold}>{bill.customer_name || bill.customers?.name}</span>
               </div>
               {(bill.customer_phone || bill.customers?.phone) && (
                 <div className={styles.metaRow}>
-                  <span>Phone:</span>
+                  <span>{getLabel('phone', lang)}:</span>
                   <span>{bill.customer_phone || bill.customers?.phone}</span>
                 </div>
               )}
@@ -102,10 +110,10 @@ export function ReceiptPreview({ bill }: ReceiptPreviewProps) {
         {bill.mode === 'full' && items.length > 0 ? (
           <>
             <div className={styles.itemsHeader}>
-              <span className={styles.itemCol}>Item</span>
-              <span className={styles.qtyCol}>Qty</span>
-              <span className={styles.rateCol}>Rate</span>
-              <span className={styles.totalCol}>Total</span>
+              <span className={styles.itemCol}>{getLabel('item', lang)}</span>
+              <span className={styles.qtyCol}>{getLabel('qty', lang)}</span>
+              <span className={styles.rateCol}>{getLabel('rate', lang)}</span>
+              <span className={styles.totalCol}>{getLabel('total', lang)}</span>
             </div>
             <div className={styles.divider}>--------------------------------</div>
             <div className={styles.itemsList}>
@@ -124,7 +132,7 @@ export function ReceiptPreview({ bill }: ReceiptPreviewProps) {
           bill.mode === 'quick' && (
             <>
               <div className={styles.quickBillRow}>
-                <span>Quick Sale {bill.note ? `(${bill.note})` : ''}</span>
+                <span>{getLabel('quickSale', lang)} {bill.note ? `(${bill.note})` : ''}</span>
                 <span>₹{Number(bill.total).toFixed(2)}</span>
               </div>
               <div className={styles.divider}>--------------------------------</div>
@@ -135,7 +143,7 @@ export function ReceiptPreview({ bill }: ReceiptPreviewProps) {
         {/* Total */}
         <div className={styles.totalSection}>
           <div className={styles.grandTotalRow}>
-            <span>GRAND TOTAL:</span>
+            <span>{getLabel('grandTotal', lang)}:</span>
             <span className={styles.grandTotal}>₹{Number(bill.total).toFixed(2)}</span>
           </div>
         </div>

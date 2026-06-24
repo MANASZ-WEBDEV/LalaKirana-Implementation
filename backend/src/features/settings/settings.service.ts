@@ -18,6 +18,7 @@ export const storeSettingsService = {
       store_address: '',
       store_phone: '',
       receipt_footer: 'Thank you! Visit again',
+      receipt_language: 'english',
     };
 
     if (data) {
