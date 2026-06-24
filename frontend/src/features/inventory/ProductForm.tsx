@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Input } from '@/shared/ui/Input';
 import { Select } from '@/shared/ui/Select';
 import { Button } from '@/shared/ui/Button';
@@ -13,6 +13,7 @@ interface ProductFormProps {
     category_id: string | null;
     price: number;
     cost_price: number;
+    mrp: number | null;
     stock_qty?: number;
     low_stock_threshold: number;
     unit: 'kg' | 'g' | 'litre' | 'ml' | 'pcs';
@@ -26,29 +27,17 @@ export function ProductForm({ initialData, onSubmit, loading, onCancel }: Produc
   const { data: categories } = useCategories();
 
   // Form states
-  const [name, setName] = useState('');
-  const [categoryId, setCategoryId] = useState('');
-  const [price, setPrice] = useState<string>('0');
-  const [costPrice, setCostPrice] = useState<string>('');
-  const [stockQty, setStockQty] = useState<string>('0');
-  const [lowStockThreshold, setLowStockThreshold] = useState<string>('5');
-  const [unit, setUnit] = useState<'kg' | 'g' | 'litre' | 'ml' | 'pcs'>('pcs');
+  const [name, setName] = useState(initialData?.name || '');
+  const [categoryId, setCategoryId] = useState(initialData?.category_id || '');
+  const [price, setPrice] = useState<string>(initialData ? initialData.price.toString() : '0');
+  const [costPrice, setCostPrice] = useState<string>(initialData?.cost_price?.toString() || '');
+  const [mrp, setMrp] = useState<string>(initialData?.mrp?.toString() || '');
+  const [stockQty, setStockQty] = useState<string>(initialData ? initialData.stock_qty.toString() : '0');
+  const [lowStockThreshold, setLowStockThreshold] = useState<string>(initialData ? initialData.low_stock_threshold.toString() : '5');
+  const [unit, setUnit] = useState<'kg' | 'g' | 'litre' | 'ml' | 'pcs'>(initialData?.unit || 'pcs');
 
   // Error states
   const [errors, setErrors] = useState<Record<string, string>>({});
-
-  // Populate form if initialData exists (Edit Mode)
-  useEffect(() => {
-    if (initialData) {
-      setName(initialData.name);
-      setCategoryId(initialData.category_id || '');
-      setPrice(initialData.price.toString());
-      setCostPrice(initialData.cost_price?.toString() || '');
-      setStockQty(initialData.stock_qty.toString());
-      setLowStockThreshold(initialData.low_stock_threshold.toString());
-      setUnit(initialData.unit);
-    }
-  }, [initialData]);
 
   // Form submission validation
   const handleSubmit = (e: React.FormEvent) => {
@@ -70,6 +59,16 @@ export function ProductForm({ initialData, onSubmit, loading, onCancel }: Produc
     const costPriceNum = parseFloat(costPrice);
     if (isNaN(costPriceNum) || costPriceNum < 0) {
       newErrors.cost_price = 'Cost price must be a non-negative number';
+    }
+
+    let mrpNum: number | null = null;
+    if (mrp.trim()) {
+      const parsedMrp = parseFloat(mrp);
+      if (isNaN(parsedMrp) || parsedMrp < 0) {
+        newErrors.mrp = 'MRP must be a non-negative number';
+      } else {
+        mrpNum = parsedMrp;
+      }
     }
 
     const stockQtyNum = parseInt(stockQty);
@@ -94,6 +93,7 @@ export function ProductForm({ initialData, onSubmit, loading, onCancel }: Produc
       category_id: categoryId || null,
       price: priceNum,
       cost_price: costPriceNum,
+      mrp: mrpNum,
       low_stock_threshold: thresholdNum,
       unit,
       ...(isEditMode ? {} : { stock_qty: stockQtyNum }),
@@ -160,7 +160,7 @@ export function ProductForm({ initialData, onSubmit, loading, onCancel }: Produc
         <Select
           label="Display Unit"
           value={unit}
-          onChange={(e) => setUnit(e.target.value as any)}
+          onChange={(e) => setUnit(e.target.value as 'kg' | 'g' | 'litre' | 'ml' | 'pcs')}
           options={unitOptions}
         />
       </div>
@@ -169,30 +169,49 @@ export function ProductForm({ initialData, onSubmit, loading, onCancel }: Produc
         <Input
           type="number"
           step="0.01"
-          label="MRP / Sell Price (₹)"
+          label="Selling Price (₹) *"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
           error={errors.price}
           placeholder="0.00"
+          helperText="What you charge the customer"
           required
         />
 
         <Input
           type="number"
           step="0.01"
-          label="Cost Price (₹)"
+          label="MRP (₹)"
+          value={mrp}
+          onChange={(e) => setMrp(e.target.value)}
+          error={errors.mrp}
+          placeholder="0.00"
+          helperText="Printed on packet. Leave blank if unknown."
+        />
+      </div>
+
+      {mrp && price && parseFloat(mrp) > parseFloat(price) && !errors.price && !errors.mrp && (
+        <div className={styles.marginPreview}>
+          Customer saves ₹{(parseFloat(mrp) - parseFloat(price)).toFixed(2)} per unit 
+          ({Math.round(((parseFloat(mrp) - parseFloat(price)) / parseFloat(mrp)) * 100)}% below MRP)
+        </div>
+      )}
+
+      <div className={styles.row}>
+        <Input
+          type="number"
+          step="0.01"
+          label="Cost Price (₹) *"
           value={costPrice}
           onChange={(e) => setCostPrice(e.target.value)}
           error={errors.cost_price}
           placeholder="0.00"
           required
         />
-      </div>
 
-      <div className={styles.row}>
         <Input
           type="number"
-          label="Low Stock Threshold"
+          label="Low Stock Threshold *"
           value={lowStockThreshold}
           onChange={(e) => setLowStockThreshold(e.target.value)}
           error={errors.low_stock_threshold}

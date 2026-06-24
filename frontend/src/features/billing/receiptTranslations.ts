@@ -21,6 +21,10 @@ export const translations = {
     customer: 'Customer',
     phone: 'Phone',
     quickSale: 'Quick Sale',
+    atMRP: 'At MRP',
+    youPaid: 'You paid',
+    youSaved: 'You saved',
+    belowMRP: '% off MRP',
   },
   hindi: {
     brandName: 'लालाकिराना',
@@ -42,6 +46,10 @@ export const translations = {
     customer: 'ग्राहक',
     phone: 'फ़ोन',
     quickSale: 'त्वरित बिक्री',
+    atMRP: 'MRP पर',
+    youPaid: 'आपने दिया',
+    youSaved: 'आपने बचाया',
+    belowMRP: 'MRP से % कम',
   }
 };
 

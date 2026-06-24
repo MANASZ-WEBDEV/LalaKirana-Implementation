@@ -64,4 +64,15 @@
   margin-top: 0.125rem;
 }
 
+.marginPreview {
+  font-size: 0.85rem;
+  color: var(--color-primary);
+  background-color: rgba(0, 103, 99, 0.05);
+  border: 1px solid rgba(0, 103, 99, 0.15);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  margin-top: -0.75rem;
+  font-weight: 500;
+}
+
 

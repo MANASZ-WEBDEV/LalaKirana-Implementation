@@ -1,4 +1,6 @@
 import { useStoreSettings } from '@/features/settings/settings.queries';
+import { useProducts } from '@/features/inventory/inventory.queries';
+import { calculateSavings } from '@/shared/utils/savings';
 import type { Bill } from '@/types/billing.types';
 import styles from './ReceiptPreview.module.css';
 import type { Language } from '@/features/billing/receiptTranslations';
@@ -18,7 +20,8 @@ interface ReceiptPreviewProps {
 }
 
 export function ReceiptPreview({ bill }: ReceiptPreviewProps) {
-  const { data: storeSettings, isLoading } = useStoreSettings();
+  const { data: storeSettings, isLoading: isSettingsLoading } = useStoreSettings();
+  const { data: productsData, isLoading: isProductsLoading } = useProducts();
 
   const lang = (storeSettings?.receipt_language || 'english') as Language;
   const storeName = formatStoreName(storeSettings?.store_name || 'LalaKirana', lang);
@@ -27,6 +30,10 @@ export function ReceiptPreview({ bill }: ReceiptPreviewProps) {
   const footerMessage = formatFooterMessage(storeSettings?.receipt_footer || 'Thank you! Visit again', lang);
 
   const items = bill.bill_items || [];
+  const products = productsData || [];
+  const savings = calculateSavings(items, products);
+  const belowMrpLabel = getLabel('belowMRP', lang).replace(/%/g, savings.savingsPercent.toString() + '%');
+
   const dateStr = bill.created_at
     ? new Date(bill.created_at).toLocaleString('en-IN', {
         dateStyle: 'medium',
@@ -41,7 +48,7 @@ export function ReceiptPreview({ bill }: ReceiptPreviewProps) {
     window.print();
   };
 
-  if (isLoading) {
+  if (isSettingsLoading || isProductsLoading) {
     return <div className={styles.loading}>Loading receipt details...</div>;
   }
 
@@ -147,6 +154,15 @@ export function ReceiptPreview({ bill }: ReceiptPreviewProps) {
             <span className={styles.grandTotal}>₹{Number(bill.total).toFixed(2)}</span>
           </div>
         </div>
+
+        {savings.hasSavings && (
+          <div className={styles.savingsSection}>
+            <span className={styles.savingsLabel}>{getLabel('youSaved', lang)}:</span>
+            <span className={styles.savingsValue}>
+              ₹{savings.totalSaved.toFixed(2)} ({belowMrpLabel})
+            </span>
+          </div>
+        )}
 
         <div className={styles.divider}>--------------------------------</div>
 

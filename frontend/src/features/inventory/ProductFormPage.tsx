@@ -66,6 +66,7 @@ export default function ProductFormPage() {
       </div>
 
       <ProductForm
+        key={isEditMode ? product?.id : 'new'}
         initialData={product}
         onSubmit={handleFormSubmit}
         loading={loading}

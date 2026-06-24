@@ -67,6 +67,7 @@ export const productsService = {
     stock_qty?: number;
     low_stock_threshold?: number;
     unit?: string;
+    mrp?: number | null;
   }) => {
     const { data, error } = await supabase
       .from('products')
@@ -92,6 +93,7 @@ export const productsService = {
       low_stock_threshold?: number;
       unit?: string;
       is_active?: boolean;
+      mrp?: number | null;
     },
     userId: string
   ) => {

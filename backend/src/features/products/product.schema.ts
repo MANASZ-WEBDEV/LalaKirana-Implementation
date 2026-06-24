@@ -11,6 +11,7 @@ export const CreateProductSchema = z.object({
     stock_qty: z.number().int().min(0, 'Stock quantity must be non-negative').default(0),
     low_stock_threshold: z.number().int().min(0, 'Threshold must be non-negative').default(5),
     unit: z.enum(['kg', 'g', 'litre', 'ml', 'pcs']).default('pcs'),
+    mrp: z.number().min(0, 'MRP must be non-negative').optional().nullable(),
   }),
 });
 
@@ -24,6 +25,7 @@ export const UpdateProductSchema = z.object({
     low_stock_threshold: z.number().int().min(0, 'Threshold must be non-negative').optional(),
     unit: z.enum(['kg', 'g', 'litre', 'ml', 'pcs']).optional(),
     is_active: z.boolean().optional(),
+    mrp: z.number().min(0, 'MRP must be non-negative').optional().nullable(),
   }),
 });
 
