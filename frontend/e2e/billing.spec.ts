@@ -24,7 +24,7 @@ test.describe('Billing and Khata E2E Flow', () => {
     await page.getByRole('button', { name: 'Add Product' }).click();
     const prodAName = `E2E Stocked ${Math.floor(Math.random() * 10000)}`;
     await page.getByLabel('Product Name').fill(prodAName);
-    await page.getByLabel('MRP / Sell Price (₹)').fill('100.00');
+    await page.getByLabel('Selling Price (₹) *').fill('100.00');
     await page.getByLabel('Cost Price (₹)').fill('80.00');
     await page.getByLabel('Low Stock Threshold').fill('2');
     await page.getByLabel('Initial Stock Quantity').fill('5');
@@ -35,7 +35,7 @@ test.describe('Billing and Khata E2E Flow', () => {
     await page.getByRole('button', { name: 'Add Product' }).click();
     const prodBName = `E2E OutOfStock ${Math.floor(Math.random() * 10000)}`;
     await page.getByLabel('Product Name').fill(prodBName);
-    await page.getByLabel('MRP / Sell Price (₹)').fill('50.00');
+    await page.getByLabel('Selling Price (₹) *').fill('50.00');
     await page.getByLabel('Cost Price (₹)').fill('40.00');
     await page.getByLabel('Low Stock Threshold').fill('2');
     await page.getByLabel('Initial Stock Quantity').fill('0');
@@ -138,7 +138,7 @@ test.describe('Billing and Khata E2E Flow', () => {
 
     await page.getByPlaceholder('Search customer by name or phone number...').fill(custName);
     await page.waitForTimeout(500);
-    await page.getByText(custName).click();
+    await page.getByText(custName, { exact: true }).click();
 
     // Outstanding Due should be ₹500.00 (5 items * ₹100.00)
     await expect(page.locator('div[class*="outstandingCard"] span[class*="statVal"]')).toHaveText('₹500.00');

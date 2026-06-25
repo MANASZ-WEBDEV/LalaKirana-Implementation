@@ -21,7 +21,7 @@ test.describe('Inventory Flow', () => {
     // 4. Fill in product details
     const uniqueProductName = `E2E Auto Oil ${Math.floor(Math.random() * 10000)}`;
     await page.getByLabel('Product Name').fill(uniqueProductName);
-    await page.getByLabel('MRP / Sell Price (₹)').fill('175.50');
+    await page.getByLabel('Selling Price (₹) *').fill('175.50');
     await page.getByLabel('Cost Price (₹)').fill('150.00');
     await page.getByLabel('Low Stock Threshold').fill('10');
     await page.getByLabel('Initial Stock Quantity').fill('50');
@@ -42,7 +42,7 @@ test.describe('Inventory Flow', () => {
     await expect(page).toHaveURL(/.*edit/);
 
     // 8. Modify Price
-    await page.getByLabel('MRP / Sell Price (₹)').fill('185.00');
+    await page.getByLabel('Selling Price (₹) *').fill('185.00');
     await page.getByRole('button', { name: 'Save Product' }).click();
 
     // 9. Verify price updated in list
