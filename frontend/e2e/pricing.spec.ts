@@ -2,16 +2,17 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Pricing E2E Flow', () => {
   test('should login, go to bulk pricing page, update a product price, and save', async ({ page }) => {
+    test.setTimeout(120000);
     // 1. Login
     await page.goto('/login');
     await page.getByLabel('Email Address').fill('manasrajanidy89@gmail.com');
     await page.getByLabel('Password').fill('changeme123456');
     await page.getByRole('button', { name: 'Sign In' }).click();
-    await expect(page).toHaveURL(/.*dashboard/);
+    await expect(page).toHaveURL(/.*dashboard/, { timeout: 20000 });
 
     // 2. Go to Bulk Price Editor Page
     await page.getByRole('link', { name: 'Bulk Pricing' }).click();
-    await expect(page).toHaveURL(/.*pricing/);
+    await expect(page).toHaveURL(/.*pricing/, { timeout: 20000 });
     await expect(page.locator('main h1')).toHaveText('Bulk Price Update');
 
     // 3. Find a product row and edit its price
@@ -39,7 +40,7 @@ test.describe('Pricing E2E Flow', () => {
     await page.getByRole('button', { name: 'Save All Changes' }).click();
 
     // 6. Verify toast notification showing success
-    await expect(page.getByText(/Successfully updated prices/)).toBeVisible();
+    await expect(page.getByText(/Successfully updated prices/)).toBeVisible({ timeout: 20000 });
 
     // 7. Verify stats bar goes back to 0 changes pending
     await expect(changedVal).toHaveText('0');

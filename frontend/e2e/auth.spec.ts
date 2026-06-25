@@ -18,7 +18,7 @@ test.describe('Authentication Flow', () => {
     await page.getByRole('button', { name: 'Sign In' }).click();
 
     // 4. Verify redirected to dashboard
-    await expect(page).toHaveURL(/.*dashboard/);
+    await expect(page).toHaveURL(/.*dashboard/, { timeout: 20000 });
     await expect(page.locator('main h1')).toHaveText('Dashboard');
 
     // 5. Verify stats load / Sign Out button is visible

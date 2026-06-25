@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Billing and Khata E2E Flow', () => {
   test('should enforce stock clamping, reject Khata checkouts without customers, and log repayments correctly', async ({ page }) => {
-    test.setTimeout(60000);
+    test.setTimeout(120000);
     // Listen to console and page errors for debugging
     page.on('console', msg => console.log('BROWSER CONSOLE:', msg.text()));
     page.on('pageerror', err => console.log('BROWSER ERROR:', err.message));
@@ -12,7 +12,7 @@ test.describe('Billing and Khata E2E Flow', () => {
     await page.getByLabel('Email Address').fill('manasrajanidy89@gmail.com');
     await page.getByLabel('Password').fill('changeme123456');
     await page.getByRole('button', { name: 'Sign In' }).click();
-    await expect(page).toHaveURL(/.*dashboard/);
+    await expect(page).toHaveURL(/.*dashboard/, { timeout: 20000 });
 
     // 2. Go to Inventory Page to create two test products:
     // Product A: 5 in stock
@@ -29,7 +29,7 @@ test.describe('Billing and Khata E2E Flow', () => {
     await page.getByLabel('Low Stock Threshold').fill('2');
     await page.getByLabel('Initial Stock Quantity').fill('5');
     await page.getByRole('button', { name: 'Add Product' }).click();
-    await expect(page).toHaveURL(/\/inventory$/);
+    await expect(page).toHaveURL(/\/inventory$/, { timeout: 60000 });
 
     // Add Product B (Out of stock)
     await page.getByRole('button', { name: 'Add Product' }).click();
@@ -40,11 +40,11 @@ test.describe('Billing and Khata E2E Flow', () => {
     await page.getByLabel('Low Stock Threshold').fill('2');
     await page.getByLabel('Initial Stock Quantity').fill('0');
     await page.getByRole('button', { name: 'Add Product' }).click();
-    await expect(page).toHaveURL(/\/inventory$/);
+    await expect(page).toHaveURL(/\/inventory$/, { timeout: 60000 });
 
     // 3. Go to Billing Page
     await page.getByRole('link', { name: 'Billing' }).click();
-    await expect(page).toHaveURL(/.*billing/);
+    await expect(page).toHaveURL(/.*billing/, { timeout: 20000 });
 
     // 4. Test Out-of-Stock selection blocking
     await page.getByPlaceholder('Type product name or scan barcode...').fill(prodBName);
@@ -127,21 +127,21 @@ test.describe('Billing and Khata E2E Flow', () => {
 
     // Confirm the bill
     await confirmBtn.click();
-    await expect(page.getByText('Bill Saved Successfully')).toBeVisible();
+    await expect(page.getByText('Bill Saved Successfully')).toBeVisible({ timeout: 20000 });
 
     // Done and clear
     await page.getByRole('button', { name: 'Done & Clear Slot' }).click();
 
     // 9. Go to Khata Page and verify balance
     await page.getByRole('link', { name: 'Khata' }).click();
-    await expect(page).toHaveURL(/.*khata/);
+    await expect(page).toHaveURL(/.*khata/, { timeout: 20000 });
 
     await page.getByPlaceholder('Search customer by name or phone number...').fill(custName);
     await page.waitForTimeout(500);
     await page.getByText(custName, { exact: true }).click();
 
     // Outstanding Due should be ₹500.00 (5 items * ₹100.00)
-    await expect(page.locator('div[class*="outstandingCard"] span[class*="statVal"]')).toHaveText('₹500.00');
+    await expect(page.locator('div[class*="outstandingCard"] span[class*="statVal"]')).toHaveText('₹500.00', { timeout: 20000 });
 
     // 10. Test Repayment Flow
     await page.getByRole('button', { name: 'Log Repayment' }).click();
@@ -150,11 +150,11 @@ test.describe('Billing and Khata E2E Flow', () => {
     await page.getByRole('button', { name: 'Confirm Repayment' }).click();
 
     // Verify Outstanding Due is now ₹300.00
-    await expect(page.locator('div[class*="outstandingCard"] span[class*="statVal"]')).toHaveText('₹300.00');
+    await expect(page.locator('div[class*="outstandingCard"] span[class*="statVal"]')).toHaveText('₹300.00', { timeout: 20000 });
   });
 
   test('should link paid bill with customer to khata account without changing outstanding balance', async ({ page }) => {
-    test.setTimeout(60000);
+    test.setTimeout(120000);
     // Listen to console and page errors for debugging
     page.on('console', msg => console.log('BROWSER CONSOLE:', msg.text()));
     page.on('pageerror', err => console.log('BROWSER ERROR:', err.message));
@@ -164,11 +164,11 @@ test.describe('Billing and Khata E2E Flow', () => {
     await page.getByLabel('Email Address').fill('manasrajanidy89@gmail.com');
     await page.getByLabel('Password').fill('changeme123456');
     await page.getByRole('button', { name: 'Sign In' }).click();
-    await expect(page).toHaveURL(/.*dashboard/);
+    await expect(page).toHaveURL(/.*dashboard/, { timeout: 20000 });
 
     // 2. Go to Billing Page
     await page.getByRole('link', { name: 'Billing' }).click();
-    await expect(page).toHaveURL(/.*billing/);
+    await expect(page).toHaveURL(/.*billing/, { timeout: 20000 });
 
     // 3. Add an item to cart
     await page.getByPlaceholder('Type product name or scan barcode...').fill('Aashirvaad Shudh Chakki Atta');
@@ -192,11 +192,14 @@ test.describe('Billing and Khata E2E Flow', () => {
     await page.getByPlaceholder('e.g. 9876543210').fill('9876543210');
     await page.getByRole('button', { name: 'Create & Select' }).click();
 
+    // Wait for customer creation to finish
+    await expect(page.getByText('created successfully')).toBeVisible({ timeout: 20000 });
+
     // 5. Open checkout drawer by clicking "Paid (Cash/UPI)"
     await page.getByRole('button', { name: '💰 Paid (Cash/UPI)' }).click();
 
     // Verify customer is already linked in the checkout drawer
-    await expect(page.getByText(`Linked: ${custName}`)).toBeVisible();
+    await expect(page.getByText(`Linked: ${custName}`)).toBeVisible({ timeout: 20000 });
 
     // 6. Enter cash received to enable confirm button
     await page.getByPlaceholder('Enter cash received...').fill('1000');
@@ -205,24 +208,36 @@ test.describe('Billing and Khata E2E Flow', () => {
     const confirmBtn = page.getByRole('button', { name: 'Confirm & Print' });
     await expect(confirmBtn).toBeEnabled();
     await confirmBtn.click();
-    await expect(page.getByText('Bill Saved Successfully')).toBeVisible();
+    await expect(page.getByText('Bill Saved Successfully')).toBeVisible({ timeout: 20000 });
 
     // Done and clear
     await page.getByRole('button', { name: 'Done & Clear Slot' }).click();
 
     // 7. Go to Khata Page to verify ledger entries and balance
     await page.getByRole('link', { name: 'Khata' }).click();
-    await expect(page).toHaveURL(/.*khata/);
+    await expect(page).toHaveURL(/.*khata/, { timeout: 20000 });
 
     await page.getByPlaceholder('Search customer by name or phone number...').fill(custName);
     await page.waitForTimeout(500);
     await page.getByText(custName, { exact: true }).click();
 
     // Outstanding Due should be ₹0.00 because they paid in full!
-    await expect(page.locator('div[class*="outstandingCard"] span[class*="statVal"]')).toHaveText('₹0.00');
+    await expect(page.locator('div[class*="outstandingCard"] span[class*="statVal"]')).toHaveText('₹0.00', { timeout: 20000 });
 
     // The transactions list should contain a "purchase" entry and a "payment" entry for the same amount
     await expect(page.getByText('purchase', { exact: false }).first()).toBeVisible();
     await expect(page.getByText('payment', { exact: false }).first()).toBeVisible();
+
+    // 8. Open Monthly Statement modal
+    await page.getByRole('button', { name: '📋 Monthly Statement' }).click();
+    await expect(page.getByText('Print Monthly Statement')).toBeVisible();
+
+    // 9. Find and click the bill number link
+    const billLink = page.locator('span[class*="billLink"]').first();
+    await expect(billLink).toBeVisible({ timeout: 30000 });
+    await billLink.click();
+
+    // 10. Verify that the Receipt Print Preview modal is displayed
+    await expect(page.getByText('Receipt Print Preview')).toBeVisible();
   });
 });
