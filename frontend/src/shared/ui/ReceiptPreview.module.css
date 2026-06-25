@@ -213,6 +213,44 @@
   font-weight: 700;
 }
 
+.grandTotalRowNoBorderBottom {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border-top: 1px dashed #000;
+  padding-top: 0.5rem;
+}
+
+.khataAddedRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.25rem 0 0.5rem 0.75rem;
+  border-bottom: 1px dashed #000;
+}
+
+.khataSummarySection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+  padding: 0.25rem 0;
+  font-size: 0.85rem;
+}
+
+.khataSummaryHeader {
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.khataSummaryRow {
+  display: flex;
+  justify-content: space-between;
+}
+
 /* PRINT MEDIA CSS RULES */
 @media print {
   /* Hide every single element in the DOM */

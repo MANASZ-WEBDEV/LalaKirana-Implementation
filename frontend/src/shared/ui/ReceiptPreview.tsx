@@ -34,6 +34,11 @@ export function ReceiptPreview({ bill }: ReceiptPreviewProps) {
   const savings = calculateSavings(items, products);
   const belowMrpLabel = getLabel('belowMRP', lang).replace(/%/g, savings.savingsPercent.toString() + '%');
 
+  const hasKhataData = bill.status === 'khata' && !!bill.customers;
+  const currentBalance = bill.customers?.total_balance ? Number(bill.customers.total_balance) : 0;
+  const thisPurchase = Number(bill.total) || 0;
+  const previousBalance = Math.max(0, currentBalance - thisPurchase);
+
   const dateStr = bill.created_at
     ? new Date(bill.created_at).toLocaleString('en-IN', {
         dateStyle: 'medium',
@@ -149,10 +154,16 @@ export function ReceiptPreview({ bill }: ReceiptPreviewProps) {
 
         {/* Total */}
         <div className={styles.totalSection}>
-          <div className={styles.grandTotalRow}>
+          <div className={bill.status === 'khata' ? styles.grandTotalRowNoBorderBottom : styles.grandTotalRow}>
             <span>{getLabel('grandTotal', lang)}:</span>
             <span className={styles.grandTotal}>₹{Number(bill.total).toFixed(2)}</span>
           </div>
+          {bill.status === 'khata' && (
+            <div className={styles.khataAddedRow}>
+              <span>  {getLabel('addedToKhata', lang)}:</span>
+              <span>₹{Number(bill.total).toFixed(2)}</span>
+            </div>
+          )}
         </div>
 
         {savings.hasSavings && (
@@ -162,6 +173,29 @@ export function ReceiptPreview({ bill }: ReceiptPreviewProps) {
               ₹{savings.totalSaved.toFixed(2)} ({belowMrpLabel})
             </span>
           </div>
+        )}
+
+        {hasKhataData && (
+          <>
+            <div className={styles.divider}>--------------------------------</div>
+            <div className={styles.khataSummarySection}>
+              <div className={styles.khataSummaryHeader}>
+                📒 {getLabel('khataSummary', lang)}
+              </div>
+              <div className={styles.khataSummaryRow}>
+                <span>{getLabel('prevBalance', lang)}:</span>
+                <span>₹{previousBalance.toFixed(2)}</span>
+              </div>
+              <div className={styles.khataSummaryRow}>
+                <span>{getLabel('thisPurchase', lang)}:</span>
+                <span>+₹{thisPurchase.toFixed(2)}</span>
+              </div>
+              <div className={styles.khataSummaryRow}>
+                <span>{getLabel('currentBalance', lang)}:</span>
+                <span className={styles.bold}>₹{currentBalance.toFixed(2)}</span>
+              </div>
+            </div>
+          </>
         )}
 
         <div className={styles.divider}>--------------------------------</div>

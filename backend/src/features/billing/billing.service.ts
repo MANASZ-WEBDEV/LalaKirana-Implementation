@@ -120,7 +120,7 @@ export const billingService = {
       .from('bills')
       .select(`
         *,
-        customers ( id, name, phone ),
+        customers ( id, name, phone, total_balance ),
         bill_items ( id, product_id, product_name, qty, unit_price, cost_price, subtotal ),
         users:created_by ( name )
       `)

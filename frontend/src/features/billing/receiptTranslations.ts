@@ -25,6 +25,11 @@ export const translations = {
     youPaid: 'You paid',
     youSaved: 'You saved',
     belowMRP: '% off MRP',
+    addedToKhata: 'Added to your khata',
+    khataSummary: 'Your Khata Summary',
+    prevBalance: 'Previous balance',
+    thisPurchase: 'This purchase',
+    currentBalance: 'Current balance',
   },
   hindi: {
     brandName: 'लालाकिराना',
@@ -50,6 +55,11 @@ export const translations = {
     youPaid: 'आपने दिया',
     youSaved: 'आपने बचाया',
     belowMRP: 'MRP से % कम',
+    addedToKhata: 'खाते में जोड़ा गया',
+    khataSummary: 'आपका खाता विवरण',
+    prevBalance: 'पिछला बकाया',
+    thisPurchase: 'यह ख़रीदारी',
+    currentBalance: 'वर्तमान बकाया',
   }
 };
 

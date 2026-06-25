@@ -24,6 +24,7 @@ export interface Bill {
     id: string;
     name: string;
     phone: string | null;
+    total_balance?: number | null;
   } | null;
   bill_items?: BillItem[];
   created_by_name?: string | null;
