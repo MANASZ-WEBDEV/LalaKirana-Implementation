@@ -64,7 +64,7 @@ export function RepaymentDrawer({
         previousBalance: outstandingBalance,
         amountPaid: repayAmt,
         remainingBalance: outstandingBalance - repayAmt,
-        date: res.created_at || new Date().toISOString(),
+        date: res.entry?.created_at || new Date().toISOString(),
       });
       setAmount('');
       setNote('');

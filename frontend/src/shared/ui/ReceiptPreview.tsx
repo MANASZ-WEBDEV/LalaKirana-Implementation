@@ -45,7 +45,7 @@ export function ReceiptPreview({ bill, repayment }: ReceiptPreviewProps) {
   const belowMrpLabel = getLabel('belowMRP', lang).replace(/%/g, savings.savingsPercent.toString() + '%');
 
   const hasKhataData = bill?.status === 'khata' && !!bill?.customers;
-  const currentBalance = bill?.customers?.total_balance ? Number(bill.customers.total_balance) : 0;
+  const currentBalance = Number(bill?.customers?.total_balance) || 0;
   const thisPurchase = Number(bill?.total) || 0;
   const previousBalance = Math.max(0, currentBalance - thisPurchase);
 
@@ -165,38 +165,38 @@ export function ReceiptPreview({ bill, repayment }: ReceiptPreviewProps) {
         <div className={styles.metaGrid}>
           <div className={styles.metaRow}>
             <span>{getLabel('billNo', lang)}:</span>
-            <span className={styles.bold}>{bill.bill_number || 'LK/XXXXX/XXXX'}</span>
+            <span className={styles.bold}>{bill?.bill_number || 'LK/XXXXX/XXXX'}</span>
           </div>
           <div className={styles.metaRow}>
             <span>{getLabel('date', lang)}:</span>
             <span>{dateStr}</span>
           </div>
-          {bill.created_by_name && (
+          {bill?.created_by_name && (
             <div className={styles.metaRow}>
               <span>{getLabel('cashier', lang)}:</span>
-              <span>{bill.created_by_name}</span>
+              <span>{bill?.created_by_name}</span>
             </div>
           )}
           <div className={styles.metaRow}>
             <span>{getLabel('mode', lang)}:</span>
-            <span className={styles.capitalize}>{formatModeStatus(bill.mode, bill.status, lang)}</span>
+            <span className={styles.capitalize}>{formatModeStatus(bill?.mode, bill?.status, lang)}</span>
           </div>
         </div>
 
         <div className={styles.divider}>--------------------------------</div>
 
         {/* Customer info (if available) */}
-        {(bill.customer_name || bill.customers?.name) && (
+        {(bill?.customer_name || bill?.customers?.name) && (
           <>
             <div className={styles.customerSection}>
               <div className={styles.metaRow}>
                 <span>{getLabel('customer', lang)}:</span>
-                <span className={styles.bold}>{bill.customer_name || bill.customers?.name}</span>
+                <span className={styles.bold}>{bill?.customer_name || bill?.customers?.name}</span>
               </div>
-              {(bill.customer_phone || bill.customers?.phone) && (
+              {(bill?.customer_phone || bill?.customers?.phone) && (
                 <div className={styles.metaRow}>
                   <span>{getLabel('phone', lang)}:</span>
-                  <span>{bill.customer_phone || bill.customers?.phone}</span>
+                  <span>{bill?.customer_phone || bill?.customers?.phone}</span>
                 </div>
               )}
             </div>
@@ -205,7 +205,7 @@ export function ReceiptPreview({ bill, repayment }: ReceiptPreviewProps) {
         )}
 
         {/* Items Table */}
-        {bill.mode === 'full' && items.length > 0 ? (
+        {bill?.mode === 'full' && items.length > 0 ? (
           <>
             <div className={styles.itemsHeader}>
               <span className={styles.itemCol}>{getLabel('item', lang)}</span>
@@ -227,11 +227,11 @@ export function ReceiptPreview({ bill, repayment }: ReceiptPreviewProps) {
             <div className={styles.divider}>--------------------------------</div>
           </>
         ) : (
-          bill.mode === 'quick' && (
+          bill?.mode === 'quick' && (
             <>
               <div className={styles.quickBillRow}>
-                <span>{getLabel('quickSale', lang)} {bill.note ? `(${bill.note})` : ''}</span>
-                <span>₹{Number(bill.total).toFixed(2)}</span>
+                <span>{getLabel('quickSale', lang)} {bill?.note ? `(${bill.note})` : ''}</span>
+                <span>₹{Number(bill?.total).toFixed(2)}</span>
               </div>
               <div className={styles.divider}>--------------------------------</div>
             </>
@@ -240,14 +240,14 @@ export function ReceiptPreview({ bill, repayment }: ReceiptPreviewProps) {
 
         {/* Total */}
         <div className={styles.totalSection}>
-          <div className={bill.status === 'khata' ? styles.grandTotalRowNoBorderBottom : styles.grandTotalRow}>
+          <div className={bill?.status === 'khata' ? styles.grandTotalRowNoBorderBottom : styles.grandTotalRow}>
             <span>{getLabel('grandTotal', lang)}:</span>
-            <span className={styles.grandTotal}>₹{Number(bill.total).toFixed(2)}</span>
+            <span className={styles.grandTotal}>₹{Number(bill?.total).toFixed(2)}</span>
           </div>
-          {bill.status === 'khata' && (
+          {bill?.status === 'khata' && (
             <div className={styles.khataAddedRow}>
               <span>  {getLabel('addedToKhata', lang)}:</span>
-              <span>₹{Number(bill.total).toFixed(2)}</span>
+              <span>₹{Number(bill?.total).toFixed(2)}</span>
             </div>
           )}
         </div>
