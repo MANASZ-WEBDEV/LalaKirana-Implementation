@@ -26,6 +26,28 @@
   margin-bottom: 0.35rem;
 }
 
+.plainInput {
+  width: 100%;
+  background: var(--color-white);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 0.85rem;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--color-on-surface);
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.plainInput:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 103, 99, 0.15);
+}
+
+.plainInput::placeholder {
+  color: var(--color-outline);
+}
+
 .searchWrapper {
   flex: 2;
   display: flex;

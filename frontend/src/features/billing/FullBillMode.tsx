@@ -1,6 +1,5 @@
 import { useBillingStore } from './billingStore';
 import { ProductSearch } from '@/shared/ui/ProductSearch';
-import { CustomerSearch } from '@/shared/ui/CustomerSearch';
 import { Button } from '@/shared/ui/Button';
 import type { Product } from '@/types/product.types';
 import styles from './FullBillMode.module.css';
@@ -38,12 +37,12 @@ export function FullBillMode({ onCheckout }: FullBillModeProps) {
       <div className={styles.topBar}>
         <div className={styles.customerInputWrapper}>
           <label className={styles.customerInputLabel}>Order Label / Slot Name</label>
-          <CustomerSearch
+          <input
+            type="text"
+            className={styles.plainInput}
             value={slot.customerName}
-            onChangeText={(val) => setCustomer(null, val)}
-            onSelect={(customer) => setCustomer(customer.id, customer.name)}
+            onChange={(e) => setCustomer(null, e.target.value)}
             placeholder="Search / type name..."
-            hideAddNew={true}
           />
         </div>
         <div className={styles.searchWrapper}>

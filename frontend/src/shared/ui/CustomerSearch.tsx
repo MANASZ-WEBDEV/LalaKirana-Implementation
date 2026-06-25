@@ -11,7 +11,6 @@ interface CustomerSearchProps {
   autoFocus?: boolean;
   value?: string;
   onChangeText?: (text: string) => void;
-  hideAddNew?: boolean;
 }
 
 export function CustomerSearch({
@@ -20,7 +19,6 @@ export function CustomerSearch({
   autoFocus = false,
   value,
   onChangeText,
-  hideAddNew = false,
 }: CustomerSearchProps) {
   const [query, setQuery] = useState(value || '');
   const [isOpen, setIsOpen] = useState(false);
@@ -76,7 +74,7 @@ export function CustomerSearch({
 
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      const maxIndex = hideAddNew ? customers.length - 1 : customers.length;
+      const maxIndex = customers.length;
       setActiveIndex((prev) => {
         const next = prev < maxIndex ? prev + 1 : prev;
         console.log('CustomerSearch ArrowDown:', { prev, next, maxIndex, customersCount: customers.length });
@@ -96,7 +94,7 @@ export function CustomerSearch({
         selectCustomer(customers[activeIndex]);
       } else if (customers.length > 0) {
         selectCustomer(customers[0]);
-      } else if (activeIndex === customers.length && query.trim() && !hideAddNew) {
+      } else if (activeIndex === customers.length && query.trim()) {
         setShowAddForm(true);
       }
     } else if (e.key === 'Escape') {
@@ -252,7 +250,7 @@ export function CustomerSearch({
                       </div>
                     </li>
                   ))}
-                  {query.trim().length > 0 && !hideAddNew && (
+                  {query.trim().length > 0 && (
                     <li
                       className={`${styles.resultItem} ${styles.addNewOption} ${
                         activeIndex === customers.length ? styles.activeItem : ''
