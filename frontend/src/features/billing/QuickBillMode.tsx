@@ -39,12 +39,13 @@ export function QuickBillMode({ onCheckout }: QuickBillModeProps) {
       {/* Customer Name input at top */}
       <div className={styles.topBar}>
         <div className={styles.customerInputWrapper}>
-          <label className={styles.customerInputLabel}>Customer Name (Optional)</label>
+          <label className={styles.customerInputLabel}>Order Label / Slot Name</label>
           <CustomerSearch
             value={slot.customerName}
             onChangeText={(val) => setCustomer(null, val)}
             onSelect={(customer) => setCustomer(customer.id, customer.name)}
             placeholder="Search / type name..."
+            hideAddNew={true}
           />
         </div>
       </div>

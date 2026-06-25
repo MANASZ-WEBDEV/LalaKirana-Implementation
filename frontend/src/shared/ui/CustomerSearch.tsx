@@ -11,6 +11,7 @@ interface CustomerSearchProps {
   autoFocus?: boolean;
   value?: string;
   onChangeText?: (text: string) => void;
+  hideAddNew?: boolean;
 }
 
 export function CustomerSearch({
@@ -19,6 +20,7 @@ export function CustomerSearch({
   autoFocus = false,
   value,
   onChangeText,
+  hideAddNew = false,
 }: CustomerSearchProps) {
   const [query, setQuery] = useState(value || '');
   const [isOpen, setIsOpen] = useState(false);
@@ -35,6 +37,7 @@ export function CustomerSearch({
   // Synchronize internal query state with value prop if controlled
   useEffect(() => {
     if (isControlled && value !== undefined) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setQuery(value);
     }
   }, [value, isControlled]);
@@ -49,6 +52,7 @@ export function CustomerSearch({
 
   // Reset active selection index when list results or query updates
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setActiveIndex(-1);
   }, [customers.length, debouncedQuery]);
 
@@ -72,7 +76,7 @@ export function CustomerSearch({
 
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      const maxIndex = customers.length;
+      const maxIndex = hideAddNew ? customers.length - 1 : customers.length;
       setActiveIndex((prev) => {
         const next = prev < maxIndex ? prev + 1 : prev;
         console.log('CustomerSearch ArrowDown:', { prev, next, maxIndex, customersCount: customers.length });
@@ -92,7 +96,7 @@ export function CustomerSearch({
         selectCustomer(customers[activeIndex]);
       } else if (customers.length > 0) {
         selectCustomer(customers[0]);
-      } else if (activeIndex === customers.length && query.trim()) {
+      } else if (activeIndex === customers.length && query.trim() && !hideAddNew) {
         setShowAddForm(true);
       }
     } else if (e.key === 'Escape') {
@@ -127,8 +131,9 @@ export function CustomerSearch({
       setIsOpen(false);
       setShowAddForm(false);
       setNewPhone('');
-    } catch (err: any) {
-      addToast('error', err.message || 'Failed to create customer');
+    } catch (err) {
+      const error = err as Error;
+      addToast('error', error.message || 'Failed to create customer');
     }
   };
 
@@ -247,7 +252,7 @@ export function CustomerSearch({
                       </div>
                     </li>
                   ))}
-                  {query.trim().length > 0 && (
+                  {query.trim().length > 0 && !hideAddNew && (
                     <li
                       className={`${styles.resultItem} ${styles.addNewOption} ${
                         activeIndex === customers.length ? styles.activeItem : ''
