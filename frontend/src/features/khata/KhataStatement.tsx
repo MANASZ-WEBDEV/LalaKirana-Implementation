@@ -2,10 +2,31 @@ import { useState } from 'react';
 import { useMonthlyStatement } from './khata.queries';
 import { Select } from '@/shared/ui/Select';
 import { useStoreSettings } from '@/features/settings/settings.queries';
+import { Modal } from '@/shared/ui/Modal';
+import { ReceiptPreview } from '@/shared/ui/ReceiptPreview';
+import { useBillDetail } from '@/features/billing/billing.queries';
 import styles from './KhataStatement.module.css';
 
 interface KhataStatementProps {
   customerId: string;
+}
+
+function BillDetailModal({ billId, onClose }: { billId: string; onClose: () => void }) {
+  const { data: bill, isLoading } = useBillDetail(billId);
+
+  return (
+    <Modal isOpen={true} onClose={onClose} title="Receipt Print Preview" maxWidth="450px">
+      <div className={styles.modalScrollable}>
+        {isLoading ? (
+          <div className={styles.loading}>Loading receipt details...</div>
+        ) : bill ? (
+          <ReceiptPreview bill={bill} />
+        ) : (
+          <div className={styles.error}>Failed to load receipt details.</div>
+        )}
+      </div>
+    </Modal>
+  );
 }
 
 export function KhataStatement({ customerId }: KhataStatementProps) {
@@ -15,6 +36,7 @@ export function KhataStatement({ customerId }: KhataStatementProps) {
   // State
   const [month, setMonth] = useState(currentMonth);
   const [year, setYear] = useState(currentYear);
+  const [selectedBillId, setSelectedBillId] = useState<string | null>(null);
 
   // Queries
   const { data: statement, isLoading } = useMonthlyStatement(customerId, {
@@ -182,7 +204,25 @@ export function KhataStatement({ customerId }: KhataStatementProps) {
                     <tr key={entry.id}>
                       <td>{new Date(entry.created_at).toLocaleDateString('en-IN')}</td>
                       <td>{entry.type === 'purchase' ? 'Catalog Purchase' : entry.note || 'Repayment'}</td>
-                      <td>{entry.bill_number || '-'}</td>
+                      <td>
+                        {entry.bill_number && entry.bill_id ? (
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            className={styles.billLink}
+                            onClick={() => setSelectedBillId(entry.bill_id)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                setSelectedBillId(entry.bill_id);
+                              }
+                            }}
+                          >
+                            {entry.bill_number}
+                          </span>
+                        ) : (
+                          '-'
+                        )}
+                      </td>
                       <td className={`${styles.rightAlign} ${styles.purchaseText}`}>
                         {entry.type === 'purchase' ? `₹${entry.amount.toFixed(2)}` : '-'}
                       </td>
@@ -222,6 +262,10 @@ export function KhataStatement({ customerId }: KhataStatementProps) {
           </div>
         </div>
       </div>
+
+      {selectedBillId && (
+        <BillDetailModal billId={selectedBillId} onClose={() => setSelectedBillId(null)} />
+      )}
     </div>
   );
 }
