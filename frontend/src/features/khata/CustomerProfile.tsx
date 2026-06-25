@@ -67,8 +67,9 @@ export default function CustomerProfile() {
       });
       addToast('success', 'Customer profile updated successfully');
       setIsEditing(false);
-    } catch (err: any) {
-      addToast('error', err.message || 'Failed to update customer profile');
+    } catch (err) {
+      const error = err as Error;
+      addToast('error', error.message || 'Failed to update customer profile');
     }
   };
 
@@ -271,6 +272,7 @@ export default function CustomerProfile() {
           customerId={id}
           customerName={profile.name}
           outstandingBalance={Number(profile.total_balance)}
+          customerPhone={profile.phone}
         />
       )}
 

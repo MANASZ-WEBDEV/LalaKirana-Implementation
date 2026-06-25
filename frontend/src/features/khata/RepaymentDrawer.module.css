@@ -97,3 +97,42 @@
 .submitBtn:hover:not(:disabled) {
   background-color: var(--color-primary-container) !important;
 }
+
+.successView {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1rem 0;
+}
+
+.successHeader {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.successIcon {
+  font-size: 3rem;
+}
+
+.receiptWrapper {
+  width: 100%;
+  max-width: 340px;
+  display: flex;
+  justify-content: center;
+}
+
+.doneBtnWrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.doneBtn {
+  width: 100%;
+  max-width: 200px;
+}

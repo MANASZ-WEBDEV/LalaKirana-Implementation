@@ -9,37 +9,52 @@ import {
   formatStoreName,
   formatFooterMessage,
   formatModeStatus,
+  formatThankYouPayment,
 } from '@/features/billing/receiptTranslations';
 
 interface ReceiptPreviewProps {
-  bill: Partial<Bill> & {
+  bill?: Partial<Bill> & {
     customer_name?: string | null;
     customer_phone?: string | null;
     created_by_name?: string | null;
   };
+  repayment?: {
+    customerName: string;
+    customerPhone?: string | null;
+    previousBalance: number;
+    amountPaid: number;
+    remainingBalance: number;
+    date?: string;
+  };
 }
 
-export function ReceiptPreview({ bill }: ReceiptPreviewProps) {
+export function ReceiptPreview({ bill, repayment }: ReceiptPreviewProps) {
   const { data: storeSettings, isLoading: isSettingsLoading } = useStoreSettings();
   const { data: productsData, isLoading: isProductsLoading } = useProducts();
 
+  const showRepayment = !!repayment;
   const lang = (storeSettings?.receipt_language || 'english') as Language;
   const storeName = formatStoreName(storeSettings?.store_name || 'LalaKirana', lang);
   const storeAddress = storeSettings?.store_address || '';
   const storePhone = storeSettings?.store_phone || '';
   const footerMessage = formatFooterMessage(storeSettings?.receipt_footer || 'Thank you! Visit again', lang);
 
-  const items = bill.bill_items || [];
+  const items = bill?.bill_items || [];
   const products = productsData || [];
   const savings = calculateSavings(items, products);
   const belowMrpLabel = getLabel('belowMRP', lang).replace(/%/g, savings.savingsPercent.toString() + '%');
 
-  const hasKhataData = bill.status === 'khata' && !!bill.customers;
-  const currentBalance = bill.customers?.total_balance ? Number(bill.customers.total_balance) : 0;
-  const thisPurchase = Number(bill.total) || 0;
+  const hasKhataData = bill?.status === 'khata' && !!bill?.customers;
+  const currentBalance = bill?.customers?.total_balance ? Number(bill.customers.total_balance) : 0;
+  const thisPurchase = Number(bill?.total) || 0;
   const previousBalance = Math.max(0, currentBalance - thisPurchase);
 
-  const dateStr = bill.created_at
+  const dateStr = repayment?.date
+    ? new Date(repayment.date).toLocaleString('en-IN', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      })
+    : bill?.created_at
     ? new Date(bill.created_at).toLocaleString('en-IN', {
         dateStyle: 'medium',
         timeStyle: 'short',
@@ -53,8 +68,79 @@ export function ReceiptPreview({ bill }: ReceiptPreviewProps) {
     window.print();
   };
 
-  if (isSettingsLoading || isProductsLoading) {
+  if (isSettingsLoading || (!showRepayment && isProductsLoading)) {
     return <div className={styles.loading}>Loading receipt details...</div>;
+  }
+
+  if (showRepayment && repayment) {
+    const thankYouRepay = formatThankYouPayment(repayment.customerName, lang);
+    return (
+      <div className={styles.container}>
+        <div className={styles.printActionArea}>
+          <button onClick={handlePrint} className={styles.printBtn}>
+            🖨️ Print Receipt
+          </button>
+        </div>
+
+        <div className={styles.receipt} id="receipt-print-area">
+          {/* Header */}
+          <div className={styles.header}>
+            <h2 className={styles.storeName}>{storeName}</h2>
+            {storeAddress && <p className={styles.storeDetail}>{storeAddress}</p>}
+            {storePhone && <p className={styles.storeDetail}>Ph: {storePhone}</p>}
+          </div>
+
+          <div className={styles.divider}>--------------------------------</div>
+
+          {/* Metadata */}
+          <div className={styles.metaGrid}>
+            <div className={styles.metaRow}>
+              <span>{getLabel('date', lang)}:</span>
+              <span>{dateStr}</span>
+            </div>
+            <div className={styles.metaRow}>
+              <span>{getLabel('customer', lang)}:</span>
+              <span className={styles.bold}>{repayment.customerName}</span>
+            </div>
+            {repayment.customerPhone && (
+              <div className={styles.metaRow}>
+                <span>{getLabel('phone', lang)}:</span>
+                <span>{repayment.customerPhone}</span>
+              </div>
+            )}
+          </div>
+
+          <div className={styles.divider}>--------------------------------</div>
+
+          {/* Khata Update Section */}
+          <div className={styles.khataSummarySection}>
+            <div className={styles.khataSummaryHeader}>
+              📒 {getLabel('khataUpdate', lang)}
+            </div>
+            <div className={styles.khataSummaryRow}>
+              <span>{getLabel('prevBalance', lang)}:</span>
+              <span>₹{repayment.previousBalance.toFixed(2)}</span>
+            </div>
+            <div className={styles.khataSummaryRow}>
+              <span>{getLabel('paymentReceived', lang)}:</span>
+              <span>-₹{repayment.amountPaid.toFixed(2)}</span>
+            </div>
+            <div className={styles.khataSummaryRow}>
+              <span>{getLabel('remainingBalance', lang)}:</span>
+              <span className={styles.bold}>₹{repayment.remainingBalance.toFixed(2)}</span>
+            </div>
+          </div>
+
+          <div className={styles.divider}>--------------------------------</div>
+
+          {/* Footer */}
+          <div className={styles.footer}>
+            <p className={styles.footerText}>{thankYouRepay}</p>
+            <p className={styles.footerSub}>LalaKirana Khandwa, Madhya Pradesh</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

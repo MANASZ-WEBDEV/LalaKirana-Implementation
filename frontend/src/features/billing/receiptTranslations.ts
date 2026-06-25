@@ -30,6 +30,9 @@ export const translations = {
     prevBalance: 'Previous balance',
     thisPurchase: 'This purchase',
     currentBalance: 'Current balance',
+    khataUpdate: 'Your Khata Update',
+    paymentReceived: 'Payment received',
+    remainingBalance: 'Remaining balance',
   },
   hindi: {
     brandName: 'लालाकिराना',
@@ -60,6 +63,9 @@ export const translations = {
     prevBalance: 'पिछला बकाया',
     thisPurchase: 'यह ख़रीदारी',
     currentBalance: 'वर्तमान बकाया',
+    khataUpdate: 'आपका खाता अपडेट',
+    paymentReceived: 'भुगतान प्राप्त हुआ',
+    remainingBalance: 'शेष बकाया',
   }
 };
 
@@ -118,4 +124,14 @@ export function formatModeStatus(mode: string | undefined, status: string | unde
     return hinString;
   }
   return engString;
+}
+
+export function formatThankYouPayment(name: string, lang: Language): string {
+  if (lang === 'bilingual') {
+    return `${name}, आपके भुगतान के लिए धन्यवाद! / Thank you for your payment, ${name}!`;
+  }
+  if (lang === 'hindi') {
+    return `${name}, आपके भुगतान के लिए धन्यवाद!`;
+  }
+  return `Thank you for your payment, ${name}!`;
 }
