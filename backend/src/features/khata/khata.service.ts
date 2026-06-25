@@ -161,6 +161,7 @@ export const khataService = {
       .eq('customer_id', customerId)
       .eq('is_deleted', false)
       .order('created_at', { ascending: false })
+      .order('type', { ascending: true })
       .range(offset, offset + limit - 1);
 
     if (error) {
@@ -249,7 +250,8 @@ export const khataService = {
       .eq('is_deleted', false)
       .gte('created_at', startDate.toISOString())
       .lte('created_at', endDate.toISOString())
-      .order('created_at', { ascending: true });
+      .order('created_at', { ascending: true })
+      .order('type', { ascending: false });
 
     const entries = (monthEntries || []).map((e: any) => ({
       ...e,

@@ -22,7 +22,7 @@ test.describe('Billing and Khata E2E Flow', () => {
 
     // Add Product A (Stocked)
     await page.getByRole('button', { name: 'Add Product' }).click();
-    const prodAName = `E2E Stocked ${Math.floor(Math.random() * 10000)}`;
+    const prodAName = `E2E Stocked ${Date.now()}`;
     await page.getByLabel('Product Name').fill(prodAName);
     await page.getByLabel('Selling Price (₹) *').fill('100.00');
     await page.getByLabel('Cost Price (₹)').fill('80.00');
@@ -33,7 +33,7 @@ test.describe('Billing and Khata E2E Flow', () => {
 
     // Add Product B (Out of stock)
     await page.getByRole('button', { name: 'Add Product' }).click();
-    const prodBName = `E2E OutOfStock ${Math.floor(Math.random() * 10000)}`;
+    const prodBName = `E2E OutOfStock ${Date.now()}`;
     await page.getByLabel('Product Name').fill(prodBName);
     await page.getByLabel('Selling Price (₹) *').fill('50.00');
     await page.getByLabel('Cost Price (₹)').fill('40.00');
@@ -49,7 +49,7 @@ test.describe('Billing and Khata E2E Flow', () => {
     // 4. Test Out-of-Stock selection blocking
     await page.getByPlaceholder('Type product name or scan barcode...').fill(prodBName);
     await page.waitForTimeout(500);
-    const outOfStockResult = page.locator('ul[class*="resultsList"] li', { hasText: prodBName });
+    const outOfStockResult = page.locator('ul[class*="resultsList"] li', { hasText: prodBName }).first();
     await expect(outOfStockResult).toBeVisible();
     await page.getByPlaceholder('Type product name or scan barcode...').press('ArrowDown');
     await expect(outOfStockResult).toHaveClass(/.*activeItem.*/);
@@ -64,7 +64,7 @@ test.describe('Billing and Khata E2E Flow', () => {
     // 5. Add Product A to Cart
     await page.getByPlaceholder('Type product name or scan barcode...').fill(prodAName);
     await page.waitForTimeout(500);
-    const stockedResult = page.locator('ul[class*="resultsList"] li', { hasText: prodAName });
+    const stockedResult = page.locator('ul[class*="resultsList"] li', { hasText: prodAName }).first();
     await expect(stockedResult).toBeVisible();
     await page.getByPlaceholder('Type product name or scan barcode...').press('ArrowDown');
     await expect(stockedResult).toHaveClass(/.*activeItem.*/);
@@ -85,7 +85,7 @@ test.describe('Billing and Khata E2E Flow', () => {
     await page.getByRole('button', { name: '💰 Paid (Cash/UPI)' }).click();
 
     // Create a new customer inside the Search using keyboard navigation
-    const custName = `E2E Cust ${Math.floor(Math.random() * 10000)}`;
+    const custName = `E2E Cust ${Date.now()}`;
     await page.getByPlaceholder('Search customer name...').fill(custName);
     await page.waitForTimeout(500);
     const addNewResult = page.locator('div[class*="dropdownMenu"] li').filter({ hasText: 'Add new customer' }).first();
@@ -151,5 +151,78 @@ test.describe('Billing and Khata E2E Flow', () => {
 
     // Verify Outstanding Due is now ₹300.00
     await expect(page.locator('div[class*="outstandingCard"] span[class*="statVal"]')).toHaveText('₹300.00');
+  });
+
+  test('should link paid bill with customer to khata account without changing outstanding balance', async ({ page }) => {
+    test.setTimeout(60000);
+    // Listen to console and page errors for debugging
+    page.on('console', msg => console.log('BROWSER CONSOLE:', msg.text()));
+    page.on('pageerror', err => console.log('BROWSER ERROR:', err.message));
+
+    // 1. Login
+    await page.goto('/login');
+    await page.getByLabel('Email Address').fill('manasrajanidy89@gmail.com');
+    await page.getByLabel('Password').fill('changeme123456');
+    await page.getByRole('button', { name: 'Sign In' }).click();
+    await expect(page).toHaveURL(/.*dashboard/);
+
+    // 2. Go to Billing Page
+    await page.getByRole('link', { name: 'Billing' }).click();
+    await expect(page).toHaveURL(/.*billing/);
+
+    // 3. Add an item to cart
+    await page.getByPlaceholder('Type product name or scan barcode...').fill('Aashirvaad Shudh Chakki Atta');
+    await page.waitForTimeout(500);
+    const productResult = page.locator('ul[class*="resultsList"] li', { hasText: 'Aashirvaad' }).first();
+    await expect(productResult).toBeVisible();
+    await page.getByPlaceholder('Type product name or scan barcode...').press('ArrowDown');
+    await expect(productResult).toHaveClass(/.*activeItem.*/);
+    await page.getByPlaceholder('Type product name or scan barcode...').press('Enter');
+
+    // Verify item in cart
+    await expect(page.locator('tbody tr')).toHaveCount(1);
+
+    // 4. Link customer on main billing screen using the new CustomerSearch field
+    const custName = `Paid Link Cust ${Date.now()}`;
+    await page.getByPlaceholder('Search / type name...').fill(custName);
+    await page.waitForTimeout(500);
+    const addNewResult = page.locator('div[class*="dropdownMenu"] li').filter({ hasText: 'Add new customer' }).first();
+    await expect(addNewResult).toBeVisible();
+    await addNewResult.click();
+    await page.getByPlaceholder('e.g. 9876543210').fill('9876543210');
+    await page.getByRole('button', { name: 'Create & Select' }).click();
+
+    // 5. Open checkout drawer by clicking "Paid (Cash/UPI)"
+    await page.getByRole('button', { name: '💰 Paid (Cash/UPI)' }).click();
+
+    // Verify customer is already linked in the checkout drawer
+    await expect(page.getByText(`Linked: ${custName}`)).toBeVisible();
+
+    // 6. Enter cash received to enable confirm button
+    await page.getByPlaceholder('Enter cash received...').fill('1000');
+
+    // Confirm the bill
+    const confirmBtn = page.getByRole('button', { name: 'Confirm & Print' });
+    await expect(confirmBtn).toBeEnabled();
+    await confirmBtn.click();
+    await expect(page.getByText('Bill Saved Successfully')).toBeVisible();
+
+    // Done and clear
+    await page.getByRole('button', { name: 'Done & Clear Slot' }).click();
+
+    // 7. Go to Khata Page to verify ledger entries and balance
+    await page.getByRole('link', { name: 'Khata' }).click();
+    await expect(page).toHaveURL(/.*khata/);
+
+    await page.getByPlaceholder('Search customer by name or phone number...').fill(custName);
+    await page.waitForTimeout(500);
+    await page.getByText(custName, { exact: true }).click();
+
+    // Outstanding Due should be ₹0.00 because they paid in full!
+    await expect(page.locator('div[class*="outstandingCard"] span[class*="statVal"]')).toHaveText('₹0.00');
+
+    // The transactions list should contain a "purchase" entry and a "payment" entry for the same amount
+    await expect(page.getByText('purchase', { exact: false }).first()).toBeVisible();
+    await expect(page.getByText('payment', { exact: false }).first()).toBeVisible();
   });
 });

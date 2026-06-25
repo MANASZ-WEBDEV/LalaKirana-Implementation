@@ -1,4 +1,5 @@
 import { useBillingStore } from './billingStore';
+import { CustomerSearch } from '@/shared/ui/CustomerSearch';
 import { Button } from '@/shared/ui/Button';
 import styles from './QuickBillMode.module.css';
 
@@ -39,11 +40,10 @@ export function QuickBillMode({ onCheckout }: QuickBillModeProps) {
       <div className={styles.topBar}>
         <div className={styles.customerInputWrapper}>
           <label className={styles.customerInputLabel}>Order Label / Slot Name</label>
-          <input
-            type="text"
-            className={styles.plainInput}
+          <CustomerSearch
             value={slot.customerName}
-            onChange={(e) => setCustomer(null, e.target.value)}
+            onSelect={(customer) => setCustomer(customer.id, customer.name)}
+            onChangeText={(text) => setCustomer(null, text)}
             placeholder="Search / type name..."
           />
         </div>
