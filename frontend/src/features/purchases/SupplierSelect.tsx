@@ -99,10 +99,15 @@ export function SupplierSelect({ onSelect, selectedSupplier, placeholder = 'Sear
     if (e) e.preventDefault();
     if (!query.trim()) return;
 
+    if (!newPhone.trim()) {
+      addToast('error', 'Phone number is required');
+      return;
+    }
+
     try {
       const newSupplier = await createSupplierMutation.mutateAsync({
         name: query.trim(),
-        phone: newPhone.trim() || null,
+        phone: newPhone.trim(),
         address: newAddress.trim() || null,
       });
       addToast('success', `Supplier "${newSupplier.name}" created successfully`);
@@ -180,13 +185,14 @@ export function SupplierSelect({ onSelect, selectedSupplier, placeholder = 'Sear
                 />
               </div>
               <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Phone (Optional)</label>
+                <label className={styles.formLabel}>Phone *</label>
                 <input
                   type="text"
                   value={newPhone}
                   onChange={(e) => setNewPhone(e.target.value)}
                   className={styles.formInput}
                   onKeyDown={handleInputKeyDown}
+                  required
                   placeholder="e.g. 9876543210"
                 />
               </div>

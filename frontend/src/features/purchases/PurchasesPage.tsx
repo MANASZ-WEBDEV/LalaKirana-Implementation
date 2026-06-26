@@ -72,10 +72,15 @@ export default function PurchasesPage() {
     e.preventDefault();
     if (!supName.trim()) return;
 
+    if (!supPhone.trim()) {
+      addToast('error', 'Phone number is required.');
+      return;
+    }
+
     try {
       await createSupplierMutation.mutateAsync({
         name: supName.trim(),
-        phone: supPhone.trim() || null,
+        phone: supPhone.trim(),
         address: supAddress.trim() || null,
         note: supNote.trim() || null,
       });
@@ -442,12 +447,13 @@ export default function PurchasesPage() {
               />
             </div>
             <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Phone Number (Optional)</label>
+              <label className={styles.formLabel}>Phone Number *</label>
               <input
                 type="text"
                 value={supPhone}
                 onChange={(e) => setSupPhone(e.target.value)}
                 className={styles.formInput}
+                required
                 placeholder="e.g. 9876543210"
               />
             </div>

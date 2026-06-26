@@ -90,6 +90,8 @@ test.describe('Inventory Flow', () => {
     const addNewSupplier = page.locator('div[class*="dropdownMenu"] li').filter({ hasText: 'Add new supplier' }).first();
     await expect(addNewSupplier).toBeVisible();
     await addNewSupplier.click();
+    // Fill in required phone number
+    await page.getByPlaceholder('e.g. 9876543210').fill('9876543210');
     await page.getByRole('button', { name: 'Create & Select' }).click();
     await expect(page.getByText('created successfully')).toBeVisible({ timeout: 20000 });
 
