@@ -253,8 +253,8 @@ export const purchasesService = {
       .select(`
         *,
         purchase_order_items (
-          id, product_id, product_name, qty, cost_price, sell_price,
-          previous_cost, previous_sell
+          id, product_id, product_name, qty, cost_price, sell_price, mrp,
+          previous_cost, previous_sell, previous_mrp
         )
       `)
       .eq('id', poId)
@@ -292,8 +292,10 @@ export const purchasesService = {
       qty: item.qty,
       cost_price: Number(item.cost_price),
       sell_price: item.sell_price ? Number(item.sell_price) : null,
+      mrp: item.mrp ? Number(item.mrp) : null,
       previous_cost: item.previous_cost ? Number(item.previous_cost) : null,
       previous_sell: item.previous_sell ? Number(item.previous_sell) : null,
+      previous_mrp: item.previous_mrp ? Number(item.previous_mrp) : null,
       reference_number: item.purchase_orders?.reference_number,
     }));
   },

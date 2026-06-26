@@ -121,7 +121,7 @@
 }
 
 .itemCol {
-  width: 35%;
+  width: 30%;
 }
 
 .itemNameWrapper {
@@ -140,10 +140,14 @@
   color: var(--color-outline);
 }
 
-.qtyCol,
+.qtyCol {
+  width: 10%;
+}
+
 .costCol,
+.mrpCol,
 .sellCol {
-  width: 15%;
+  width: 14%;
 }
 
 .tableInput {
@@ -163,7 +167,7 @@
 }
 
 .marginCol {
-  width: 15%;
+  width: 13%;
   font-weight: 600;
   color: var(--color-primary);
 }

@@ -47,7 +47,8 @@ const PurchaseItemSchema = z.object({
   qty: z.number().int().positive('Quantity must be positive'),
   cost_price: z.number().min(0, 'Cost price must be non-negative'),
   sell_price: z.number().min(0, 'Sell price must be non-negative').optional().nullable(),
-  // null = keep existing sell price
+  mrp: z.number().min(0, 'MRP must be non-negative').optional().nullable(),
+  // null = keep existing sell price / MRP
 });
 
 export const CreatePurchaseOrderSchema = z.object({

@@ -650,6 +650,7 @@ function PurchaseOrderItemsList({ poId }: { poId: string }) {
           <th>Product</th>
           <th>Qty</th>
           <th>Cost Price</th>
+          <th>MRP</th>
           <th>Sell Price</th>
         </tr>
       </thead>
@@ -659,6 +660,7 @@ function PurchaseOrderItemsList({ poId }: { poId: string }) {
             <td>{item.product_name}</td>
             <td>{item.qty}</td>
             <td>₹{Number(item.cost_price).toFixed(2)}</td>
+            <td>{item.mrp ? `₹${Number(item.mrp).toFixed(2)}` : 'Keep Existing'}</td>
             <td>{item.sell_price ? `₹${Number(item.sell_price).toFixed(2)}` : 'Keep Existing'}</td>
           </tr>
         ))}

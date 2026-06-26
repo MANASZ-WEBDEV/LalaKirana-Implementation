@@ -17,8 +17,10 @@ export interface PurchaseItem {
   qty: number;
   cost_price: number;
   sell_price: number | null;
+  mrp: number | null;
   previous_cost?: number;
   previous_sell?: number;
+  previous_mrp?: number;
 }
 
 export interface PurchaseOrder {
@@ -60,6 +62,7 @@ export interface CreatePurchaseItemInput {
   qty: number;
   cost_price: number;
   sell_price?: number | null;
+  mrp?: number | null;
 }
 
 export interface CreatePurchaseOrderInput {

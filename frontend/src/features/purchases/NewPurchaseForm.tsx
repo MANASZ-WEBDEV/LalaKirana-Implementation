@@ -18,8 +18,10 @@ interface PurchaseOrderItemInput {
   qty: number;
   cost_price: number;
   sell_price: number | null;
+  mrp: number | null;
   unit: string;
   current_sell_price: number;
+  current_mrp: number | null;
 }
 
 export function NewPurchaseForm() {
@@ -57,8 +59,10 @@ export function NewPurchaseForm() {
           qty: 1,
           cost_price: preloadedProduct.cost_price,
           sell_price: null,
+          mrp: null,
           unit: preloadedProduct.unit,
           current_sell_price: preloadedProduct.price,
+          current_mrp: preloadedProduct.mrp,
         },
       ]);
       setHasAddedPreloaded(true);
@@ -89,8 +93,10 @@ export function NewPurchaseForm() {
         qty: 1,
         cost_price: product.cost_price,
         sell_price: null, // Keep existing unless specified
+        mrp: null,
         unit: product.unit,
         current_sell_price: product.price,
+        current_mrp: product.mrp,
       },
     ]);
   };
@@ -101,7 +107,7 @@ export function NewPurchaseForm() {
 
   const handleItemFieldChange = (
     productId: string,
-    field: 'qty' | 'cost_price' | 'sell_price',
+    field: 'qty' | 'cost_price' | 'sell_price' | 'mrp',
     value: string
   ) => {
     setItems((prev) =>
@@ -115,7 +121,7 @@ export function NewPurchaseForm() {
 
         let parsedVal: number | null = parseFloat(cleanValue);
         if (isNaN(parsedVal)) {
-          parsedVal = field === 'sell_price' ? null : 0;
+          parsedVal = (field === 'sell_price' || field === 'mrp') ? null : 0;
         }
 
         return {
@@ -181,6 +187,7 @@ export function NewPurchaseForm() {
           qty: item.qty,
           cost_price: item.cost_price,
           sell_price: item.sell_price,
+          mrp: item.mrp,
         })),
       };
 
@@ -242,6 +249,7 @@ export function NewPurchaseForm() {
                 <th className={styles.itemCol}>Product Item</th>
                 <th className={styles.qtyCol}>Qty</th>
                 <th className={styles.costCol}>Cost Price (₹)</th>
+                <th className={styles.mrpCol}>MRP (₹)</th>
                 <th className={styles.sellCol}>Sell Price (₹)</th>
                 <th className={styles.marginCol}>Est. Margin %</th>
                 <th className={styles.actionCol}></th>
@@ -250,7 +258,7 @@ export function NewPurchaseForm() {
             <tbody>
               {items.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className={styles.emptyTable}>
+                  <td colSpan={7} className={styles.emptyTable}>
                     No products added. Use the search bar above to add products.
                   </td>
                 </tr>
@@ -288,6 +296,17 @@ export function NewPurchaseForm() {
                           placeholder="Cost Price"
                           min={0.01}
                           required
+                        />
+                      </td>
+                      <td className={styles.mrpCol}>
+                        <input
+                          type="number"
+                          step="any"
+                          value={item.mrp === null ? '' : item.mrp}
+                          onChange={(e) => handleItemFieldChange(item.product_id, 'mrp', e.target.value)}
+                          className={styles.tableInput}
+                          placeholder={item.current_mrp ? `Current: ${item.current_mrp}` : 'MRP'}
+                          min={0.01}
                         />
                       </td>
                       <td className={styles.sellCol}>
