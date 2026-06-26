@@ -57,7 +57,7 @@ export const CreatePurchaseOrderSchema = z.object({
     supplier_name: z.string().min(1, 'Supplier name is required'),
     order_date: z.string().optional(),
     // ISO date string, defaults to today
-    reference_number: z.string().max(50).optional().nullable(),
+    reference_number: z.string().min(1, 'Reference invoice bill number is required').max(50),
     // seller's paper bill number
     payment_status: z.enum(['paid', 'credit', 'partial']).default('paid'),
     amount_paid: z.number().min(0).optional().default(0),

@@ -93,6 +93,9 @@ test.describe('Inventory Flow', () => {
     await page.getByRole('button', { name: 'Create & Select' }).click();
     await expect(page.getByText('created successfully')).toBeVisible({ timeout: 20000 });
 
+    // Fill in required Reference Invoice Bill #
+    await page.getByLabel('Reference Invoice Bill # *').fill('E2E-INV-9999');
+
     // 6. Add product to order
     await page.getByPlaceholder('Type product name to add to order...').fill(productName);
     await page.waitForTimeout(500);

@@ -69,7 +69,7 @@ export interface CreatePurchaseOrderInput {
   supplier_id?: string | null;
   supplier_name: string;
   order_date?: string;
-  reference_number?: string | null;
+  reference_number: string;
   payment_status: 'paid' | 'credit' | 'partial';
   amount_paid?: number;
   note?: string | null;

@@ -150,6 +150,11 @@ export function NewPurchaseForm() {
       return;
     }
 
+    if (!referenceNumber.trim()) {
+      addToast('error', 'Please enter reference invoice bill number.');
+      return;
+    }
+
     if (items.length === 0) {
       addToast('error', 'Please add at least one item to purchase.');
       return;
@@ -172,7 +177,7 @@ export function NewPurchaseForm() {
         supplier_id: selectedSupplier.id,
         supplier_name: selectedSupplier.name,
         order_date: orderDate,
-        reference_number: referenceNumber.trim() || null,
+        reference_number: referenceNumber.trim(),
         payment_status: paymentStatus,
         amount_paid:
           paymentStatus === 'paid'
@@ -227,10 +232,11 @@ export function NewPurchaseForm() {
               required
             />
             <Input
-              label="Reference Invoice Bill #"
+              label="Reference Invoice Bill # *"
               placeholder="e.g. INV-2831"
               value={referenceNumber}
               onChange={(e) => setReferenceNumber(e.target.value)}
+              required
             />
           </div>
         </div>
