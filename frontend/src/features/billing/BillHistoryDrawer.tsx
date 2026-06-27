@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Drawer } from '@/shared/ui/Drawer';
 import { Modal } from '@/shared/ui/Modal';
 import { Input } from '@/shared/ui/Input';
@@ -17,16 +18,21 @@ interface BillHistoryDrawerProps {
   onClose: () => void;
 }
 
-type DateFilter = 'today' | 'yesterday' | 'week' | 'month' | 'all';
+type DateFilter = 'today' | 'yesterday' | 'week' | 'month' | 'this_month' | 'last_month' | 'custom' | 'all';
 
 export function BillHistoryDrawer({ isOpen, onClose }: BillHistoryDrawerProps) {
   const user = useAuthStore((s) => s.user);
   const isOwner = user?.role === 'owner';
   const addToast = useToastStore((s) => s.addToast);
 
+  const [searchParams, setSearchParams] = useSearchParams();
+  const billParam = searchParams.get('bill');
+
   // Filter States
-  const [search, setSearch] = useState('');
-  const [dateFilter, setDateFilter] = useState<DateFilter>('today');
+  const [search, setSearch] = useState(billParam || '');
+  const [dateFilter, setDateFilter] = useState<DateFilter>(billParam ? 'all' : 'today');
+  const [customFrom, setCustomFrom] = useState('');
+  const [customTo, setCustomTo] = useState('');
   const [status, setStatus] = useState<Bill['status'] | 'all'>('all');
   const [mode, setMode] = useState<Bill['mode'] | 'all'>('all');
   const [page, setPage] = useState(1);
@@ -41,29 +47,75 @@ export function BillHistoryDrawer({ isOpen, onClose }: BillHistoryDrawerProps) {
   // Reprint State
   const [reprintBill, setReprintBill] = useState<Bill | null>(null);
 
+  // Prefill search filter if billParam changes
+  useEffect(() => {
+    if (isOpen && billParam) {
+      setSearch(billParam);
+      setDateFilter('all');
+      setPage(1);
+    }
+  }, [isOpen, billParam]);
+
+  const handleClose = () => {
+    if (searchParams.has('bill')) {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('bill');
+      setSearchParams(newParams);
+    }
+    onClose();
+  };
+
   // Calculate dates based on filter
   const getDates = () => {
-    const today = new Date().toISOString().split('T')[0];
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
     let date_from: string | undefined;
     let date_to: string | undefined;
 
-    if (dateFilter === 'today') {
-      date_from = today;
-      date_to = today;
-    } else if (dateFilter === 'yesterday') {
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().split('T')[0];
-      date_from = yesterdayStr;
-      date_to = yesterdayStr;
-    } else if (dateFilter === 'week') {
-      const oneWeekAgo = new Date();
-      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-      date_from = oneWeekAgo.toISOString().split('T')[0];
-    } else if (dateFilter === 'month') {
-      const oneMonthAgo = new Date();
-      oneMonthAgo.setDate(oneMonthAgo.getDate() - 30);
-      date_from = oneMonthAgo.toISOString().split('T')[0];
+    switch (dateFilter) {
+      case 'today':
+        date_from = today;
+        date_to = today;
+        break;
+      case 'yesterday': {
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yStr = yesterday.toISOString().split('T')[0];
+        date_from = yStr;
+        date_to = yStr;
+        break;
+      }
+      case 'week': {
+        const d = new Date(now);
+        d.setDate(d.getDate() - 7);
+        date_from = d.toISOString().split('T')[0];
+        break;
+      }
+      case 'month': {
+        const d = new Date(now);
+        d.setDate(d.getDate() - 30);
+        date_from = d.toISOString().split('T')[0];
+        break;
+      }
+      case 'this_month': {
+        date_from = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+        date_to = today;
+        break;
+      }
+      case 'last_month': {
+        const firstOfLast = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const lastOfLast = new Date(now.getFullYear(), now.getMonth(), 0);
+        date_from = firstOfLast.toISOString().split('T')[0];
+        date_to = lastOfLast.toISOString().split('T')[0];
+        break;
+      }
+      case 'custom':
+        date_from = customFrom || undefined;
+        date_to = customTo || undefined;
+        break;
+      case 'all':
+        // no filters
+        break;
     }
 
     return { date_from, date_to };
@@ -107,6 +159,13 @@ export function BillHistoryDrawer({ isOpen, onClose }: BillHistoryDrawerProps) {
   const bills = data?.bills || [];
   const totalPages = data?.totalPages || 1;
 
+  // Automatically expand if search leads to a single matching bill
+  useEffect(() => {
+    if (bills.length === 1 && search.trim() && bills[0].bill_number === search.trim()) {
+      setExpandedBillId(bills[0].id);
+    }
+  }, [bills, search]);
+
   const getStatusBadge = (billStatus: Bill['status']) => {
     switch (billStatus) {
       case 'paid':
@@ -122,7 +181,7 @@ export function BillHistoryDrawer({ isOpen, onClose }: BillHistoryDrawerProps) {
 
   return (
     <>
-      <Drawer isOpen={isOpen} onClose={onClose} title="Billing History">
+      <Drawer isOpen={isOpen} onClose={handleClose} title="Billing History">
         <div className={styles.container}>
           {/* Filters Area */}
           <div className={styles.filtersCard}>
@@ -143,12 +202,19 @@ export function BillHistoryDrawer({ isOpen, onClose }: BillHistoryDrawerProps) {
                   setDateFilter(e.target.value as DateFilter);
                   setPage(1);
                 }}
-                options={[
+                options={isOwner ? [
                   { value: 'today', label: 'Today' },
                   { value: 'yesterday', label: 'Yesterday' },
                   { value: 'week', label: 'Last 7 Days' },
                   { value: 'month', label: 'Last 30 Days' },
-                  { value: 'all', label: 'All Dates' },
+                  { value: 'this_month', label: 'This Month' },
+                  { value: 'last_month', label: 'Last Month' },
+                  { value: 'custom', label: 'Custom Range' },
+                  { value: 'all', label: 'All Time' },
+                ] : [
+                  { value: 'today', label: 'Today' },
+                  { value: 'yesterday', label: 'Yesterday' },
+                  { value: 'week', label: 'Last 7 Days' },
                 ]}
               />
               <Select
@@ -177,6 +243,33 @@ export function BillHistoryDrawer({ isOpen, onClose }: BillHistoryDrawerProps) {
                 ]}
               />
             </div>
+
+            {/* Custom Date Range Pickers */}
+            {dateFilter === 'custom' && (
+              <div className={styles.customDateRow}>
+                <div className={styles.dateField}>
+                  <label className={styles.dateLabel}>From</label>
+                  <input
+                    type="date"
+                    value={customFrom}
+                    onChange={(e) => { setCustomFrom(e.target.value); setPage(1); }}
+                    className={styles.dateInput}
+                    max={customTo || new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+                <div className={styles.dateField}>
+                  <label className={styles.dateLabel}>To</label>
+                  <input
+                    type="date"
+                    value={customTo}
+                    onChange={(e) => { setCustomTo(e.target.value); setPage(1); }}
+                    className={styles.dateInput}
+                    min={customFrom}
+                    max={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* List Area */}

@@ -25,6 +25,46 @@
   gap: 0.5rem;
 }
 
+.customDateRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  padding-top: 0.25rem;
+  border-top: 1px solid var(--color-outline-variant);
+}
+
+.dateField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.dateLabel {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.dateInput {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--color-on-surface);
+  background: var(--color-white);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.dateInput:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(0, 103, 99, 0.08);
+}
+
 .listSection {
   flex: 1;
   overflow-y: auto;
