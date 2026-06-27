@@ -8,6 +8,7 @@ import {
   StatementQuerySchema,
 } from './khata.schema.js';
 import { authMiddleware } from '../../middleware/auth.middleware.js';
+import { requireOwner } from '../../middleware/role.middleware.js';
 import { validateRequest } from '../../middleware/validate.middleware.js';
 
 const router = Router();
@@ -106,6 +107,7 @@ router.get(
  */
 router.post(
   '/:id/repay',
+  requireOwner,
   validateRequest(RepaymentSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     try {

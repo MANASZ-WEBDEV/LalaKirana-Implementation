@@ -19,6 +19,7 @@ const router = Router();
 
 // All purchase routes require authentication
 router.use(authMiddleware);
+router.use(requireOwner);
 
 // ─── SUPPLIERS ───────────────────────────────────
 

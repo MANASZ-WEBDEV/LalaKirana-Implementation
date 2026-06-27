@@ -37,7 +37,29 @@ router.get(
   validateRequest(BillHistoryQuerySchema),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const result = await billingService.getBills(req.query as any);
+      const userRole = req.user?.role;
+      if (userRole !== 'owner') {
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        const maxAllowedDate = sevenDaysAgo.toISOString().split('T')[0];
+        
+        if (!req.query.date_from || (req.query.date_from as string) < maxAllowedDate) {
+          req.query.date_from = maxAllowedDate;
+        }
+      }
+
+      let result = await billingService.getBills(req.query as any);
+
+      if (userRole !== 'owner') {
+        result.bills = result.bills.map((bill: any) => ({
+          ...bill,
+          bill_items: (bill.bill_items || []).map((item: any) => ({
+            ...item,
+            cost_price: null,
+          })),
+        }));
+      }
+
       res.json(result);
     } catch (err) {
       next(err);
@@ -70,6 +92,14 @@ router.get(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const bill = await billingService.getBillById(req.params.id as string);
+      if (req.user?.role !== 'owner') {
+        if (bill.bill_items) {
+          bill.bill_items = bill.bill_items.map((item: any) => ({
+            ...item,
+            cost_price: null,
+          }));
+        }
+      }
       res.json(bill);
     } catch (err) {
       next(err);

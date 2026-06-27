@@ -11,7 +11,10 @@ export const productsController = {
       };
       
       const includeInactive = req.user?.role === 'owner';
-      const products = await productsService.getAllProducts(filters, includeInactive);
+      let products = await productsService.getAllProducts(filters, includeInactive);
+      if (req.user?.role !== 'owner') {
+        products = products.map((p) => ({ ...p, cost_price: null }));
+      }
       return res.json(products);
     } catch (err: any) {
       console.error('Get all products error:', err);
@@ -23,6 +26,9 @@ export const productsController = {
     try {
       const id = req.params.id as string;
       const product = await productsService.getProductById(id);
+      if (req.user?.role !== 'owner') {
+        product.cost_price = null as any;
+      }
       return res.json(product);
     } catch (err: any) {
       console.error('Get product by ID error:', err);
@@ -33,6 +39,9 @@ export const productsController = {
   createProduct: async (req: Request, res: Response) => {
     try {
       const product = await productsService.createProduct(req.body);
+      if (req.user?.role !== 'owner') {
+        product.cost_price = null as any;
+      }
       return res.status(201).json(product);
     } catch (err: any) {
       console.error('Create product error:', err);
@@ -42,9 +51,15 @@ export const productsController = {
 
   updateProduct: async (req: Request, res: Response) => {
     try {
+      if (req.user?.role !== 'owner' && req.body.hasOwnProperty('is_active')) {
+        return res.status(403).json({ message: 'Forbidden: Staff cannot update active status of a product' });
+      }
       const id = req.params.id as string;
       const userId = req.user!.id;
       const product = await productsService.updateProduct(id, req.body, userId);
+      if (req.user?.role !== 'owner') {
+        product.cost_price = null as any;
+      }
       return res.json(product);
     } catch (err: any) {
       console.error('Update product error:', err);
@@ -99,6 +114,32 @@ export const productsController = {
     } catch (err: any) {
       console.error('Create category error:', err);
       return res.status(400).json({ message: err.message || 'Failed to create category' });
+    }
+  },
+
+  updateCategory: async (req: Request, res: Response) => {
+    try {
+      const id = req.params.id as string;
+      const { name } = req.body;
+      if (!name) {
+        return res.status(400).json({ message: 'Category name is required' });
+      }
+      const category = await productsService.updateCategory(id, name);
+      return res.json(category);
+    } catch (err: any) {
+      console.error('Update category error:', err);
+      return res.status(400).json({ message: err.message || 'Failed to update category' });
+    }
+  },
+
+  deleteCategory: async (req: Request, res: Response) => {
+    try {
+      const id = req.params.id as string;
+      const result = await productsService.deleteCategory(id);
+      return res.json(result);
+    } catch (err: any) {
+      console.error('Delete category error:', err);
+      return res.status(400).json({ message: err.message || 'Failed to delete category' });
     }
   },
 

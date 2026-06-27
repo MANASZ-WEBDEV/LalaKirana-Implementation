@@ -4,7 +4,7 @@ export interface DashboardStats {
   totalProducts: number;
   lowStockCount: number;
   outOfStockCount: number;
-  inventoryValue: number;
+  inventoryValue: number | null;
 }
 
 export interface LowStockProduct {

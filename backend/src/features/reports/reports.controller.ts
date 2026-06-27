@@ -2,9 +2,12 @@ import { Request, Response } from 'express';
 import { reportsService } from './reports.service.js';
 
 export const reportsController = {
-  getDashboardStats: async (_req: Request, res: Response) => {
+  getDashboardStats: async (req: Request, res: Response) => {
     try {
       const stats = await reportsService.getDashboardStats();
+      if (req.user?.role !== 'owner') {
+        stats.inventoryValue = null;
+      }
       return res.json(stats);
     } catch (err: any) {
       console.error('Dashboard stats error:', err);
