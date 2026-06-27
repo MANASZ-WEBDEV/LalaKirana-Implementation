@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useProducts, useCategories, useSoftDeleteProduct } from './inventory.queries';
 import { CategoryTabs } from './CategoryTabs';
@@ -35,6 +35,20 @@ export default function InventoryPage() {
   const stockFilter = (searchParams.get('status') as 'all' | 'in' | 'low' | 'out') || 'all';
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState('');
+
+  const categoryParam = searchParams.get('category');
+
+  useEffect(() => {
+    if (categoryParam && categories && categories.length > 0) {
+      const matched = categories.find((c) => c.name.toLowerCase() === categoryParam.toLowerCase());
+      if (matched) {
+        setSelectedCategory(matched.id);
+        const newParams = new URLSearchParams(searchParams);
+        newParams.delete('category');
+        setSearchParams(newParams, { replace: true });
+      }
+    }
+  }, [categoryParam, categories, searchParams, setSearchParams]);
 
   const setStockFilter = (val: string) => {
     setSearchParams((prev) => {

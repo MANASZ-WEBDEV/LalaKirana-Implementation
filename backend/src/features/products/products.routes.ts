@@ -19,6 +19,8 @@ router.get('/health', (_req, res) => {
 // Categories (Place specific routes before parameter routes)
 router.get('/categories', authMiddleware, productsController.getCategories);
 router.post('/categories', authMiddleware, requireOwner, productsController.createCategory);
+router.put('/categories/:id', authMiddleware, requireOwner, productsController.updateCategory);
+router.delete('/categories/:id', authMiddleware, requireOwner, productsController.deleteCategory);
 
 // Products
 router.get('/', authMiddleware, productsController.getAllProducts);

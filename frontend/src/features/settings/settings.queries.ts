@@ -96,6 +96,30 @@ export function useCreateCategory() {
   });
 }
 
+export function useUpdateCategory() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, name }: { id: string; name: string }) =>
+      api.put<Category>(`/products/categories/${id}`, { name }).then((r) => r.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: settingsKeys.categories });
+      queryClient.invalidateQueries({ queryKey: ['products'] }); // invalidate products list to reflect category rename
+    },
+  });
+}
+
+export function useDeleteCategory() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      api.delete(`/products/categories/${id}`).then((r) => r.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: settingsKeys.categories });
+      queryClient.invalidateQueries({ queryKey: ['products'] }); // invalidate products list to reflect deleted category
+    },
+  });
+}
+
 export function useStoreSettings() {
   return useQuery({
     queryKey: settingsKeys.store,

@@ -194,6 +194,34 @@ export const productsService = {
     return data;
   },
 
+  updateCategory: async (id: string, name: string) => {
+    const { data, error } = await supabase
+      .from('categories')
+      .update({ name })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to update category: ${error.message}`);
+    }
+
+    return data;
+  },
+
+  deleteCategory: async (id: string) => {
+    const { error } = await supabase
+      .from('categories')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      throw new Error(`Failed to delete category: ${error.message}`);
+    }
+
+    return { success: true };
+  },
+
   getPriceHistory: async (productId: string) => {
     const { data, error } = await supabase
       .from('price_history')

@@ -8,6 +8,7 @@
 .categoryCard:hover { box-shadow: var(--shadow-sm); }
 .categoryName { font-size: 14px; font-weight: 500; color: var(--color-on-surface); }
 .categoryDate { font-size: 12px; color: var(--color-on-surface-variant); }
+.categoryCardRight { display: flex; align-items: center; gap: 16px; }
 .emptyText { padding: 24px; text-align: center; color: var(--color-on-surface-variant); font-size: 14px; }
 
 @media (max-width: 480px) {
