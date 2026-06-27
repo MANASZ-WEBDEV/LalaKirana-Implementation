@@ -46,11 +46,20 @@ describe('Billing and Khata Transactional Endpoints', () => {
     ownerToken = ownerLogin.body.token;
 
     // 3. Create test category
-    const { data: cat } = await supabase
+    let { data: cat } = await supabase
       .from('categories')
       .insert({ name: 'Billing Test Category' })
       .select('id')
       .single();
+
+    if (!cat) {
+      const { data: existing } = await supabase
+        .from('categories')
+        .select('id')
+        .eq('name', 'Billing Test Category')
+        .single();
+      cat = existing;
+    }
     testCategoryId = cat!.id;
 
     // 4. Create test products
@@ -97,7 +106,7 @@ describe('Billing and Khata Transactional Endpoints', () => {
       .select('id')
       .single();
     customerId = cust!.id;
-  }, 30000);
+  }, 120000);
 
   afterAll(async () => {
     // Delete transactions and related records

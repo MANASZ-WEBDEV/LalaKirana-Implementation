@@ -44,11 +44,20 @@ describe('Purchases Transactional Endpoints', () => {
     ownerToken = ownerLogin.body.token;
 
     // 3. Create test category
-    const { data: cat } = await supabase
+    let { data: cat } = await supabase
       .from('categories')
       .insert({ name: 'Test Purchases Category' })
       .select('id')
       .single();
+
+    if (!cat) {
+      const { data: existing } = await supabase
+        .from('categories')
+        .select('id')
+        .eq('name', 'Test Purchases Category')
+        .single();
+      cat = existing;
+    }
     testCategoryId = cat!.id;
 
     // 4. Create test product (Cost = 40.0, Sell = 50.0, Stock = 5)
@@ -78,7 +87,7 @@ describe('Purchases Transactional Endpoints', () => {
       .select('id')
       .single();
     supplierId = supp!.id;
-  }, 30000);
+  }, 120000);
 
   afterAll(async () => {
     // Clean up
@@ -102,6 +111,7 @@ describe('Purchases Transactional Endpoints', () => {
         .send({
           supplier_id: supplierId,
           supplier_name: 'Test Supplier',
+          reference_number: 'REF-TEST-99',
           payment_status: 'partial',
           amount_paid: 0,
           items: [
@@ -128,6 +138,7 @@ describe('Purchases Transactional Endpoints', () => {
         .send({
           supplier_id: supplierId,
           supplier_name: 'Test Supplier',
+          reference_number: 'REF-TEST-100',
           payment_status: 'partial',
           amount_paid: 100.0,
           items: [

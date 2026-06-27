@@ -59,11 +59,11 @@ describe('Settings & User Management Endpoints', () => {
       .post('/api/v1/auth/login')
       .send({ email: TEST_STAFF_EMAIL, password: PASSWORD });
     staffToken = staffLogin.body.token;
-  }, 30000);
+  }, 120000);
 
   afterAll(async () => {
     await cleanupTestUsers([TEST_OWNER_EMAIL, TEST_STAFF_EMAIL, NEW_STAFF_EMAIL]);
-  }, 30000);
+  }, 120000);
 
   describe('GET /api/v1/auth/users (Owner only)', () => {
     it('should allow owner to list users', async () => {

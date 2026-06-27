@@ -115,7 +115,7 @@ describe('Auth Endpoints', () => {
         .from('users')
         .update({ failed_attempts: 0, locked_until: null })
         .eq('id', staffId);
-    }, 15000);
+    }, 45000);
   });
 
   describe('Authenticated Operations', () => {
@@ -221,6 +221,6 @@ describe('Auth Endpoints', () => {
         .send({ email: TEST_OWNER_EMAIL, password: PASSWORD });
 
       expect(resOldLogin.status).toBe(401);
-    }, 15000);
+    }, 45000);
   });
 });

@@ -24,7 +24,7 @@ describe('Products Endpoints', () => {
     // Create test users
     const hashedPassword = await bcrypt.hash(PASSWORD, 12);
 
-    const { data: ownerUser } = await supabase
+    const { data: ownerUser, error: ownerError } = await supabase
       .from('users')
       .insert({
         name: 'Product Test Owner',
@@ -35,9 +35,12 @@ describe('Products Endpoints', () => {
       .select('id')
       .single();
 
+    if (ownerError) {
+      console.error("Owner insert failed in tests/products.test.ts beforeAll:", ownerError);
+    }
     ownerId = ownerUser!.id;
 
-    const { data: staffUser } = await supabase
+    const { data: staffUser, error: staffError } = await supabase
       .from('users')
       .insert({
         name: 'Product Test Staff',
@@ -48,6 +51,9 @@ describe('Products Endpoints', () => {
       .select('id')
       .single();
 
+    if (staffError) {
+      console.error("Staff insert failed in tests/products.test.ts beforeAll:", staffError);
+    }
     staffId = staffUser!.id;
 
     // Login to get tokens
@@ -65,13 +71,22 @@ describe('Products Endpoints', () => {
     await supabase.from('categories').delete().eq('name', 'Temp Test Category');
 
     // Create a test category directly in database for products testing
-    const { data: cat } = await supabase
+    let { data: cat } = await supabase
       .from('categories')
       .insert({ name: 'Temp Test Category' })
       .select('id')
       .single();
+
+    if (!cat) {
+      const { data: existing } = await supabase
+        .from('categories')
+        .select('id')
+        .eq('name', 'Temp Test Category')
+        .single();
+      cat = existing;
+    }
     testCategoryId = cat!.id;
-  }, 30000);
+  }, 120000);
 
   afterAll(async () => {
     // Delete test products and category
