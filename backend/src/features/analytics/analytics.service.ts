@@ -11,6 +11,7 @@ export interface AnalyticsOverview {
   profitMargin: number;
   orderCount: number;
   avgOrderValue: number;
+  noCostProductsCount: number;
   // Deltas vs previous period
   revenueDelta: number | null;
   profitDelta: number | null;
@@ -142,6 +143,21 @@ async function getExpensesTotal(from: string, to: string): Promise<number> {
   return (data || []).reduce((sum, item) => sum + Number(item.amount || 0), 0);
 }
 
+async function getNoCostProductsCount(): Promise<number> {
+  const { data, error } = await supabase
+    .from('products')
+    .select('id, cost_price')
+    .eq('is_active', true);
+
+  if (error) {
+    throw new Error(`Failed to count no-cost products: ${error.message}`);
+  }
+
+  return (data || []).filter(
+    (p) => p.cost_price === null || p.cost_price === undefined || Number(p.cost_price) === 0
+  ).length;
+}
+
 // ────────────────────────────────────────────────────────
 // Service
 // ────────────────────────────────────────────────────────
@@ -154,6 +170,7 @@ export const analyticsService = {
     const billData = await getBillRevenue(from, to);
     const eodData = await getEODRevenue(from, to);
     const expensesTotal = await getExpensesTotal(from, to);
+    const noCostProductsCount = await getNoCostProductsCount();
 
     const totalRevenue = Math.round((billData.revenue + eodData.revenue) * 100) / 100;
     const totalCost = Math.round((billData.cost + eodData.cost) * 100) / 100;
@@ -180,6 +197,7 @@ export const analyticsService = {
       profitMargin,
       orderCount,
       avgOrderValue,
+      noCostProductsCount,
       revenueDelta: calcDelta(totalRevenue, prevRevenue),
       profitDelta: calcDelta(totalProfit, prevProfit),
       orderCountDelta: calcDelta(orderCount, prevOrderCount),
@@ -443,6 +461,111 @@ export const analyticsService = {
         percentage: totalRevenue > 0 ? Math.round((data.revenue / totalRevenue) * 1000) / 10 : 0,
       }))
       .sort((a, b) => b.revenue - a.revenue);
+  },
+ 
+  /**
+   * Complete Net Profit calculation breakdown
+   */
+  getProfitBreakdown: async (from: string, to: string) => {
+    // 1. Revenue components
+    // Full bills
+    const { data: fullBills, error: fullErr } = await supabase
+      .from('bills')
+      .select('total, mode, bill_items ( qty, unit_price, cost_price )')
+      .in('status', ['paid', 'khata'])
+      .gte('created_at', `${from}T00:00:00`)
+      .lte('created_at', `${to}T23:59:59`);
+
+    if (fullErr) throw new Error(`Failed to fetch breakdown bills: ${fullErr.message}`);
+
+    let fullBillsRevenue = 0;
+    let quickBillsRevenue = 0;
+    for (const bill of fullBills || []) {
+      if (bill.mode === 'full') {
+        for (const item of (bill.bill_items as any[]) || []) {
+          fullBillsRevenue += Number(item.qty) * Number(item.unit_price);
+        }
+      } else {
+        quickBillsRevenue += Number(bill.total);
+      }
+    }
+
+    // EOD
+    const { data: eodEntries, error: eodErr } = await supabase
+      .from('eod_entries')
+      .select('qty_sold, unit_price')
+      .gte('entry_date', from)
+      .lte('entry_date', to);
+
+    if (eodErr) throw new Error(`Failed to fetch breakdown EOD: ${eodErr.message}`);
+
+    let eodRevenue = 0;
+    for (const e of eodEntries || []) {
+      eodRevenue += Number(e.qty_sold) * Number(e.unit_price || 0);
+    }
+
+    // 2. COGS breakdown (per product sold)
+    const topProducts = await analyticsService.getTopProducts(from, to, 1000);
+    const cogsItems = topProducts.map((p) => {
+      const avgCost = p.totalQty > 0 ? p.totalCost / p.totalQty : 0;
+      const avgPrice = p.totalQty > 0 ? p.totalRevenue / p.totalQty : 0;
+      return {
+        product_name: p.product_name,
+        qty: p.totalQty,
+        cost_price: Math.round(avgCost * 100) / 100,
+        price: Math.round(avgPrice * 100) / 100,
+        total_cost: Math.round(p.totalCost * 100) / 100,
+      };
+    }).filter(item => item.qty > 0 && item.total_cost > 0);
+
+    const totalCogs = cogsItems.reduce((sum, item) => sum + item.total_cost, 0);
+
+    // 3. Operational Expenses
+    const { data: expenses, error: expErr } = await supabase
+      .from('expenses')
+      .select('id, category, amount, description, expense_date')
+      .gte('expense_date', from)
+      .lte('expense_date', to)
+      .order('expense_date', { ascending: true });
+
+    if (expErr) throw new Error(`Failed to fetch breakdown expenses: ${expErr.message}`);
+
+    const expensesList = (expenses || []).map(exp => ({
+      id: exp.id,
+      category: exp.category,
+      amount: Number(exp.amount),
+      description: exp.description,
+      expense_date: exp.expense_date,
+    }));
+
+    const totalExpenses = expensesList.reduce((sum, exp) => sum + exp.amount, 0);
+
+    // 4. Missing Cost Count
+    const noCostProductsCount = await getNoCostProductsCount();
+
+    const totalRevenue = Math.round((fullBillsRevenue + quickBillsRevenue + eodRevenue) * 100) / 100;
+    const grossProfit = Math.round((totalRevenue - totalCogs) * 100) / 100;
+    const netProfit = Math.round((grossProfit - totalExpenses) * 100) / 100;
+
+    return {
+      revenue: {
+        fullBills: Math.round(fullBillsRevenue * 100) / 100,
+        quickBills: Math.round(quickBillsRevenue * 100) / 100,
+        eod: Math.round(eodRevenue * 100) / 100,
+        total: totalRevenue,
+      },
+      cogs: {
+        total: Math.round(totalCogs * 100) / 100,
+        items: cogsItems,
+      },
+      grossProfit,
+      expenses: {
+        total: Math.round(totalExpenses * 100) / 100,
+        list: expensesList,
+      },
+      netProfit,
+      noCostProductsCount,
+    };
   },
 
   /**

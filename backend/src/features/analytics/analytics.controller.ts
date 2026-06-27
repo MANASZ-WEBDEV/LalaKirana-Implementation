@@ -62,6 +62,20 @@ export const analyticsController = {
     }
   },
 
+  getProfitBreakdown: async (req: Request, res: Response) => {
+    try {
+      const { from, to } = req.query as { from: string; to: string };
+      if (!from || !to) {
+        return res.status(400).json({ message: 'Missing required query params: from, to (YYYY-MM-DD)' });
+      }
+      const breakdown = await analyticsService.getProfitBreakdown(from, to);
+      return res.json(breakdown);
+    } catch (err: any) {
+      console.error('Analytics profit breakdown error:', err);
+      return res.status(500).json({ message: err.message || 'Failed to load profit breakdown' });
+    }
+  },
+
   exportCSV: async (req: Request, res: Response) => {
     try {
       const { from, to } = req.query as { from: string; to: string };

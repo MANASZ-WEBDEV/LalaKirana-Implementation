@@ -9,10 +9,43 @@ export interface AnalyticsOverview {
   profitMargin: number;
   orderCount: number;
   avgOrderValue: number;
+  noCostProductsCount?: number;
   revenueDelta: number | null;
   profitDelta: number | null;
   orderCountDelta: number | null;
   avgOrderValueDelta: number | null;
+}
+
+export interface ProfitBreakdown {
+  revenue: {
+    fullBills: number;
+    quickBills: number;
+    eod: number;
+    total: number;
+  };
+  cogs: {
+    total: number;
+    items: {
+      product_name: string;
+      qty: number;
+      cost_price: number;
+      price: number;
+      total_cost: number;
+    }[];
+  };
+  grossProfit: number;
+  expenses: {
+    total: number;
+    list: {
+      id: string;
+      category: string;
+      amount: number;
+      description: string | null;
+      expense_date: string;
+    }[];
+  };
+  netProfit: number;
+  noCostProductsCount: number;
 }
 
 export interface TrendPoint {

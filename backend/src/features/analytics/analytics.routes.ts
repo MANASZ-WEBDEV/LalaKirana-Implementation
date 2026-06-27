@@ -11,6 +11,7 @@ router.get('/health', (_req, res) => {
 // All analytics endpoints require authentication
 // Owner-only access is enforced at the frontend level (route guard)
 router.get('/overview', authMiddleware, analyticsController.getOverview);
+router.get('/breakdown', authMiddleware, analyticsController.getProfitBreakdown);
 router.get('/trend', authMiddleware, analyticsController.getTrend);
 router.get('/top-products', authMiddleware, analyticsController.getTopProducts);
 router.get('/categories', authMiddleware, analyticsController.getCategoryBreakdown);
