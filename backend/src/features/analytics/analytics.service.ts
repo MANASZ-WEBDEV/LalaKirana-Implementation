@@ -128,6 +128,20 @@ async function getEODRevenue(from: string, to: string) {
   return { revenue, cost };
 }
 
+async function getExpensesTotal(from: string, to: string): Promise<number> {
+  const { data, error } = await supabase
+    .from('expenses')
+    .select('amount')
+    .gte('expense_date', from)
+    .lte('expense_date', to);
+
+  if (error) {
+    throw new Error(`Failed to fetch expenses: ${error.message}`);
+  }
+
+  return (data || []).reduce((sum, item) => sum + Number(item.amount || 0), 0);
+}
+
 // ────────────────────────────────────────────────────────
 // Service
 // ────────────────────────────────────────────────────────
@@ -139,10 +153,11 @@ export const analyticsService = {
   getOverview: async (from: string, to: string): Promise<AnalyticsOverview> => {
     const billData = await getBillRevenue(from, to);
     const eodData = await getEODRevenue(from, to);
+    const expensesTotal = await getExpensesTotal(from, to);
 
     const totalRevenue = Math.round((billData.revenue + eodData.revenue) * 100) / 100;
     const totalCost = Math.round((billData.cost + eodData.cost) * 100) / 100;
-    const totalProfit = Math.round((totalRevenue - totalCost) * 100) / 100;
+    const totalProfit = Math.round((totalRevenue - totalCost - expensesTotal) * 100) / 100;
     const profitMargin = totalRevenue > 0 ? Math.round((totalProfit / totalRevenue) * 1000) / 10 : 0;
     const orderCount = billData.orderCount;
     const avgOrderValue = orderCount > 0 ? Math.round((billData.revenue / orderCount) * 100) / 100 : 0;
@@ -151,9 +166,10 @@ export const analyticsService = {
     const { prevFrom, prevTo } = getPreviousPeriod(from, to);
     const prevBill = await getBillRevenue(prevFrom, prevTo);
     const prevEod = await getEODRevenue(prevFrom, prevTo);
+    const prevExpenses = await getExpensesTotal(prevFrom, prevTo);
 
     const prevRevenue = prevBill.revenue + prevEod.revenue;
-    const prevProfit = (prevBill.revenue + prevEod.revenue) - (prevBill.cost + prevEod.cost);
+    const prevProfit = (prevBill.revenue + prevEod.revenue) - (prevBill.cost + prevEod.cost) - prevExpenses;
     const prevOrderCount = prevBill.orderCount;
     const prevAvgOrder = prevOrderCount > 0 ? prevBill.revenue / prevOrderCount : 0;
 
@@ -201,6 +217,16 @@ export const analyticsService = {
       .order('entry_date', { ascending: true });
 
     if (eodErr) throw new Error(`Failed to fetch trend EOD: ${eodErr.message}`);
+
+    // Fetch expenses
+    const { data: expenses, error: expErr } = await supabase
+      .from('expenses')
+      .select('expense_date, amount')
+      .gte('expense_date', from)
+      .lte('expense_date', to)
+      .order('expense_date', { ascending: true });
+
+    if (expErr) throw new Error(`Failed to fetch trend expenses: ${expErr.message}`);
 
     // Build a map of date → { revenue, cost, orderCount }
     const map = new Map<string, { revenue: number; cost: number; orderCount: number }>();
@@ -250,6 +276,13 @@ export const analyticsService = {
       const qty = Number(e.qty_sold);
       bucket.revenue += qty * Number(e.unit_price || 0);
       bucket.cost += qty * Number(e.cost_price || 0);
+    }
+
+    // Process expenses
+    for (const exp of expenses || []) {
+      const key = getKey(exp.expense_date);
+      const bucket = ensure(key);
+      bucket.cost += Number(exp.amount || 0);
     }
 
     // Fill gaps: generate all dates/weeks/months in range
