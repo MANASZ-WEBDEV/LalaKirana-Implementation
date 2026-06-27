@@ -74,3 +74,34 @@
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
+
+.lockedCard {
+  opacity: 0.75;
+  background-color: var(--color-surface-dim) !important;
+  border-style: dashed;
+  cursor: not-allowed;
+}
+
+.lockedCard::after {
+  background-color: var(--color-outline) !important;
+}
+
+.lockedContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  color: var(--color-on-surface-variant);
+  font-family: var(--font-body);
+}
+
+.lockIcon {
+  font-size: 1.125rem;
+}
+
+.lockedText {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}

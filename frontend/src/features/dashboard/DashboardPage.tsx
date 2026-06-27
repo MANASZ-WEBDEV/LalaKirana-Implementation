@@ -5,10 +5,13 @@ import { LowStockAlert } from './LowStockAlert';
 import { RecentPriceChanges } from './RecentPriceChanges';
 import { Skeleton } from '@/shared/ui/Skeleton';
 import { Button } from '@/shared/ui/Button';
+import { useAuthStore } from '@/shared/store/authStore';
 import styles from './DashboardPage.module.css';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user);
+  const isOwner = user?.role === 'owner';
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
   const { data: lowStock, isLoading: lowStockLoading } = useLowStockProducts();
   const { data: priceChanges, isLoading: priceChangesLoading } = useRecentPriceChanges(8);
@@ -88,7 +91,8 @@ export default function DashboardPage() {
         />
         <StatCard
           label="Inventory Value"
-          value={formatCurrency(stats?.inventoryValue ?? 0)}
+          value={stats?.inventoryValue !== null && stats?.inventoryValue !== undefined ? formatCurrency(stats.inventoryValue) : '₹0'}
+          locked={!isOwner}
         />
       </div>
 

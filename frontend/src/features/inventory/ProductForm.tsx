@@ -3,6 +3,7 @@ import { Input } from '@/shared/ui/Input';
 import { Select } from '@/shared/ui/Select';
 import { Button } from '@/shared/ui/Button';
 import { useCategories } from './inventory.queries';
+import { useAuthStore } from '@/shared/store/authStore';
 import type { Product } from '@/types/product.types';
 import styles from './ProductForm.module.css';
 
@@ -25,6 +26,8 @@ interface ProductFormProps {
 export function ProductForm({ initialData, onSubmit, loading, onCancel }: ProductFormProps) {
   const isEditMode = !!initialData;
   const { data: categories } = useCategories();
+  const user = useAuthStore((s) => s.user);
+  const isOwner = user?.role === 'owner';
 
   // Form states
   const [name, setName] = useState(initialData?.name || '');
@@ -53,12 +56,17 @@ export function ProductForm({ initialData, onSubmit, loading, onCancel }: Produc
       newErrors.price = 'Price must be a non-negative number';
     }
 
-    if (!costPrice.trim()) {
-      newErrors.cost_price = 'Cost price is required';
-    }
-    const costPriceNum = parseFloat(costPrice);
-    if (isNaN(costPriceNum) || costPriceNum < 0) {
-      newErrors.cost_price = 'Cost price must be a non-negative number';
+    let costPriceNum = 0;
+    if (isOwner) {
+      if (!costPrice.trim()) {
+        newErrors.cost_price = 'Cost price is required';
+      }
+      costPriceNum = parseFloat(costPrice);
+      if (isNaN(costPriceNum) || costPriceNum < 0) {
+        newErrors.cost_price = 'Cost price must be a non-negative number';
+      }
+    } else {
+      costPriceNum = initialData?.cost_price || priceNum;
     }
 
     let mrpNum: number | null = null;
@@ -198,16 +206,18 @@ export function ProductForm({ initialData, onSubmit, loading, onCancel }: Produc
       )}
 
       <div className={styles.row}>
-        <Input
-          type="number"
-          step="0.01"
-          label="Cost Price (₹) *"
-          value={costPrice}
-          onChange={(e) => setCostPrice(e.target.value)}
-          error={errors.cost_price}
-          placeholder="0.00"
-          required
-        />
+        {isOwner && (
+          <Input
+            type="number"
+            step="0.01"
+            label="Cost Price (₹) *"
+            value={costPrice}
+            onChange={(e) => setCostPrice(e.target.value)}
+            error={errors.cost_price}
+            placeholder="0.00"
+            required
+          />
+        )}
 
         <Input
           type="number"

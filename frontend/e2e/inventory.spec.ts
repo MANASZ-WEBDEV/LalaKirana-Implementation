@@ -13,7 +13,7 @@ test.describe('Inventory Flow', () => {
     // 2. Go to Inventory Page
     await page.getByRole('link', { name: 'Inventory' }).click();
     await expect(page).toHaveURL(/.*inventory/, { timeout: 20000 });
-    await expect(page.locator('main h1')).toHaveText('Inventory Catalog');
+    await expect(page.locator('header h1')).toHaveText('Inventory Catalog');
 
     // 3. Click "Add Product"
     await page.getByRole('button', { name: 'Add Product' }).click();

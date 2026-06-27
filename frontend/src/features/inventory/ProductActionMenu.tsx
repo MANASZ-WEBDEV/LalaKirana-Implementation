@@ -72,16 +72,18 @@ export function ProductActionMenu({
           >
             ⚖️ Adjust Stock
           </button>
-          <button
-            onClick={() => {
-              onViewHistory(product);
-              setIsOpen(false);
-            }}
-            className={styles.menuItem}
-            role="menuitem"
-          >
-            📋 Price & Audit History
-          </button>
+          {isOwner && (
+            <button
+              onClick={() => {
+                onViewHistory(product);
+                setIsOpen(false);
+              }}
+              className={styles.menuItem}
+              role="menuitem"
+            >
+              📋 Price & Audit History
+            </button>
+          )}
           {isOwner && (
             <button
               onClick={() => {

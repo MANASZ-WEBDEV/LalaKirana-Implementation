@@ -13,7 +13,7 @@ test.describe('Pricing E2E Flow', () => {
     // 2. Go to Bulk Price Editor Page
     await page.getByRole('link', { name: 'Bulk Pricing' }).click();
     await expect(page).toHaveURL(/.*pricing/, { timeout: 20000 });
-    await expect(page.locator('main h1')).toHaveText('Bulk Price Update');
+    await expect(page.locator('header h1')).toHaveText('Bulk Price Editor');
 
     // 3. Find a product row and edit its price
     // Note: We use one of the standard seeded products or E2E products

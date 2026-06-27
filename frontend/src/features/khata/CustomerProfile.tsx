@@ -14,6 +14,7 @@ import { Modal } from '@/shared/ui/Modal';
 import { DataTable } from '@/shared/ui/DataTable';
 import type { ColumnConfig } from '@/shared/ui/DataTable';
 import { useToastStore } from '@/shared/store/toastStore';
+import { useAuthStore } from '@/shared/store/authStore';
 import type { KhataEntry } from '@/types/khata.types';
 import styles from './CustomerProfile.module.css';
 
@@ -21,6 +22,9 @@ export default function CustomerProfile() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const addToast = useToastStore((s) => s.addToast);
+
+  const user = useAuthStore((s) => s.user);
+  const isOwner = user?.role === 'owner';
 
   // States
   const [showRepayDrawer, setShowRepayDrawer] = useState(false);
@@ -150,9 +154,11 @@ export default function CustomerProfile() {
           <Button variant="secondary" onClick={() => setShowStatementModal(true)}>
             📋 Monthly Statement
           </Button>
-          <Button onClick={() => setShowRepayDrawer(true)} disabled={Number(profile.total_balance) <= 0}>
-            💰 Log Repayment
-          </Button>
+          {isOwner && (
+            <Button onClick={() => setShowRepayDrawer(true)} disabled={Number(profile.total_balance) <= 0}>
+              💰 Log Repayment
+            </Button>
+          )}
         </div>
       </header>
 
