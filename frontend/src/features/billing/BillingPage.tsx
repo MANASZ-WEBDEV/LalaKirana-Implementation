@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useBillingStore } from './billingStore';
 import { OrderSlot } from './OrderSlot';
 import { FullBillMode } from './FullBillMode';
@@ -11,11 +12,18 @@ import styles from './BillingPage.module.css';
 
 export default function BillingPage() {
   const { slots, activeSlotId, addSlot, setActiveSlotId } = useBillingStore();
+  const [searchParams] = useSearchParams();
 
   // Dialog / Drawer states
   const [showConfirmDrawer, setShowConfirmDrawer] = useState(false);
   const [checkoutMode, setCheckoutMode] = useState<'paid' | 'khata'>('paid');
   const [showHistoryDrawer, setShowHistoryDrawer] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get('bill')) {
+      setShowHistoryDrawer(true);
+    }
+  }, [searchParams]);
 
   const activeSlot = slots.find((s) => s.id === activeSlotId);
 

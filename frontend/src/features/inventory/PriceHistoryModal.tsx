@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Modal } from '@/shared/ui/Modal';
 import { DataTable } from '@/shared/ui/DataTable';
 import type { ColumnConfig } from '@/shared/ui/DataTable';
@@ -28,6 +29,7 @@ export function PriceHistoryModal({
   isOpen,
   onClose,
 }: PriceHistoryModalProps) {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabId>('prices');
 
   // Queries
@@ -127,10 +129,49 @@ export function PriceHistoryModal({
       header: 'Reference / Note',
       render: (entry) => {
         if (entry.bill_number) {
-          return <span className={styles.reference}>Bill #{entry.bill_number}</span>;
+          return (
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                navigate(`/billing?bill=${entry.bill_number}`);
+              }}
+              className={styles.linkButton}
+            >
+              Bill #{entry.bill_number}
+            </button>
+          );
+        }
+        if (entry.purchase_order_id) {
+          const displayText = entry.po_reference 
+            ? `PO Ref: ${entry.po_reference}` 
+            : (entry.note || 'View Purchase Order');
+          return (
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                navigate(`/purchases?po=${entry.purchase_order_id}`);
+              }}
+              className={styles.linkButton}
+            >
+              {displayText}
+            </button>
+          );
         }
         if (entry.po_reference) {
-          return <span className={styles.reference}>PO Ref: {entry.po_reference}</span>;
+          return (
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                navigate(`/purchases?po=${entry.po_reference}`);
+              }}
+              className={styles.linkButton}
+            >
+              PO Ref: {entry.po_reference}
+            </button>
+          );
         }
         return <span className={styles.note}>{entry.note || <span style={{ opacity: 0.5 }}>-</span>}</span>;
       },

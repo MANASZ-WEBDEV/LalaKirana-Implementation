@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   usePurchaseOrders,
   useExpenses,
@@ -25,6 +25,12 @@ type TabId = 'stock_in' | 'expenses' | 'suppliers';
 
 export default function PurchasesPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const poParam = searchParams.get('po');
+
+  const { data: queryPOData, isLoading: queryPOLoading } = usePurchaseDetail(poParam || '', {
+    enabled: !!poParam,
+  });
   const user = useAuthStore((s) => s.user);
   const isOwner = user?.role === 'owner';
   const addToast = useToastStore((s) => s.addToast);
@@ -269,6 +275,17 @@ export default function PurchasesPage() {
 
   const handleRowClick = (po: PurchaseOrder) => {
     setSelectedPO(po);
+  };
+
+  const activePO = selectedPO || queryPOData;
+
+  const handleClosePO = () => {
+    setSelectedPO(null);
+    if (searchParams.has('po')) {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('po');
+      setSearchParams(newParams);
+    }
   };
 
   const renderActiveTab = () => {
@@ -536,21 +553,21 @@ export default function PurchasesPage() {
       )}
 
       {/* Detailed PO Modal */}
-      {selectedPO && (
+      {activePO && (
         <Modal
-          isOpen={selectedPO !== null}
-          onClose={() => setSelectedPO(null)}
-          title={`Purchase Order Details — ${selectedPO.supplier_name}`}
+          isOpen={activePO !== null}
+          onClose={handleClosePO}
+          title={`Purchase Order Details — ${activePO.supplier_name}`}
           maxWidth="600px"
         >
           <div className={styles.poDetailContainer}>
             <div className={styles.poMetaCard}>
-              <p><strong>Order ID:</strong> {selectedPO.id}</p>
-              <p><strong>Date:</strong> {new Date(selectedPO.order_date).toLocaleDateString('en-IN')}</p>
-              <p><strong>Total Cost:</strong> ₹{Number(selectedPO.total).toFixed(2)}</p>
-              <p><strong>Items:</strong> {selectedPO.item_count}</p>
-              <p><strong>Payment Status:</strong> {selectedPO.payment_status}</p>
-              {selectedPO.note && <p><strong>Note:</strong> {selectedPO.note}</p>}
+              <p><strong>Order ID:</strong> {activePO.id}</p>
+              <p><strong>Date:</strong> {new Date(activePO.order_date).toLocaleDateString('en-IN')}</p>
+              <p><strong>Total Cost:</strong> ₹{Number(activePO.total).toFixed(2)}</p>
+              <p><strong>Items:</strong> {activePO.item_count}</p>
+              <p><strong>Payment Status:</strong> {activePO.payment_status}</p>
+              {activePO.note && <p><strong>Note:</strong> {activePO.note}</p>}
             </div>
 
             {/* List items */}
@@ -560,22 +577,21 @@ export default function PurchasesPage() {
                 <div>Loading items...</div>
               ) : (
                 <ul className={styles.poItemsList}>
-                  {/* Fetch PO detail inline or load it if the endpoint returns items. In purchases.routes.ts: GET /purchases/:id returns PO with items! Let's display the items from the row if preloaded, or load if they are linked. Wait! Purchases page list query does NOT return items nested by default. But let's check `PurchasesPage` poData. We can fetch using `usePurchaseDetail` hook! */}
-                  <PurchaseOrderItemsList poId={selectedPO.id} />
+                  <PurchaseOrderItemsList poId={activePO.id} />
                 </ul>
               )}
             </div>
 
             <div className={styles.poModalActions}>
-              <Button variant="secondary" onClick={() => setSelectedPO(null)}>
+              <Button variant="secondary" onClick={handleClosePO}>
                 Close
               </Button>
-              {isOwner && selectedPO.status !== 'cancelled' && (
+              {isOwner && activePO.status !== 'cancelled' && (
                 <Button
                   variant="danger"
                   onClick={() => {
-                    setCancellingPO(selectedPO);
-                    setSelectedPO(null);
+                    setCancellingPO(activePO);
+                    setSelectedPO(null); // Clear selectedPO so it can render cancelling modal
                   }}
                 >
                   Cancel Purchase Order

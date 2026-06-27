@@ -173,6 +173,25 @@
   color: var(--color-primary);
 }
 
+.linkButton {
+  background: transparent;
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-primary);
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  display: inline-block;
+  transition: color var(--transition-fast);
+}
+
+.linkButton:hover {
+  color: #004d49; /* Darker premium teal on hover */
+}
+
 .note {
   font-size: 0.85rem;
   color: var(--color-on-surface-variant);
