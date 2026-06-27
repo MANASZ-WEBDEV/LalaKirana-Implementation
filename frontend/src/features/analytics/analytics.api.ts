@@ -4,11 +4,15 @@ import type {
   TrendPoint,
   TopProduct,
   CategoryBreakdown,
+  ProfitBreakdown,
 } from '@/types/analytics.types';
 
 export const analyticsApi = {
   getOverview: (from: string, to: string) =>
     api.get<AnalyticsOverview>('/analytics/overview', { params: { from, to } }).then((r) => r.data),
+
+  getProfitBreakdown: (from: string, to: string) =>
+    api.get<ProfitBreakdown>('/analytics/breakdown', { params: { from, to } }).then((r) => r.data),
 
   getTrend: (from: string, to: string, granularity: string = 'day') =>
     api.get<TrendPoint[]>('/analytics/trend', { params: { from, to, granularity } }).then((r) => r.data),

@@ -82,10 +82,13 @@ export default function InventoryPage() {
 
 
 
+  const noCostFilter = searchParams.get('no_cost') === 'true';
+
   // Filter products client-side
   const filteredProducts = (products || []).filter((p) => {
     const matchesCategory = !selectedCategory || p.category_id === selectedCategory;
     const matchesSearch = !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesNoCost = !noCostFilter || p.cost_price === null || p.cost_price === undefined || Number(p.cost_price) === 0;
 
     let matchesStock = true;
     if (stockFilter === 'out') {
@@ -96,7 +99,7 @@ export default function InventoryPage() {
       matchesStock = p.stock_qty > p.low_stock_threshold;
     }
 
-    return matchesCategory && matchesSearch && matchesStock;
+    return matchesCategory && matchesSearch && matchesStock && matchesNoCost;
   });
 
   const isLoading = productsLoading || categoriesLoading;
@@ -230,6 +233,38 @@ export default function InventoryPage() {
         </div>
       ) : (
         <>
+          {noCostFilter && (
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              backgroundColor: 'rgba(217, 119, 6, 0.1)',
+              border: '1px solid rgba(217, 119, 6, 0.3)',
+              borderRadius: 'var(--radius-md)',
+              padding: '12px 18px',
+              marginBottom: '20px',
+              fontSize: '14px',
+              color: '#d97706',
+              fontWeight: 500
+            }}>
+              <span>⚠️ Showing only products missing Cost Price information.</span>
+              <button 
+                onClick={() => setSearchParams(prev => { prev.delete('no_cost'); return prev; })}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--color-primary)',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
+                  padding: 0
+                }}
+              >
+                Show All Products
+              </button>
+            </div>
+          )}
+
           <CategoryTabs
             categories={categories || []}
             activeCategoryId={selectedCategory}
@@ -245,16 +280,17 @@ export default function InventoryPage() {
                 <EmptyState
                   heading="No Products Found"
                   subtext={
-                    searchQuery || selectedCategory || stockFilter !== 'all'
-                      ? "Try clearing your search query, category, or stock status filters."
+                    searchQuery || selectedCategory || stockFilter !== 'all' || noCostFilter
+                      ? "Try clearing your search query, category, or active filters."
                       : "Start seeding products into the database store catalog."
                   }
-                  actionText={searchQuery || selectedCategory || stockFilter !== 'all' ? "Reset Filters" : "Add Product"}
+                  actionText={searchQuery || selectedCategory || stockFilter !== 'all' || noCostFilter ? "Reset Filters" : "Add Product"}
                   onAction={() => {
-                    if (searchQuery || selectedCategory || stockFilter !== 'all') {
+                    if (searchQuery || selectedCategory || stockFilter !== 'all' || noCostFilter) {
                       setSearchQuery('');
                       setSelectedCategory(undefined);
                       setStockFilter('all');
+                      setSearchParams(prev => { prev.delete('no_cost'); return prev; });
                     } else {
                       navigate('/inventory/new');
                     }

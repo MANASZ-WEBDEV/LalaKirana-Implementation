@@ -747,3 +747,14 @@
     font-size: 1.4rem;
   }
 }
+
+.clickableCard {
+  cursor: pointer !important;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.clickableCard:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: var(--shadow-md) !important;
+  border-color: var(--color-primary) !important;
+}

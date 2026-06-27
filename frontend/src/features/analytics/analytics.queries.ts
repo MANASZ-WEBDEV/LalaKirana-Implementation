@@ -45,3 +45,12 @@ export function useCategoryBreakdown(from: string, to: string) {
     staleTime: 60_000,
   });
 }
+
+export function useProfitBreakdown(from: string, to: string) {
+  return useQuery({
+    queryKey: ['analytics', 'breakdown', from, to] as const,
+    queryFn: () => analyticsApi.getProfitBreakdown(from, to),
+    enabled: !!from && !!to,
+    staleTime: 60_000,
+  });
+}

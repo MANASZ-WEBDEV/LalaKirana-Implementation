@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   AreaChart,
   Area,
@@ -20,6 +21,7 @@ import {
 } from './analytics.queries';
 import { analyticsApi } from './analytics.api';
 import { Skeleton } from '@/shared/ui/Skeleton';
+import { ProfitBreakdownDrawer } from './ProfitBreakdownDrawer';
 import type { DateRangePreset, Granularity } from '@/types/analytics.types';
 import styles from './AnalyticsPage.module.css';
 
@@ -103,9 +105,11 @@ export default function AnalyticsPage() {
 }
 
 function AnalyticsDashboard() {
+  const navigate = useNavigate();
   const [preset, setPreset] = useState<DateRangePreset>('month');
   const [granularity, setGranularity] = useState<Granularity>('day');
   const [chartView, setChartView] = useState<'combined' | 'revenue' | 'profit'>('combined');
+  const [isBreakdownOpen, setIsBreakdownOpen] = useState(false);
 
   const { from, to } = useMemo(() => getDateRange(preset), [preset]);
 
@@ -178,6 +182,39 @@ function AnalyticsDashboard() {
         </div>
       </div>
 
+      {overview && overview.noCostProductsCount && overview.noCostProductsCount > 0 ? (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          backgroundColor: 'rgba(217, 119, 6, 0.05)',
+          border: '1px solid rgba(217, 119, 6, 0.2)',
+          borderRadius: 'var(--radius-md)',
+          padding: '12px 18px',
+          fontSize: '14px',
+          color: '#b45309',
+          fontWeight: 500,
+          marginTop: '-8px',
+          marginBottom: '8px'
+        }}>
+          <span>⚠️ {overview.noCostProductsCount} products have no cost price set. Profit figures may be understated.</span>
+          <button 
+            onClick={() => navigate('/inventory?no_cost=true')}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'var(--color-primary)',
+              fontWeight: 600,
+              cursor: 'pointer',
+              textDecoration: 'underline',
+              padding: 0
+            }}
+          >
+            Set cost prices in Inventory &rarr;
+          </button>
+        </div>
+      ) : null}
+
       {/* KPI Stat Cards */}
       {isLoading ? (
         <div className={styles.skeletonGrid}>
@@ -205,10 +242,11 @@ function AnalyticsDashboard() {
           />
           <StatCard
             className={styles.statProfit}
-            label="Net Profit"
+            label="Net Profit (View Breakdown)"
             value={formatCurrency(overview?.totalProfit ?? 0)}
             delta={overview?.profitDelta}
             suffix={overview?.profitMargin ? `${overview.profitMargin}% margin` : undefined}
+            onClick={() => setIsBreakdownOpen(true)}
           />
           <StatCard
             className={styles.statAvg}
@@ -442,6 +480,14 @@ function AnalyticsDashboard() {
           )}
         </div>
       </div>
+
+      <ProfitBreakdownDrawer
+        isOpen={isBreakdownOpen}
+        onClose={() => setIsBreakdownOpen(false)}
+        from={from}
+        to={to}
+        onRedirectToInventory={() => navigate('/inventory?no_cost=true')}
+      />
     </div>
   );
 }
@@ -454,12 +500,16 @@ function StatCard({
   value,
   delta,
   suffix,
+  onClick,
+  style,
 }: {
   className: string;
   label: string;
   value: string;
   delta?: number | null;
   suffix?: string;
+  onClick?: () => void;
+  style?: React.CSSProperties;
 }) {
   const getDeltaClass = () => {
     if (delta === null || delta === undefined) return styles.deltaNeutral;
@@ -467,7 +517,11 @@ function StatCard({
   };
 
   return (
-    <div className={`${styles.statCard} ${className}`}>
+    <div
+      className={`${styles.statCard} ${className} ${onClick ? styles.clickableCard : ''}`}
+      onClick={onClick}
+      style={style}
+    >
       <div className={styles.statLabel}>{label}</div>
       <div className={styles.statValue}>{value}</div>
       {delta !== null && delta !== undefined && (
