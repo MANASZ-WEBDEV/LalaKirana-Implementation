@@ -406,9 +406,16 @@ function AnalyticsDashboard() {
                   <span className={styles.productRank}>{idx + 1}</span>
                   <div className={styles.productInfo}>
                     <span className={styles.productName}>{p.product_name}</span>
-                    <span className={styles.productCategory}>{p.category_name || 'Uncategorized'}</span>
+                    <span className={styles.productCategory}>
+                      {p.category_name || 'Uncategorized'}
+                      {Number(p.totalDiscount || 0) > 0 && (
+                        <span className={styles.productDiscountBadge} title={`Total discount given: ₹${Number(p.totalDiscount).toFixed(2)}`}>
+                          ₹{Math.round(p.totalDiscount)} off
+                        </span>
+                      )}
+                    </span>
                   </div>
-                  <span className={styles.productRevenue}>{formatCurrency(p.totalRevenue)}</span>
+                  <span className={styles.productRevenue}>{formatCurrency(p.netRevenue ?? p.totalRevenue)}</span>
                   <span className={`${styles.productProfit} ${p.totalProfit >= 0 ? styles.productProfitPositive : styles.productProfitNegative}`}>
                     {p.totalProfit >= 0 ? '+' : ''}{formatCurrency(p.totalProfit)}
                   </span>

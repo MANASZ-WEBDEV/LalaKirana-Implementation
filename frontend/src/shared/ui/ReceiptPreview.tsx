@@ -215,14 +215,25 @@ export function ReceiptPreview({ bill, repayment }: ReceiptPreviewProps) {
             </div>
             <div className={styles.divider}>--------------------------------</div>
             <div className={styles.itemsList}>
-              {items.map((item, idx) => (
-                <div key={idx} className={styles.itemRow}>
-                  <span className={styles.itemColName}>{item.product_name}</span>
-                  <span className={styles.qtyCol}>{item.qty}</span>
-                  <span className={styles.rateCol}>₹{Number(item.unit_price).toFixed(2)}</span>
-                  <span className={styles.totalCol}>₹{((item.qty || 0) * (item.unit_price || 0)).toFixed(2)}</span>
-                </div>
-              ))}
+              {items.map((item, idx) => {
+                const discountVal = Number(item.discount || 0);
+                const subtotalVal = item.subtotal ?? ((item.qty || 0) * (Number(item.unit_price) - discountVal));
+                return (
+                  <div key={idx} className={styles.itemRow}>
+                    <span className={styles.itemColName}>
+                      {item.product_name}
+                      {discountVal > 0 && (
+                        <span className={styles.itemDiscountLabel}>
+                          (Disc: -₹{discountVal.toFixed(2)})
+                        </span>
+                      )}
+                    </span>
+                    <span className={styles.qtyCol}>{item.qty}</span>
+                    <span className={styles.rateCol}>₹{Number(item.unit_price).toFixed(2)}</span>
+                    <span className={styles.totalCol}>₹{Number(subtotalVal).toFixed(2)}</span>
+                  </div>
+                );
+              })}
             </div>
             <div className={styles.divider}>--------------------------------</div>
           </>
@@ -240,6 +251,12 @@ export function ReceiptPreview({ bill, repayment }: ReceiptPreviewProps) {
 
         {/* Total */}
         <div className={styles.totalSection}>
+          {Number(bill?.discount_total) > 0 && (
+            <div className={styles.discountRow}>
+              <span>{getLabel('specialDiscount', lang)}:</span>
+              <span>-₹{Number(bill?.discount_total).toFixed(2)}</span>
+            </div>
+          )}
           <div className={bill?.status === 'khata' ? styles.grandTotalRowNoBorderBottom : styles.grandTotalRow}>
             <span>{getLabel('grandTotal', lang)}:</span>
             <span className={styles.grandTotal}>₹{Number(bill?.total).toFixed(2)}</span>

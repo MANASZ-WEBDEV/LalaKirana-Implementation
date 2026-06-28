@@ -64,6 +64,10 @@ export interface TopProduct {
   totalCost: number;
   totalProfit: number;
   totalQty: number;
+  totalDiscount: number;
+  netRevenue: number;
+  netProfit: number;
+  discountBillCount: number;
 }
 
 export interface CategoryBreakdown {

@@ -33,6 +33,8 @@ export const translations = {
     khataUpdate: 'Your Khata Update',
     paymentReceived: 'Payment received',
     remainingBalance: 'Remaining balance',
+    specialDiscount: 'Special Discount',
+    totalSavings: 'Total Savings',
   },
   hindi: {
     brandName: 'लालाकिराना',
@@ -66,6 +68,8 @@ export const translations = {
     khataUpdate: 'आपका खाता अपडेट',
     paymentReceived: 'भुगतान प्राप्त हुआ',
     remainingBalance: 'शेष बकाया',
+    specialDiscount: 'विशेष छूट',
+    totalSavings: 'कुल बचत',
   }
 };
 

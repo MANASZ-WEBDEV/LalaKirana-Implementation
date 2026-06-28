@@ -758,3 +758,14 @@
   box-shadow: var(--shadow-md) !important;
   border-color: var(--color-primary) !important;
 }
+
+.productDiscountBadge {
+  font-size: 0.7rem;
+  color: #059669;
+  background-color: rgba(5, 150, 105, 0.08);
+  padding: 0.1rem 0.35rem;
+  border-radius: var(--radius-full);
+  margin-left: 0.35rem;
+  font-weight: 600;
+  display: inline-block;
+}

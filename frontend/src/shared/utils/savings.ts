@@ -29,22 +29,25 @@ export function calculateSavings(
   for (const item of items) {
     const product = products.find(p => p.id === item.product_id);
     const mrp = product?.mrp ?? null;
-    const subtotal = item.subtotal ?? (item.qty * item.unit_price);
+    const discount = Number(item.discount || 0);
+    const subtotal = item.subtotal ?? (item.qty * (item.unit_price - discount));
 
     totalCharged += subtotal;
 
-    if (mrp !== null && mrp > item.unit_price) {
-      const itemMRP = mrp * item.qty;
-      totalMRP += itemMRP;
+    // Use MRP if available, otherwise fallback to the unit selling price (before discount)
+    const refPrice = mrp !== null ? mrp : item.unit_price;
+    const itemReferenceTotal = refPrice * item.qty;
+    totalMRP += itemReferenceTotal;
+
+    const itemSaved = itemReferenceTotal - subtotal;
+    if (itemSaved > 0) {
       itemSavings.push({
         name: item.product_name,
-        mrp,
-        price: item.unit_price,
+        mrp: refPrice,
+        price: item.unit_price - discount,
         qty: item.qty,
-        saved: itemMRP - subtotal,
+        saved: itemSaved,
       });
-    } else {
-      totalMRP += subtotal; // no MRP or selling at MRP
     }
   }
 

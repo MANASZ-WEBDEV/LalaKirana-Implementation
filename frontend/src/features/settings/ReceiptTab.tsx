@@ -24,6 +24,7 @@ export function ReceiptTab() {
   const [storePhone, setStorePhone] = useState('');
   const [receiptFooter, setReceiptFooter] = useState('');
   const [receiptLanguage, setReceiptLanguage] = useState<Language>('english');
+  const [staffDiscountLimit, setStaffDiscountLimit] = useState('50');
 
   // Sync state when data is loaded
   useEffect(() => {
@@ -33,6 +34,7 @@ export function ReceiptTab() {
       setStorePhone(currentSettings.store_phone || '');
       setReceiptFooter(currentSettings.receipt_footer || '');
       setReceiptLanguage((currentSettings.receipt_language as Language) || 'english');
+      setStaffDiscountLimit(currentSettings.staff_discount_limit || '50');
     }
   }, [currentSettings]);
 
@@ -45,6 +47,7 @@ export function ReceiptTab() {
         store_phone: storePhone.trim(),
         receipt_footer: receiptFooter.trim(),
         receipt_language: receiptLanguage,
+        staff_discount_limit: staffDiscountLimit.trim(),
       });
       addToast('success', 'Receipt layout settings updated successfully.');
     } catch (err: any) {
@@ -130,6 +133,23 @@ export function ReceiptTab() {
                 { value: 'bilingual', label: 'Bilingual (Hindi + English / द्विभाषी)' },
               ]}
             />
+          </div>
+
+          <h3 className={styles.sectionTitle} style={{ marginTop: '2rem' }}>Billing & Discount Rules</h3>
+          
+          <div className={styles.formGroup}>
+            <Input
+              label="Staff Discount Limit per Item (₹) *"
+              type="number"
+              min={0}
+              value={staffDiscountLimit}
+              onChange={(e) => setStaffDiscountLimit(e.target.value)}
+              required
+              placeholder="e.g. 50"
+            />
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+              The maximum discount amount (₹) a staff member can apply to any single item on a bill. Owners have unlimited discount capability.
+            </p>
           </div>
 
           <div className={styles.actions}>

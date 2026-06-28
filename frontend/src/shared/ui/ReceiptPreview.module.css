@@ -281,3 +281,19 @@
     display: none !important;
   }
 }
+
+.itemDiscountLabel {
+  font-size: 0.725rem;
+  color: #555;
+  font-weight: 500;
+  display: block;
+}
+
+.discountRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #333;
+  font-weight: 600;
+  padding: 0.25rem 0;
+}
