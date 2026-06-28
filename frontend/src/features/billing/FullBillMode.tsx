@@ -2,6 +2,8 @@ import { useBillingStore } from './billingStore';
 import { ProductSearch } from '@/shared/ui/ProductSearch';
 import { CustomerSearch } from '@/shared/ui/CustomerSearch';
 import { Button } from '@/shared/ui/Button';
+import { useAuthStore } from '@/shared/store/authStore';
+import { useStoreSettings } from '@/features/settings/settings.queries';
 import type { Product } from '@/types/product.types';
 import styles from './FullBillMode.module.css';
 
@@ -10,8 +12,14 @@ interface FullBillModeProps {
 }
 
 export function FullBillMode({ onCheckout }: FullBillModeProps) {
-  const { slots, activeSlotId, addToCart, updateCartQty, removeFromCart, clearCart, setCustomer } =
+  const { slots, activeSlotId, addToCart, updateCartQty, updateCartDiscount, removeFromCart, clearCart, setCustomer } =
     useBillingStore();
+
+  const user = useAuthStore((s) => s.user);
+  const { data: storeSettings } = useStoreSettings();
+
+  const isStaff = user?.role === 'staff';
+  const staffLimit = parseFloat(storeSettings?.staff_discount_limit || '50');
 
   const slot = slots.find((s) => s.id === activeSlotId);
 
@@ -28,9 +36,11 @@ export function FullBillMode({ onCheckout }: FullBillModeProps) {
     }
   };
 
-  const cartTotal = slot.items.reduce((sum, item) => sum + item.qty * item.unit_price, 0);
+  const cartTotal = slot.items.reduce((sum, item) => sum + item.qty * (item.unit_price - (item.discount || 0)), 0);
+  const totalSavings = slot.items.reduce((sum, item) => sum + item.qty * (item.discount || 0), 0);
   const hasStockErrors = slot.items.some((item) => item.qty > item.stock_qty);
-  const isCheckoutDisabled = slot.items.length === 0 || hasStockErrors;
+  const hasDiscountErrors = isStaff && slot.items.some((item) => (item.discount || 0) > staffLimit);
+  const isCheckoutDisabled = slot.items.length === 0 || hasStockErrors || hasDiscountErrors;
 
   return (
     <div className={styles.container}>
@@ -67,6 +77,7 @@ export function FullBillMode({ onCheckout }: FullBillModeProps) {
                   <th className={styles.itemCol}>Product Item</th>
                   <th className={styles.qtyCol}>Quantity</th>
                   <th className={styles.rateCol}>Unit Price</th>
+                  <th className={styles.discountCol}>Discount (₹/unit)</th>
                   <th className={styles.totalCol}>Subtotal</th>
                   <th className={styles.actionCol}></th>
                 </tr>
@@ -74,6 +85,7 @@ export function FullBillMode({ onCheckout }: FullBillModeProps) {
               <tbody>
                 {slot.items.map((item) => {
                   const isLowStock = item.stock_qty <= item.qty;
+                  const isOverLimit = isStaff && (item.discount || 0) > staffLimit;
                   return (
                     <tr key={item.product_id} className={isLowStock ? styles.lowStockRow : ''}>
                       <td className={styles.itemCol}>
@@ -113,7 +125,29 @@ export function FullBillMode({ onCheckout }: FullBillModeProps) {
                         </div>
                       </td>
                       <td className={styles.rateCol}>₹{Number(item.unit_price).toFixed(2)}</td>
-                      <td className={styles.totalCol}>₹{(item.qty * item.unit_price).toFixed(2)}</td>
+                      <td className={styles.discountCol}>
+                        <div className={styles.discountInputWrapper}>
+                          <input
+                            type="number"
+                            step="any"
+                            min={0}
+                            max={item.unit_price}
+                            value={item.discount || ''}
+                            onChange={(e) => {
+                              const val = parseFloat(e.target.value);
+                              updateCartDiscount(item.product_id, isNaN(val) ? 0 : val);
+                            }}
+                            className={`${styles.discountInput} ${isOverLimit ? styles.discountInputError : ''}`}
+                            placeholder="0.00"
+                          />
+                          {isOverLimit && (
+                            <span className={styles.limitError} title={`Staff discount cannot exceed ₹${staffLimit}`}>
+                              Max ₹{staffLimit}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className={styles.totalCol}>₹{(item.qty * (item.unit_price - (item.discount || 0))).toFixed(2)}</td>
                       <td className={styles.actionCol}>
                         <button
                           type="button"
@@ -140,6 +174,12 @@ export function FullBillMode({ onCheckout }: FullBillModeProps) {
             🧹 Clear Cart
           </Button>
           <div className={styles.totalWrapper}>
+            {totalSavings > 0 && (
+              <div className={styles.savingsWrapper}>
+                <span className={styles.savingsLabel}>Savings:</span>
+                <span className={styles.savingsVal}>-₹{totalSavings.toFixed(2)}</span>
+              </div>
+            )}
             <span className={styles.totalLabel}>Total:</span>
             <span className={styles.totalVal}>₹{cartTotal.toFixed(2)}</span>
           </div>

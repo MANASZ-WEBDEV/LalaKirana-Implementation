@@ -129,8 +129,12 @@ export function BillConfirmDrawer({ isOpen, onClose, statusMode }: BillConfirmDr
 
   const isFull = slot.mode === 'full';
   const total = isFull
-    ? slot.items.reduce((sum, item) => sum + item.qty * item.unit_price, 0)
+    ? slot.items.reduce((sum, item) => sum + item.qty * (item.unit_price - (item.discount || 0)), 0)
     : parseFloat(slot.quickAmount) || 0;
+
+  const totalSavings = isFull
+    ? slot.items.reduce((sum, item) => sum + item.qty * (item.discount || 0), 0)
+    : 0;
 
   const handleSelectCustomer = (customer: Customer) => {
     setSelectedCustomer(customer);
@@ -163,6 +167,7 @@ export function BillConfirmDrawer({ isOpen, onClose, statusMode }: BillConfirmDr
               qty: item.qty,
               unit_price: item.unit_price,
               cost_price: item.cost_price,
+              discount: item.discount || 0,
             }))
           : [],
       };
@@ -226,14 +231,28 @@ export function BillConfirmDrawer({ isOpen, onClose, statusMode }: BillConfirmDr
               </div>
               {isFull && (
                 <div className={styles.summaryItems}>
-                  {slot.items.map((item) => (
-                    <div key={item.product_id} className={styles.summaryItemRow}>
-                      <span>
-                        {item.product_name} x {item.qty}
-                      </span>
-                      <span>₹{(item.qty * item.unit_price).toFixed(2)}</span>
-                    </div>
-                  ))}
+                  {slot.items.map((item) => {
+                    const itemDiscount = item.discount || 0;
+                      <div key={item.product_id} className={styles.summaryItemRow}>
+                        <span>
+                          {item.product_name} x {item.qty}
+                          {itemDiscount > 0 && (
+                            <span className={styles.summaryItemDiscount}>
+                              {' '}
+                              (Disc: -₹{itemDiscount.toFixed(2)}/unit)
+                            </span>
+                          )}
+                        </span>
+                        <span>₹{(item.qty * (item.unit_price - itemDiscount)).toFixed(2)}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              {totalSavings > 0 && (
+                <div className={styles.summaryRowSavings}>
+                  <span>Total Discount:</span>
+                  <span>-₹{totalSavings.toFixed(2)}</span>
                 </div>
               )}
               <div className={styles.summaryRowTotal}>

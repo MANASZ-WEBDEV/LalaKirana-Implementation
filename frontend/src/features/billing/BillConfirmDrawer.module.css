@@ -262,3 +262,16 @@
 .confirmBtn:hover {
   background-color: var(--color-primary-container) !important;
 }
+
+.summaryItemDiscount {
+  color: #059669;
+  font-weight: 500;
+}
+
+.summaryRowSavings {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.95rem;
+  color: #059669;
+  font-weight: 600;
+}

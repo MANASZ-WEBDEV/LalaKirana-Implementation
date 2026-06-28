@@ -10,6 +10,7 @@ export interface CartItem {
   cost_price: number;
   unit: string;
   stock_qty: number;
+  discount: number;
 }
 
 export interface OrderSlot {
@@ -30,6 +31,7 @@ interface BillingState {
   setActiveSlotId: (id: number) => void;
   addToCart: (productId: string, product: Product, qty?: number) => void;
   updateCartQty: (productId: string, qty: number) => void;
+  updateCartDiscount: (productId: string, discount: number) => void;
   removeFromCart: (productId: string) => void;
   clearCart: () => void;
   updateQuickAmount: (amount: string) => void;
@@ -134,6 +136,7 @@ export const useBillingStore = create<BillingState>()(
               cost_price: product.cost_price,
               unit: product.unit,
               stock_qty: product.stock_qty,
+              discount: 0,
             },
           ];
         }
@@ -159,6 +162,26 @@ export const useBillingStore = create<BillingState>()(
           if (item.product_id === productId) {
             const clampedQty = Math.min(qty, item.stock_qty);
             return { ...item, qty: clampedQty };
+          }
+          return item;
+        });
+
+        const updatedSlots = slots.map((s) =>
+          s.id === activeSlotId ? { ...s, items: newItems } : s
+        );
+
+        set({ slots: updatedSlots });
+      },
+
+      updateCartDiscount: (productId: string, discount: number) => {
+        const { slots, activeSlotId } = get();
+        const activeSlot = slots.find((s) => s.id === activeSlotId);
+        if (!activeSlot || activeSlot.mode !== 'full') return;
+
+        const newItems = activeSlot.items.map((item) => {
+          if (item.product_id === productId) {
+            const clampedDiscount = Math.max(0, Math.min(discount, item.unit_price));
+            return { ...item, discount: clampedDiscount };
           }
           return item;
         });

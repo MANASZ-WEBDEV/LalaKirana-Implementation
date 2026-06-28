@@ -6,6 +6,7 @@ export interface BillItem {
   qty: number;
   unit_price: number;
   cost_price: number;
+  discount?: number;
   subtotal?: number;
 }
 
@@ -20,6 +21,7 @@ export interface Bill {
   synced: boolean;
   created_by: string;
   created_at: string;
+  discount_total?: number;
   customers?: {
     id: string;
     name: string;
@@ -41,6 +43,7 @@ export interface ConfirmBillInput {
     qty: number;
     unit_price: number;
     cost_price: number;
+    discount?: number;
   }[];
   customer_id?: string | null;
   customer_name?: string | null;
