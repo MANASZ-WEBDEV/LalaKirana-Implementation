@@ -191,8 +191,8 @@ export function NewPurchaseForm() {
           product_name: item.product_name,
           qty: item.qty,
           cost_price: item.cost_price,
-          sell_price: item.sell_price,
-          mrp: item.mrp,
+          sell_price: item.sell_price !== null ? item.sell_price : item.current_sell_price,
+          mrp: item.mrp !== null ? item.mrp : item.current_mrp,
         })),
       };
 
