@@ -11,6 +11,7 @@ import {
   usePayPurchase,
   useSupplierLedger,
   useUpdateSupplier,
+  useRecordPOPayment,
 } from './purchases.queries';
 import { NewExpenseForm } from './NewExpenseForm';
 import { Input } from '@/shared/ui/Input';
@@ -77,6 +78,11 @@ export default function PurchasesPage() {
       setSupplierModalTab('edit');
     }
   }, [selectedSupplierForDetails]);
+
+  // Record PO Payment States
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [partialPayAmount, setPartialPayAmount] = useState('');
+  const [partialPayNote, setPartialPayNote] = useState('');
 
   // Form States (Supplier Creation)
   const [supName, setSupName] = useState('');
