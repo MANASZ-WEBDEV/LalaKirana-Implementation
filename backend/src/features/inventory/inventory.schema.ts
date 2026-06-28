@@ -5,7 +5,7 @@ const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-
 export const StockAdjustSchema = z.object({
   body: z.object({
     type: z.enum(['add', 'remove', 'set']),
-    qty: z.number().int().min(0, 'Quantity must be non-negative'),
+    qty: z.number().min(0, 'Quantity must be non-negative'),
     reason: z.enum(['new_arrival', 'damage', 'returned', 'audit', 'other']),
     note: z.string().optional(),
   }),
@@ -13,7 +13,7 @@ export const StockAdjustSchema = z.object({
 
 export const EODProductRowSchema = z.object({
   product_id: z.string().regex(uuidRegex, 'Invalid product ID'),
-  qty_sold: z.number().int().min(1, 'Quantity sold must be at least 1'),
+  qty_sold: z.number().positive('Quantity sold must be positive'),
 });
 
 export const EODEntrySchema = z.object({

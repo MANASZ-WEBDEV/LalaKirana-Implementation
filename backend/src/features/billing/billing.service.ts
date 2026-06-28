@@ -80,7 +80,7 @@ export const billingService = {
       .select(`
         *,
         customers ( id, name, phone ),
-        bill_items ( id, product_name, qty, unit_price, cost_price, discount, subtotal )
+        bill_items ( id, product_name, qty, unit_price, cost_price, discount, subtotal, is_loose )
       `, { count: 'exact' });
 
     if (date_from) {
@@ -136,7 +136,7 @@ export const billingService = {
       .select(`
         *,
         customers ( id, name, phone, total_balance ),
-        bill_items ( id, product_id, product_name, qty, unit_price, cost_price, discount, subtotal ),
+        bill_items ( id, product_id, product_name, qty, unit_price, cost_price, discount, subtotal, is_loose ),
         users:created_by ( name )
       `)
       .eq('id', billId)

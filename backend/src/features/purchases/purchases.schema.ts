@@ -44,11 +44,12 @@ export const SupplierRepaymentSchema = z.object({
 const PurchaseItemSchema = z.object({
   product_id: z.string().regex(uuidRegex, 'Invalid product ID'),
   product_name: z.string().min(1, 'Product name required'),
-  qty: z.number().int().positive('Quantity must be positive'),
+  qty: z.number().positive('Quantity must be positive'),
   cost_price: z.number().min(0, 'Cost price must be non-negative'),
   sell_price: z.number().min(0, 'Sell price must be non-negative').optional().nullable(),
   mrp: z.number().min(0, 'MRP must be non-negative').optional().nullable(),
   // null = keep existing sell price / MRP
+  is_loose: z.boolean().optional().default(false),
 });
 
 export const CreatePurchaseOrderSchema = z.object({

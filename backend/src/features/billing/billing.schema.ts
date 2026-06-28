@@ -6,10 +6,11 @@ const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-
 const BillItemSchema = z.object({
   product_id: z.string().regex(uuidRegex, 'Invalid product ID'),
   product_name: z.string().min(1, 'Product name is required'),
-  qty: z.number().int().positive('Quantity must be positive'),
+  qty: z.number().positive('Quantity must be positive'),
   unit_price: z.number().min(0, 'Unit price must be non-negative'),
   cost_price: z.number().min(0, 'Cost price must be non-negative'),
   discount: z.number().min(0, 'Discount must be non-negative').optional().default(0),
+  is_loose: z.boolean().optional().default(false),
 });
 
 // Confirm a bill (create + confirm in one step — no draft in DB)

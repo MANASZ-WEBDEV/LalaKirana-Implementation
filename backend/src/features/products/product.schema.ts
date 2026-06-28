@@ -8,10 +8,11 @@ export const CreateProductSchema = z.object({
     category_id: z.string().regex(uuidRegex, 'Invalid category ID').optional().nullable(),
     price: z.number().min(0, 'Price must be non-negative'),
     cost_price: z.number().min(0, 'Cost price must be non-negative').optional().nullable(),
-    stock_qty: z.number().int().min(0, 'Stock quantity must be non-negative').default(0),
+    stock_qty: z.number().min(0, 'Stock quantity must be non-negative').default(0),
     low_stock_threshold: z.number().int().min(0, 'Threshold must be non-negative').default(5),
     unit: z.enum(['kg', 'g', 'litre', 'ml', 'pcs']).default('pcs'),
     mrp: z.number().min(0, 'MRP must be non-negative').optional().nullable(),
+    is_loose: z.boolean().default(false),
   }),
 });
 
@@ -21,11 +22,12 @@ export const UpdateProductSchema = z.object({
     category_id: z.string().regex(uuidRegex, 'Invalid category ID').optional().nullable(),
     price: z.number().min(0, 'Price must be non-negative').optional(),
     cost_price: z.number().min(0, 'Cost price must be non-negative').optional(),
-    stock_qty: z.number().int().min(0, 'Stock quantity must be non-negative').optional(),
+    stock_qty: z.number().min(0, 'Stock quantity must be non-negative').optional(),
     low_stock_threshold: z.number().int().min(0, 'Threshold must be non-negative').optional(),
     unit: z.enum(['kg', 'g', 'litre', 'ml', 'pcs']).optional(),
     is_active: z.boolean().optional(),
     mrp: z.number().min(0, 'MRP must be non-negative').optional().nullable(),
+    is_loose: z.boolean().optional(),
   }),
 });
 
