@@ -17,6 +17,7 @@ describe('Billing and Khata Transactional Endpoints', () => {
   let testCategoryId: string;
   let product1Id: string;
   let product2Id: string;
+  let productLooseId: string;
   let customerId: string;
   let createdPaidBillId: string;
   let createdKhataBillId: string;
@@ -118,6 +119,23 @@ describe('Billing and Khata Transactional Endpoints', () => {
       .single();
     product2Id = p2!.id;
 
+    // Product Loose: Stock = 20 (kg)
+    const { data: pLoose } = await supabase
+      .from('products')
+      .insert({
+        name: 'Billing Test Loose Item',
+        category_id: testCategoryId,
+        price: 200.0,
+        cost_price: 150.0,
+        stock_qty: 20,
+        low_stock_threshold: 2,
+        unit: 'kg',
+        is_loose: true,
+      })
+      .select('id')
+      .single();
+    productLooseId = pLoose!.id;
+
     // 5. Create test customer
     const { data: cust } = await supabase
       .from('customers')
@@ -144,6 +162,10 @@ describe('Billing and Khata Transactional Endpoints', () => {
     if (product2Id) {
       await supabase.from('stock_log').delete().eq('product_id', product2Id);
       await supabase.from('products').delete().eq('id', product2Id);
+    }
+    if (productLooseId) {
+      await supabase.from('stock_log').delete().eq('product_id', productLooseId);
+      await supabase.from('products').delete().eq('id', productLooseId);
     }
     await supabase.from('categories').delete().eq('id', testCategoryId);
     await cleanupTestUsers([TEST_OWNER_EMAIL, TEST_STAFF_EMAIL]);
@@ -602,5 +624,45 @@ describe('Billing and Khata Transactional Endpoints', () => {
 
       expect(res.status).toBe(500);
       expect(res.body.message).toContain('Staff discount limit exceeded');
+    });
+  });
+
+  describe('Loose / Bulk Items', () => {
+    it('should successfully confirm a bill with decimal quantity for loose product', async () => {
+      const res = await request(app)
+        .post('/api/v1/billing')
+        .set('Authorization', `Bearer ${staffToken}`)
+        .send({
+          mode: 'full',
+          status: 'paid',
+          total: 50.0,
+          customer_id: null,
+          customer_name: 'Loose Item Customer',
+          items: [
+            {
+              product_id: productLooseId,
+              product_name: 'Billing Test Loose Item',
+              qty: 0.25,
+              unit_price: 200.0,
+              cost_price: 150.0,
+              discount: 0,
+              is_loose: true,
+            },
+          ],
+        });
+
+      expect(res.status).toBe(201);
+      expect(Number(res.body.total)).toBe(50.0);
+      expect(res.body.bill_items[0].is_loose).toBe(true);
+      expect(Number(res.body.bill_items[0].qty)).toBe(0.25);
+
+      // Verify stock is decremented in DB
+      const { data: prod } = await supabase
+        .from('products')
+        .select('stock_qty')
+        .eq('id', productLooseId)
+        .single();
+      expect(Number(prod.stock_qty)).toBe(19.75);
+    });
   });
 });
