@@ -42,10 +42,7 @@ export default function LoginPage() {
       isValid = false;
     }
 
-    if (showRecovery && !recoveryCode) {
-      setRecoveryError('Recovery override code is required');
-      isValid = false;
-    }
+
 
     if (!isValid) return;
 
