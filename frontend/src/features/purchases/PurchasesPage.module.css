@@ -239,16 +239,73 @@
 .poMetaCard {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.5rem 1rem;
-  background-color: var(--color-surface-container);
+  gap: 0.6rem 1.25rem;
+  background-color: var(--color-surface-container-low);
   border: 1px solid var(--color-outline-variant);
+  border-left: 4px solid var(--color-primary);
   border-radius: var(--radius-md);
-  padding: 0.85rem 1rem;
+  padding: 1rem 1.25rem;
   font-size: 0.85rem;
+  box-shadow: var(--shadow-sm);
 }
 
 .poMetaCard p {
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.poIdBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--color-surface-container-high);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  padding: 0.15rem 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.775rem;
+  color: var(--color-primary);
+  cursor: pointer;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+  user-select: none;
+}
+
+.poIdBadge:hover {
+  background-color: var(--color-primary-container);
+  border-color: var(--color-primary);
+  transform: translateY(-1px);
+}
+
+.copyIcon {
+  font-size: 0.7rem;
+  opacity: 0.6;
+}
+
+.poStatusRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  grid-column: span 2;
+}
+
+.markPaidBtn {
+  padding: 0.2rem 0.5rem !important;
+  font-size: 0.725rem !important;
+  height: 1.6rem !important;
+  border-radius: var(--radius-md) !important;
+  background-color: var(--color-primary) !important;
+  color: var(--color-white) !important;
+  min-width: auto !important;
+  font-weight: 600 !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+.markPaidBtn:hover {
+  background-color: var(--color-primary-container) !important;
+  color: var(--color-primary) !important;
 }
 
 .poItemsWrapper {
@@ -259,40 +316,63 @@
 
 .poItemsWrapper h4 {
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  color: var(--color-on-surface);
   border-bottom: 1px solid var(--color-outline-variant);
   padding-bottom: 0.35rem;
+  margin: 0;
+}
+
+.poTableScroll {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  background-color: var(--color-white);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
 .poTable {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.8rem;
-  font-family: var(--font-mono);
 }
 
 .poTable th,
 .poTable td {
-  padding: 0.4rem 0.5rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--color-outline-variant);
 }
 
 .poTable th {
   background-color: var(--color-surface-container);
   color: var(--color-on-surface-variant);
   font-weight: 600;
-  text-align: left;
+  text-transform: uppercase;
+  font-size: 0.725rem;
+  letter-spacing: 0.5px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
-.poTableScroll {
-  max-height: 250px;
-  overflow-y: auto;
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-md);
+.poTable tbody tr {
+  transition: background-color var(--transition-fast);
+}
+
+.poTable tbody tr:nth-child(even) {
+  background-color: rgba(0, 0, 0, 0.015);
+}
+
+.poTable tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.03);
 }
 
 .poModalActions {
   display: flex;
   justify-content: space-between;
-  margin-top: 0.5rem;
+  align-items: center;
+  margin-top: 0.75rem;
+  border-top: 1px solid var(--color-outline-variant);
+  padding-top: 1rem;
 }

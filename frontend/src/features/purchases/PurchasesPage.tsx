@@ -577,20 +577,21 @@ export default function PurchasesPage() {
               <p>
                 <strong>Order ID:</strong>{' '}
                 <span
+                  className={styles.poIdBadge}
                   title="Click to copy full ID"
-                  style={{ cursor: 'pointer', textDecoration: 'underline dotted', color: 'var(--color-primary)' }}
                   onClick={() => {
                     navigator.clipboard.writeText(activePO.id);
                     addToast('success', 'Full Order ID copied to clipboard');
                   }}
                 >
-                  PO-{activePO.id.slice(0, 8).toUpperCase()}
+                  PO-{activePO.id.slice(0, 8).toUpperCase()}{' '}
+                  <span className={styles.copyIcon}>📋</span>
                 </span>
               </p>
               <p><strong>Date:</strong> {new Date(activePO.order_date).toLocaleDateString('en-IN')}</p>
               <p><strong>Total Cost:</strong> ₹{Number(activePO.total).toFixed(2)}</p>
               <p><strong>Total Units:</strong> {activePO.item_count}</p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0.25rem 0' }}>
+              <div className={styles.poStatusRow}>
                 <strong>Payment Status:</strong>
                 <Badge variant={activePO.payment_status === 'paid' ? 'success' : activePO.payment_status === 'partial' ? 'warning' : 'error'}>
                   {activePO.payment_status.toUpperCase()}
@@ -601,7 +602,7 @@ export default function PurchasesPage() {
                     variant="primary"
                     onClick={handleMarkAsPaid}
                     loading={payPurchaseMutation.isPending}
-                    style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', height: 'auto' }}
+                    className={styles.markPaidBtn}
                   >
                     Mark as Paid
                   </Button>
