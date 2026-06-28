@@ -106,7 +106,7 @@ export function ReceiptTab() {
               onChange={(e) => setStoreAddress(e.target.value)}
               className={styles.textarea}
               placeholder="Store address printed at top of receipts..."
-              rows={3}
+              rows={2}
             />
           </div>
 
