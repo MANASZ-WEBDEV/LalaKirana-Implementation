@@ -6,11 +6,14 @@ import { supabase } from '../src/db/supabase.js';
 import { cleanupTestUsers } from './setup.js';
 
 const TEST_OWNER_EMAIL = 'billing-test-owner@lalakirana.in';
+const TEST_STAFF_EMAIL = 'billing-test-staff@lalakirana.in';
 const PASSWORD = 'password123';
 
 describe('Billing and Khata Transactional Endpoints', () => {
   let ownerToken: string;
   let ownerId: string;
+  let staffToken: string;
+  let staffId: string;
   let testCategoryId: string;
   let product1Id: string;
   let product2Id: string;
@@ -20,7 +23,7 @@ describe('Billing and Khata Transactional Endpoints', () => {
 
   beforeAll(async () => {
     // 1. Clean up potential leftovers
-    await cleanupTestUsers([TEST_OWNER_EMAIL]);
+    await cleanupTestUsers([TEST_OWNER_EMAIL, TEST_STAFF_EMAIL]);
     await supabase.from('customers').delete().eq('name', 'Billing Test Customer');
     await supabase.from('categories').delete().eq('name', 'Billing Test Category');
 
@@ -39,11 +42,31 @@ describe('Billing and Khata Transactional Endpoints', () => {
 
     ownerId = ownerUser!.id;
 
-    // Login
+    // Login owner
     const ownerLogin = await request(app)
       .post('/api/v1/auth/login')
       .send({ email: TEST_OWNER_EMAIL, password: PASSWORD });
     ownerToken = ownerLogin.body.token;
+
+    // Create test staff
+    const { data: staffUser } = await supabase
+      .from('users')
+      .insert({
+        name: 'Billing Test Staff',
+        email: TEST_STAFF_EMAIL,
+        password: hashedPassword,
+        role: 'staff',
+      })
+      .select('id')
+      .single();
+
+    staffId = staffUser!.id;
+
+    // Login staff
+    const staffLogin = await request(app)
+      .post('/api/v1/auth/login')
+      .send({ email: TEST_STAFF_EMAIL, password: PASSWORD });
+    staffToken = staffLogin.body.token;
 
     // 3. Create test category
     let { data: cat } = await supabase
@@ -123,7 +146,7 @@ describe('Billing and Khata Transactional Endpoints', () => {
       await supabase.from('products').delete().eq('id', product2Id);
     }
     await supabase.from('categories').delete().eq('id', testCategoryId);
-    await cleanupTestUsers([TEST_OWNER_EMAIL]);
+    await cleanupTestUsers([TEST_OWNER_EMAIL, TEST_STAFF_EMAIL]);
   });
 
   describe('Paid Bill Checkout', () => {
@@ -496,5 +519,88 @@ describe('Billing and Khata Transactional Endpoints', () => {
         )
       ).toBe(true);
     });
+  });
+
+  describe('Discounts & Staff limits', () => {
+    it('should successfully confirm a bill with a discount by owner', async () => {
+      const res = await request(app)
+        .post('/api/v1/billing')
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({
+          mode: 'full',
+          status: 'paid',
+          total: 40.0,
+          customer_id: null,
+          customer_name: 'Discounted Customer',
+          items: [
+            {
+              product_id: product1Id,
+              product_name: 'Billing Test Item 1',
+              qty: 1,
+              unit_price: 50.0,
+              cost_price: 40.0,
+              discount: 10.0,
+            },
+          ],
+        });
+
+      expect(res.status).toBe(201);
+      expect(Number(res.body.total)).toBe(40.0);
+      expect(Number(res.body.discount_total)).toBe(10.0);
+      expect(Number(res.body.bill_items[0].discount)).toBe(10.0);
+      expect(Number(res.body.bill_items[0].subtotal)).toBe(40.0);
+    });
+
+    it('should successfully confirm a bill with a discount by staff under limit', async () => {
+      const res = await request(app)
+        .post('/api/v1/billing')
+        .set('Authorization', `Bearer ${staffToken}`)
+        .send({
+          mode: 'full',
+          status: 'paid',
+          total: 30.0,
+          customer_id: null,
+          customer_name: 'Staff Discount Customer',
+          items: [
+            {
+              product_id: product1Id,
+              product_name: 'Billing Test Item 1',
+              qty: 1,
+              unit_price: 50.0,
+              cost_price: 40.0,
+              discount: 20.0,
+            },
+          ],
+        });
+
+      expect(res.status).toBe(201);
+      expect(Number(res.body.total)).toBe(30.0);
+      expect(Number(res.body.discount_total)).toBe(20.0);
+    });
+
+    it('should fail to confirm a bill with a discount by staff exceeding limit', async () => {
+      const res = await request(app)
+        .post('/api/v1/billing')
+        .set('Authorization', `Bearer ${staffToken}`)
+        .send({
+          mode: 'full',
+          status: 'paid',
+          total: 10.0,
+          customer_id: null,
+          customer_name: 'Staff Discount Exceeded',
+          items: [
+            {
+              product_id: product1Id,
+              product_name: 'Billing Test Item 1',
+              qty: 1,
+              unit_price: 50.0,
+              cost_price: 40.0,
+              discount: 60.0,
+            },
+          ],
+        });
+
+      expect(res.status).toBe(500);
+      expect(res.body.message).toContain('Staff discount limit exceeded');
   });
 });
