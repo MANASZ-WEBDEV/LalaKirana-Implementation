@@ -85,7 +85,18 @@ export function useCancelPurchase() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: purchasesKeys.orders() });
       queryClient.invalidateQueries({ queryKey: purchasesKeys.suppliers() });
-      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+    },
+  });
+}
+
+export function usePayPurchase(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => purchasesApi.payPurchaseOrder(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: purchasesKeys.order(id) });
+      queryClient.invalidateQueries({ queryKey: purchasesKeys.orders() });
+      queryClient.invalidateQueries({ queryKey: purchasesKeys.suppliers() });
     },
   });
 }

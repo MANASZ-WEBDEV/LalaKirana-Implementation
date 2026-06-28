@@ -56,6 +56,9 @@ export const purchasesApi = {
       .post<{ message: string }>(`/purchases/${id}/cancel`, { reason })
       .then((r) => r.data),
 
+  payPurchaseOrder: (id: string) =>
+    api.post<PurchaseOrder>(`/purchases/${id}/pay`).then((r) => r.data),
+
   // Expenses CRUD
   getExpenses: (params?: ExpenseQuery) =>
     api

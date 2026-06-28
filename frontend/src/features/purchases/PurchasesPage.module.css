@@ -284,6 +284,13 @@
   text-align: left;
 }
 
+.poTableScroll {
+  max-height: 250px;
+  overflow-y: auto;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+}
+
 .poModalActions {
   display: flex;
   justify-content: space-between;

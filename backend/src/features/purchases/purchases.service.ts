@@ -209,6 +209,69 @@ export const purchasesService = {
   },
 
   /**
+   * Mark a purchase order as fully paid.
+   * Subtracts unpaid amount from supplier balance.
+   */
+  payPurchaseOrder: async (poId: string, userId: string) => {
+    // 1. Fetch current PO details
+    const { data: po, error: fetchError } = await supabase
+      .from('purchase_orders')
+      .select('id, supplier_id, total, amount_paid, payment_status, status')
+      .eq('id', poId)
+      .single();
+
+    if (fetchError || !po) {
+      throw new Error('Purchase order not found');
+    }
+
+    if (po.status === 'cancelled') {
+      throw new Error('Cannot pay a cancelled purchase order');
+    }
+
+    if (po.payment_status === 'paid') {
+      return po;
+    }
+
+    const total = Number(po.total);
+    const amountPaid = Number(po.amount_paid || 0);
+    const unpaidAmount = total - amountPaid;
+
+    // 2. Update purchase order status
+    const { data: updatedPO, error: updateError } = await supabase
+      .from('purchase_orders')
+      .update({
+        payment_status: 'paid',
+        amount_paid: total,
+      })
+      .eq('id', poId)
+      .select()
+      .single();
+
+    if (updateError) {
+      throw new Error(`Failed to update purchase order status: ${updateError.message}`);
+    }
+
+    // 3. Subtract unpaid amount from supplier balance if supplier exists
+    if (po.supplier_id && unpaidAmount > 0) {
+      const { data: supplier, error: suppFetchErr } = await supabase
+        .from('suppliers')
+        .select('total_balance')
+        .eq('id', po.supplier_id)
+        .single();
+      
+      if (!suppFetchErr && supplier) {
+        const newBalance = Number(supplier.total_balance) - unpaidAmount;
+        await supabase
+          .from('suppliers')
+          .update({ total_balance: newBalance })
+          .eq('id', po.supplier_id);
+      }
+    }
+
+    return updatedPO;
+  },
+
+  /**
    * Get paginated purchase orders with filters.
    */
   getPurchaseOrders: async (query: PurchaseQuery) => {

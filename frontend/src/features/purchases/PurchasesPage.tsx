@@ -8,6 +8,7 @@ import {
   useCreateSupplier,
   useSupplierRepayment,
   usePurchaseDetail,
+  usePayPurchase,
 } from './purchases.queries';
 import { NewExpenseForm } from './NewExpenseForm';
 import { Input } from '@/shared/ui/Input';
@@ -278,6 +279,7 @@ export default function PurchasesPage() {
   };
 
   const activePO = selectedPO || queryPOData;
+  const payPurchaseMutation = usePayPurchase(activePO?.id || '');
 
   const handleClosePO = () => {
     setSelectedPO(null);
@@ -285,6 +287,16 @@ export default function PurchasesPage() {
       const newParams = new URLSearchParams(searchParams);
       newParams.delete('po');
       setSearchParams(newParams);
+    }
+  };
+
+  const handleMarkAsPaid = async () => {
+    if (!activePO) return;
+    try {
+      await payPurchaseMutation.mutateAsync();
+      addToast('success', 'Purchase order marked as paid and supplier balance adjusted.');
+    } catch (err: any) {
+      addToast('error', err.message || 'Failed to update payment status.');
     }
   };
 
@@ -562,11 +574,39 @@ export default function PurchasesPage() {
         >
           <div className={styles.poDetailContainer}>
             <div className={styles.poMetaCard}>
-              <p><strong>Order ID:</strong> {activePO.id}</p>
+              <p>
+                <strong>Order ID:</strong>{' '}
+                <span
+                  title="Click to copy full ID"
+                  style={{ cursor: 'pointer', textDecoration: 'underline dotted', color: 'var(--color-primary)' }}
+                  onClick={() => {
+                    navigator.clipboard.writeText(activePO.id);
+                    addToast('success', 'Full Order ID copied to clipboard');
+                  }}
+                >
+                  PO-{activePO.id.slice(0, 8).toUpperCase()}
+                </span>
+              </p>
               <p><strong>Date:</strong> {new Date(activePO.order_date).toLocaleDateString('en-IN')}</p>
               <p><strong>Total Cost:</strong> ₹{Number(activePO.total).toFixed(2)}</p>
-              <p><strong>Items:</strong> {activePO.item_count}</p>
-              <p><strong>Payment Status:</strong> {activePO.payment_status}</p>
+              <p><strong>Total Units:</strong> {activePO.item_count}</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0.25rem 0' }}>
+                <strong>Payment Status:</strong>
+                <Badge variant={activePO.payment_status === 'paid' ? 'success' : activePO.payment_status === 'partial' ? 'warning' : 'error'}>
+                  {activePO.payment_status.toUpperCase()}
+                </Badge>
+                {isOwner && activePO.payment_status !== 'paid' && activePO.status !== 'cancelled' && (
+                  <Button
+                    size="sm"
+                    variant="primary"
+                    onClick={handleMarkAsPaid}
+                    loading={payPurchaseMutation.isPending}
+                    style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', height: 'auto' }}
+                  >
+                    Mark as Paid
+                  </Button>
+                )}
+              </div>
               {activePO.note && <p><strong>Note:</strong> {activePO.note}</p>}
             </div>
 
@@ -576,19 +616,17 @@ export default function PurchasesPage() {
               {poLoading ? (
                 <div>Loading items...</div>
               ) : (
-                <ul className={styles.poItemsList}>
+                <div className={styles.poTableScroll}>
                   <PurchaseOrderItemsList poId={activePO.id} />
-                </ul>
+                </div>
               )}
             </div>
 
             <div className={styles.poModalActions}>
-              <Button variant="secondary" onClick={handleClosePO}>
-                Close
-              </Button>
               {isOwner && activePO.status !== 'cancelled' && (
                 <Button
-                  variant="danger"
+                  variant="secondary"
+                  style={{ borderColor: 'var(--color-error)', color: 'var(--color-error)' }}
                   onClick={() => {
                     setCancellingPO(activePO);
                     setSelectedPO(null); // Clear selectedPO so it can render cancelling modal
@@ -597,6 +635,9 @@ export default function PurchasesPage() {
                   Cancel Purchase Order
                 </Button>
               )}
+              <Button variant="secondary" onClick={handleClosePO} style={{ marginLeft: 'auto' }}>
+                Close
+              </Button>
             </div>
           </div>
         </Modal>
@@ -670,22 +711,41 @@ function PurchaseOrderItemsList({ poId }: { poId: string }) {
       <thead>
         <tr>
           <th>Product</th>
-          <th>Qty</th>
-          <th>Cost Price</th>
-          <th>MRP</th>
-          <th>Sell Price</th>
+          <th style={{ textAlign: 'center' }}>Qty</th>
+          <th style={{ textAlign: 'right' }}>Cost Price</th>
+          <th style={{ textAlign: 'right' }}>MRP</th>
+          <th style={{ textAlign: 'right' }}>Sell Price</th>
+          <th style={{ textAlign: 'right' }}>Margin</th>
         </tr>
       </thead>
       <tbody>
-        {po.purchase_order_items.map((item) => (
-          <tr key={item.id}>
-            <td>{item.product_name}</td>
-            <td>{item.qty}</td>
-            <td>₹{Number(item.cost_price).toFixed(2)}</td>
-            <td>{item.mrp ? `₹${Number(item.mrp).toFixed(2)}` : 'Keep Existing'}</td>
-            <td>{item.sell_price ? `₹${Number(item.sell_price).toFixed(2)}` : 'Keep Existing'}</td>
-          </tr>
-        ))}
+        {po.purchase_order_items.map((item) => {
+          const cost = Number(item.cost_price);
+          const sell = item.sell_price ? Number(item.sell_price) : 0;
+          const marginVal = sell > 0 ? Math.round(((sell - cost) / sell) * 100) : null;
+          const displayMargin = marginVal !== null ? `${marginVal}%` : '-';
+
+          return (
+            <tr key={item.id}>
+              <td style={{ fontWeight: 500 }}>{item.product_name}</td>
+              <td style={{ textAlign: 'center' }}>{item.qty}</td>
+              <td style={{ textAlign: 'right' }}>₹{cost.toFixed(2)}</td>
+              <td style={{ textAlign: 'right' }}>
+                {item.mrp ? `₹${Number(item.mrp).toFixed(2)}` : <span style={{ color: 'var(--color-outline)', fontSize: '0.75rem', fontStyle: 'italic' }}>(unchanged)</span>}
+              </td>
+              <td style={{ textAlign: 'right' }}>
+                {item.sell_price ? `₹${sell.toFixed(2)}` : <span style={{ color: 'var(--color-outline)', fontSize: '0.75rem', fontStyle: 'italic' }}>(unchanged)</span>}
+              </td>
+              <td style={{ 
+                textAlign: 'right', 
+                fontWeight: 600,
+                color: marginVal !== null && marginVal > 0 ? '#006763' : marginVal !== null && marginVal < 0 ? '#ba1a1a' : 'inherit'
+              }}>
+                {displayMargin}
+              </td>
+            </tr>
+          );
+        })}
       </tbody>
     </table>
   );

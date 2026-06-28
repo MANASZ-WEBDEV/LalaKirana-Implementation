@@ -163,4 +163,18 @@ router.post(
   }
 );
 
+router.post(
+  '/:id/pay',
+  requireOwner,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.user!.id;
+      const result = await purchasesService.payPurchaseOrder(req.params.id as string, userId);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
 export default router;
