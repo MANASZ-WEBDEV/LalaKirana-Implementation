@@ -62,6 +62,9 @@ export const purchasesApi = {
   payPurchaseOrder: (id: string) =>
     api.post<PurchaseOrder>(`/purchases/${id}/pay`).then((r) => r.data),
 
+  recordPOPayment: ({ id, amount, note }: { id: string; amount: number; note: string | null }) =>
+    api.post<PurchaseOrder>(`/purchases/${id}/record-payment`, { amount, note }).then((r) => r.data),
+
   // Expenses CRUD
   getExpenses: (params?: ExpenseQuery) =>
     api

@@ -102,6 +102,21 @@ export function usePayPurchase(id: string) {
   });
 }
 
+export function useRecordPOPayment(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { amount: number; note: string | null }) =>
+      purchasesApi.recordPOPayment({ id, ...data }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: purchasesKeys.order(id) });
+      queryClient.invalidateQueries({ queryKey: purchasesKeys.orders() });
+      queryClient.invalidateQueries({ queryKey: purchasesKeys.suppliers() });
+      // Invalidate ledger since a repayment is created under the hood
+      queryClient.invalidateQueries({ queryKey: purchasesKeys.all }); 
+    },
+  });
+}
+
 export function useExpenses(filters?: ExpenseQuery) {
   return useQuery({
     queryKey: purchasesKeys.expenses(filters),
