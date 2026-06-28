@@ -11,6 +11,7 @@ export interface CartItem {
   unit: string;
   stock_qty: number;
   discount: number;
+  is_loose: boolean;
 }
 
 export interface OrderSlot {
@@ -137,6 +138,7 @@ export const useBillingStore = create<BillingState>()(
               unit: product.unit,
               stock_qty: product.stock_qty,
               discount: 0,
+              is_loose: !!product.is_loose,
             },
           ];
         }

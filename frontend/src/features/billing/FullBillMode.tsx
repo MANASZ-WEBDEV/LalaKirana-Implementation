@@ -100,29 +100,69 @@ export function FullBillMode({ onCheckout }: FullBillModeProps) {
                         </div>
                       </td>
                       <td className={styles.qtyCol}>
-                        <div className={styles.qtyControls}>
-                          <button
-                            type="button"
-                            onClick={() => updateCartQty(item.product_id, item.qty - 1)}
-                            className={styles.qtyBtn}
-                          >
-                            −
-                          </button>
-                          <input
-                            type="number"
-                            value={item.qty}
-                            min={1}
-                            onChange={(e) => handleQtyChange(item.product_id, e.target.value)}
-                            className={styles.qtyInput}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => updateCartQty(item.product_id, item.qty + 1)}
-                            className={styles.qtyBtn}
-                          >
-                            +
-                          </button>
-                        </div>
+                        {item.is_loose ? (
+                          <div className={styles.looseQtyWrapper}>
+                            <div className={styles.looseInputRow}>
+                              <input
+                                type="number"
+                                value={Math.round(item.qty * 1000)}
+                                min={1}
+                                step="1"
+                                onChange={(e) => {
+                                  const grams = parseInt(e.target.value, 10);
+                                  updateCartQty(item.product_id, isNaN(grams) ? 0 : grams / 1000);
+                                }}
+                                className={styles.looseQtyInput}
+                              />
+                              <span className={styles.looseQtyLabel}>g</span>
+                            </div>
+                            <div className={styles.quickWeightPills}>
+                              {[
+                                { label: '50g', value: 0.05 },
+                                { label: '100g', value: 0.1 },
+                                { label: '250g', value: 0.25 },
+                                { label: '500g', value: 0.5 },
+                                { label: '1kg', value: 1.0 },
+                                { label: '2kg', value: 2.0 },
+                              ].map((pill) => (
+                                <button
+                                  key={pill.label}
+                                  type="button"
+                                  onClick={() => updateCartQty(item.product_id, pill.value)}
+                                  className={`${styles.weightPill} ${
+                                    Math.abs(item.qty - pill.value) < 0.0001 ? styles.weightPillActive : ''
+                                  }`}
+                                >
+                                  {pill.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className={styles.qtyControls}>
+                            <button
+                              type="button"
+                              onClick={() => updateCartQty(item.product_id, item.qty - 1)}
+                              className={styles.qtyBtn}
+                            >
+                              −
+                            </button>
+                            <input
+                              type="number"
+                              value={item.qty}
+                              min={1}
+                              onChange={(e) => handleQtyChange(item.product_id, e.target.value)}
+                              className={styles.qtyInput}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => updateCartQty(item.product_id, item.qty + 1)}
+                              className={styles.qtyBtn}
+                            >
+                              +
+                            </button>
+                          </div>
+                        )}
                       </td>
                       <td className={styles.rateCol}>₹{Number(item.unit_price).toFixed(2)}</td>
                       <td className={styles.discountCol}>

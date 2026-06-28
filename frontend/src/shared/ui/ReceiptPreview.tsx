@@ -218,6 +218,12 @@ export function ReceiptPreview({ bill, repayment }: ReceiptPreviewProps) {
               {items.map((item, idx) => {
                 const discountVal = Number(item.discount || 0);
                 const subtotalVal = item.subtotal ?? ((item.qty || 0) * (Number(item.unit_price) - discountVal));
+                const qtyVal = Number(item.qty || 0);
+                const formattedQty = item.is_loose
+                  ? qtyVal < 1
+                    ? `${Math.round(qtyVal * 1000)}g`
+                    : `${qtyVal.toFixed(3).replace(/\.?0+$/, '')}kg`
+                  : `${qtyVal}`;
                 return (
                   <div key={idx} className={styles.itemRow}>
                     <span className={styles.itemColName}>
@@ -228,7 +234,7 @@ export function ReceiptPreview({ bill, repayment }: ReceiptPreviewProps) {
                         </span>
                       )}
                     </span>
-                    <span className={styles.qtyCol}>{item.qty}</span>
+                    <span className={styles.qtyCol}>{formattedQty}</span>
                     <span className={styles.rateCol}>₹{Number(item.unit_price).toFixed(2)}</span>
                     <span className={styles.totalCol}>₹{Number(subtotalVal).toFixed(2)}</span>
                   </div>

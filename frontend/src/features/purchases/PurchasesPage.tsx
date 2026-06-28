@@ -11,7 +11,6 @@ import {
   usePayPurchase,
   useSupplierLedger,
   useUpdateSupplier,
-  useRecordPOPayment,
 } from './purchases.queries';
 import { NewExpenseForm } from './NewExpenseForm';
 import { Input } from '@/shared/ui/Input';
@@ -32,7 +31,7 @@ export default function PurchasesPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const poParam = searchParams.get('po');
 
-  const { data: queryPOData, isLoading: queryPOLoading } = usePurchaseDetail(poParam || '', {
+  const { data: queryPOData } = usePurchaseDetail(poParam || '', {
     enabled: !!poParam,
   });
   const user = useAuthStore((s) => s.user);
@@ -79,10 +78,7 @@ export default function PurchasesPage() {
     }
   }, [selectedSupplierForDetails]);
 
-  // Record PO Payment States
-  const [showPaymentForm, setShowPaymentForm] = useState(false);
-  const [partialPayAmount, setPartialPayAmount] = useState('');
-  const [partialPayNote, setPartialPayNote] = useState('');
+
 
   // Form States (Supplier Creation)
   const [supName, setSupName] = useState('');

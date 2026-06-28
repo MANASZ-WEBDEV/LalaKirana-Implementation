@@ -8,6 +8,7 @@ export interface BillItem {
   cost_price: number;
   discount?: number;
   subtotal?: number;
+  is_loose?: boolean;
 }
 
 export interface Bill {
@@ -44,6 +45,7 @@ export interface ConfirmBillInput {
     unit_price: number;
     cost_price: number;
     discount?: number;
+    is_loose?: boolean;
   }[];
   customer_id?: string | null;
   customer_name?: string | null;

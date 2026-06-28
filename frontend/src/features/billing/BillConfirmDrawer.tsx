@@ -168,6 +168,7 @@ export function BillConfirmDrawer({ isOpen, onClose, statusMode }: BillConfirmDr
               unit_price: item.unit_price,
               cost_price: item.cost_price,
               discount: item.discount || 0,
+              is_loose: item.is_loose,
             }))
           : [],
       };
@@ -233,10 +234,15 @@ export function BillConfirmDrawer({ isOpen, onClose, statusMode }: BillConfirmDr
                 <div className={styles.summaryItems}>
                   {slot.items.map((item) => {
                     const itemDiscount = item.discount || 0;
+                    const formattedQty = item.is_loose
+                      ? item.qty < 1
+                        ? `(${Math.round(item.qty * 1000)}g)`
+                        : `(${item.qty.toFixed(3).replace(/\.?0+$/, '')}kg)`
+                      : `x ${item.qty}`;
                     return (
                       <div key={item.product_id} className={styles.summaryItemRow}>
                         <span>
-                          {item.product_name} x {item.qty}
+                          {item.product_name} {formattedQty}
                           {itemDiscount > 0 && (
                             <span className={styles.summaryItemDiscount}>
                               {' '}
