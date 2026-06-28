@@ -9,6 +9,7 @@ const BillItemSchema = z.object({
   qty: z.number().int().positive('Quantity must be positive'),
   unit_price: z.number().min(0, 'Unit price must be non-negative'),
   cost_price: z.number().min(0, 'Cost price must be non-negative'),
+  discount: z.number().min(0, 'Discount must be non-negative').optional().default(0),
 });
 
 // Confirm a bill (create + confirm in one step — no draft in DB)

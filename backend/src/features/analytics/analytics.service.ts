@@ -35,6 +35,10 @@ export interface TopProduct {
   totalCost: number;
   totalProfit: number;
   totalQty: number;
+  totalDiscount: number;
+  netRevenue: number;
+  netProfit: number;
+  discountBillCount: number;
 }
 
 export interface CategoryBreakdown {
@@ -79,7 +83,7 @@ async function getBillRevenue(from: string, to: string) {
       total,
       mode,
       created_at,
-      bill_items ( qty, unit_price, cost_price )
+      bill_items ( qty, cost_price, subtotal )
     `)
     .in('status', ['paid', 'khata'])
     .gte('created_at', `${from}T00:00:00`)
@@ -96,7 +100,7 @@ async function getBillRevenue(from: string, to: string) {
     if (bill.mode === 'full' && Array.isArray(bill.bill_items)) {
       for (const item of bill.bill_items as any[]) {
         const qty = Number(item.qty);
-        revenue += qty * Number(item.unit_price);
+        revenue += Number(item.subtotal || 0);
         cost += qty * Number(item.cost_price || 0);
       }
     } else {
@@ -217,7 +221,7 @@ export const analyticsService = {
         total,
         mode,
         created_at,
-        bill_items ( qty, unit_price, cost_price )
+        bill_items ( qty, cost_price, subtotal )
       `)
       .in('status', ['paid', 'khata'])
       .gte('created_at', `${from}T00:00:00`)
@@ -279,7 +283,7 @@ export const analyticsService = {
       if (bill.mode === 'full' && Array.isArray(bill.bill_items)) {
         for (const item of bill.bill_items as any[]) {
           const qty = Number(item.qty);
-          bucket.revenue += qty * Number(item.unit_price);
+          bucket.revenue += Number(item.subtotal || 0);
           bucket.cost += qty * Number(item.cost_price || 0);
         }
       } else {
@@ -312,7 +316,7 @@ export const analyticsService = {
     while (cursor <= endDate) {
       const key = getKey(cursor.toISOString());
       const bucket = map.get(key) || { revenue: 0, cost: 0, orderCount: 0 };
-      
+
       // Only add if we haven't already added this key
       if (!result.length || result[result.length - 1].date !== key) {
         result.push({
@@ -345,7 +349,7 @@ export const analyticsService = {
     const { data: bills, error: billErr } = await supabase
       .from('bills')
       .select(`
-        bill_items ( product_id, product_name, qty, unit_price, cost_price )
+        bill_items ( product_id, product_name, qty, unit_price, cost_price, discount, subtotal )
       `)
       .in('status', ['paid', 'khata'])
       .gte('created_at', `${from}T00:00:00`)
@@ -363,9 +367,9 @@ export const analyticsService = {
     if (eodErr) throw new Error(`Failed to fetch EOD for top products: ${eodErr.message}`);
 
     // Aggregate by product_id
-    const productMap = new Map<string, TopProduct>();
+    const productMap = new Map<string, any>();
 
-    const ensureProduct = (id: string, name: string): TopProduct => {
+    const ensureProduct = (id: string, name: string): any => {
       if (!productMap.has(id)) {
         productMap.set(id, {
           product_id: id,
@@ -375,6 +379,10 @@ export const analyticsService = {
           totalCost: 0,
           totalProfit: 0,
           totalQty: 0,
+          totalDiscount: 0,
+          netRevenue: 0,
+          netProfit: 0,
+          discountBillCount: 0,
         });
       }
       return productMap.get(id)!;
@@ -390,6 +398,11 @@ export const analyticsService = {
         p.totalRevenue += qty * Number(item.unit_price);
         p.totalCost += qty * Number(item.cost_price || 0);
         p.totalQty += qty;
+        p.totalDiscount += qty * Number(item.discount || 0);
+        p.netRevenue += Number(item.subtotal || (qty * (Number(item.unit_price) - Number(item.discount || 0))));
+        if (Number(item.discount || 0) > 0) {
+          p.discountBillCount += 1;
+        }
       }
     }
 
@@ -398,9 +411,11 @@ export const analyticsService = {
       if (!e.product_id) continue;
       const p = ensureProduct(e.product_id, e.product_name);
       const qty = Number(e.qty_sold);
-      p.totalRevenue += qty * Number(e.unit_price || 0);
+      const itemPrice = Number(e.unit_price || 0);
+      p.totalRevenue += qty * itemPrice;
       p.totalCost += qty * Number(e.cost_price || 0);
       p.totalQty += qty;
+      p.netRevenue += qty * itemPrice;
     }
 
     // Enrich with category names
@@ -419,15 +434,20 @@ export const analyticsService = {
       }
     }
 
-    // Calculate profit and sort by revenue
+    // Calculate profit and sort by net revenue
     const result = Array.from(productMap.values())
       .map((p) => ({
         ...p,
         totalRevenue: Math.round(p.totalRevenue * 100) / 100,
         totalCost: Math.round(p.totalCost * 100) / 100,
-        totalProfit: Math.round((p.totalRevenue - p.totalCost) * 100) / 100,
+        totalQty: p.totalQty,
+        totalDiscount: Math.round(p.totalDiscount * 100) / 100,
+        netRevenue: Math.round(p.netRevenue * 100) / 100,
+        netProfit: Math.round((p.netRevenue - p.totalCost) * 100) / 100,
+        totalProfit: Math.round((p.netRevenue - p.totalCost) * 100) / 100,
+        discountBillCount: p.discountBillCount,
       }))
-      .sort((a, b) => b.totalRevenue - a.totalRevenue)
+      .sort((a, b) => b.netRevenue - a.netRevenue)
       .slice(0, limit);
 
     return result;
@@ -462,7 +482,7 @@ export const analyticsService = {
       }))
       .sort((a, b) => b.revenue - a.revenue);
   },
- 
+
   /**
    * Complete Net Profit calculation breakdown
    */
@@ -471,7 +491,7 @@ export const analyticsService = {
     // Full bills
     const { data: fullBills, error: fullErr } = await supabase
       .from('bills')
-      .select('total, mode, bill_items ( qty, unit_price, cost_price )')
+      .select('total, mode, bill_items ( qty, unit_price, cost_price, subtotal )')
       .in('status', ['paid', 'khata'])
       .gte('created_at', `${from}T00:00:00`)
       .lte('created_at', `${to}T23:59:59`);
@@ -483,7 +503,7 @@ export const analyticsService = {
     for (const bill of fullBills || []) {
       if (bill.mode === 'full') {
         for (const item of (bill.bill_items as any[]) || []) {
-          fullBillsRevenue += Number(item.qty) * Number(item.unit_price);
+          fullBillsRevenue += Number(item.subtotal || 0);
         }
       } else {
         quickBillsRevenue += Number(bill.total);
@@ -508,7 +528,7 @@ export const analyticsService = {
     const topProducts = await analyticsService.getTopProducts(from, to, 1000);
     const cogsItems = topProducts.map((p) => {
       const avgCost = p.totalQty > 0 ? p.totalCost / p.totalQty : 0;
-      const avgPrice = p.totalQty > 0 ? p.totalRevenue / p.totalQty : 0;
+      const avgPrice = p.totalQty > 0 ? p.netRevenue / p.totalQty : 0;
       return {
         product_name: p.product_name,
         qty: p.totalQty,
@@ -574,12 +594,12 @@ export const analyticsService = {
   exportCSV: async (from: string, to: string): Promise<string> => {
     const topProducts = await analyticsService.getTopProducts(from, to, 1000);
 
-    const header = 'Product,Category,Qty Sold,Revenue (₹),Cost (₹),Profit (₹),Margin (%)';
+    const header = 'Product,Category,Qty Sold,Gross Revenue (₹),Discount Given (₹),Net Revenue (₹),Cost (₹),Profit (₹),Margin (%)';
     const rows = topProducts.map((p) => {
-      const margin = p.totalRevenue > 0
-        ? Math.round(((p.totalRevenue - p.totalCost) / p.totalRevenue) * 1000) / 10
+      const margin = p.netRevenue > 0
+        ? Math.round(((p.netRevenue - p.totalCost) / p.netRevenue) * 1000) / 10
         : 0;
-      return `"${p.product_name}","${p.category_name || 'Uncategorized'}",${p.totalQty},${p.totalRevenue},${p.totalCost},${p.totalProfit},${margin}`;
+      return `"${p.product_name}","${p.category_name || 'Uncategorized'}",${p.totalQty},${p.totalRevenue},${p.totalDiscount},${p.netRevenue},${p.totalCost},${p.totalProfit},${margin}`;
     });
 
     return [header, ...rows].join('\n');

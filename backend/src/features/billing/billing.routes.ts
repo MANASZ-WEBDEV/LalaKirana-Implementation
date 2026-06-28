@@ -20,7 +20,8 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = req.user!.id;
-      const bill = await billingService.confirmBill(req.body, userId);
+      const userRole = req.user!.role;
+      const bill = await billingService.confirmBill(req.body, userId, userRole);
       res.status(201).json(bill);
     } catch (err) {
       next(err);

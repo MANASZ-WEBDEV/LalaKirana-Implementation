@@ -19,6 +19,7 @@ export const storeSettingsService = {
       store_phone: '',
       receipt_footer: 'Thank you! Visit again',
       receipt_language: 'english',
+      staff_discount_limit: '50',
     };
 
     if (data) {

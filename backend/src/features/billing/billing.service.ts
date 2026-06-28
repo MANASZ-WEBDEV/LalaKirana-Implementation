@@ -1,5 +1,6 @@
 import { supabase } from '../../db/supabase.js';
 import type { ConfirmBillInput, BillHistoryQuery } from './billing.schema.js';
+import { storeSettingsService } from '../settings/settings.service.js';
 
 export const billingService = {
 
@@ -8,7 +9,21 @@ export const billingService = {
    * Creates the bill record, inserts items, deducts stock, and handles khata.
    * All operations are done in sequence with consistent error handling.
    */
-  confirmBill: async (input: ConfirmBillInput, userId: string) => {
+  confirmBill: async (input: ConfirmBillInput, userId: string, userRole: string) => {
+    // For staff, enforce discount cap from store settings
+    if (userRole === 'staff' && input.mode === 'full') {
+      const settings = await storeSettingsService.getStoreSettings();
+      const staffDiscountLimit = parseFloat(settings.staff_discount_limit || '50');
+
+      for (const item of input.items || []) {
+        if (item.discount && item.discount > staffDiscountLimit) {
+          throw new Error(
+            `Staff discount limit exceeded: Maximum allowed discount is ₹${staffDiscountLimit} per item.`
+          );
+        }
+      }
+    }
+
     // Call transactional PostgreSQL function
     const { data: billId, error: txError } = await supabase
       .rpc('confirm_bill_transaction', {
@@ -65,7 +80,7 @@ export const billingService = {
       .select(`
         *,
         customers ( id, name, phone ),
-        bill_items ( id, product_name, qty, unit_price, cost_price, subtotal )
+        bill_items ( id, product_name, qty, unit_price, cost_price, discount, subtotal )
       `, { count: 'exact' });
 
     if (date_from) {
@@ -121,7 +136,7 @@ export const billingService = {
       .select(`
         *,
         customers ( id, name, phone, total_balance ),
-        bill_items ( id, product_id, product_name, qty, unit_price, cost_price, subtotal ),
+        bill_items ( id, product_id, product_name, qty, unit_price, cost_price, discount, subtotal ),
         users:created_by ( name )
       `)
       .eq('id', billId)
