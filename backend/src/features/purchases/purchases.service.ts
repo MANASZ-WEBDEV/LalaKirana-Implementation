@@ -266,9 +266,77 @@ export const purchasesService = {
           .update({ total_balance: newBalance })
           .eq('id', po.supplier_id);
       }
+
+      // Log the payment in supplier_repayments table!
+      await supabase
+        .from('supplier_repayments')
+        .insert([{
+          supplier_id: po.supplier_id,
+          amount: unpaidAmount,
+          note: `Settled Purchase Order PO-${po.id.slice(0, 8).toUpperCase()}`,
+          created_by: userId,
+        }]);
     }
 
     return updatedPO;
+  },
+
+  /**
+   * Get a consolidated transaction statement (ledger) for a specific supplier.
+   * Merges purchase orders and repayments, ordered by date descending.
+   */
+  getSupplierLedger: async (supplierId: string) => {
+    // 1. Fetch all POs for this supplier
+    const { data: pos, error: posErr } = await supabase
+      .from('purchase_orders')
+      .select('id, order_date, total, amount_paid, payment_status, reference_number, note, status')
+      .eq('supplier_id', supplierId);
+
+    if (posErr) {
+      throw new Error(`Failed to fetch supplier purchase orders for ledger: ${posErr.message}`);
+    }
+
+    // 2. Fetch all Repayments for this supplier
+    const { data: repayments, error: repErr } = await supabase
+      .from('supplier_repayments')
+      .select('id, repayment_date, amount, note, created_at')
+      .eq('supplier_id', supplierId);
+
+    if (repErr) {
+      throw new Error(`Failed to fetch supplier repayments for ledger: ${repErr.message}`);
+    }
+
+    // 3. Map both lists to a unified statement format
+    const poLogs = (pos || []).map((po: any) => ({
+      id: po.id,
+      date: po.order_date,
+      type: 'purchase_order' as const,
+      label: `PO-${po.id.slice(0, 8).toUpperCase()}${po.reference_number ? ` (Ref: ${po.reference_number})` : ''}`,
+      note: po.note,
+      total: Number(po.total),
+      amount_paid: Number(po.amount_paid || 0),
+      payment_status: po.payment_status,
+      status: po.status,
+      sortByDate: new Date(po.order_date).getTime(),
+    }));
+
+    const repaymentLogs = (repayments || []).map((rep: any) => ({
+      id: rep.id,
+      date: rep.repayment_date,
+      type: 'repayment' as const,
+      label: 'Direct Repayment',
+      note: rep.note,
+      total: null,
+      amount_paid: Number(rep.amount),
+      payment_status: 'paid',
+      status: 'confirmed',
+      sortByDate: new Date(rep.repayment_date).getTime() + (new Date(rep.created_at).getTime() % 86400000) / 100000000,
+    }));
+
+    // 4. Combine and sort by date descending
+    const ledger = [...poLogs, ...repaymentLogs].sort((a, b) => b.sortByDate - a.sortByDate);
+
+    return ledger;
   },
 
   /**

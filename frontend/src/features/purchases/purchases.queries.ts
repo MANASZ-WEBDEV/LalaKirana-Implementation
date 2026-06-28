@@ -8,6 +8,7 @@ export const purchasesKeys = {
   orders: (filters?: PurchaseQuery) => [...purchasesKeys.all, 'orders', filters || {}] as const,
   order: (id: string) => [...purchasesKeys.all, 'order', id] as const,
   expenses: (filters?: ExpenseQuery) => [...purchasesKeys.all, 'expenses', filters || {}] as const,
+  ledger: (id: string) => [...purchasesKeys.all, 'ledger', id] as const,
 };
 
 export function useSuppliers(filters?: SupplierQuery) {
@@ -116,5 +117,13 @@ export function useCreateExpense() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: purchasesKeys.expenses() });
     },
+  });
+}
+
+export function useSupplierLedger(id: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: purchasesKeys.ledger(id),
+    queryFn: () => purchasesApi.getSupplierLedger(id),
+    ...options,
   });
 }

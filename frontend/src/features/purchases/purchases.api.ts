@@ -33,6 +33,9 @@ export const purchasesApi = {
   logSupplierRepayment: (id: string, data: SupplierRepaymentInput) =>
     api.post<{ message: string; new_balance: number }>(`/purchases/suppliers/${id}/repay`, data).then((r) => r.data),
 
+  getSupplierLedger: (id: string) =>
+    api.get<any[]>(`/purchases/suppliers/${id}/ledger`).then((r) => r.data),
+
   // Purchase Orders CRUD
   getPurchaseOrders: (params?: PurchaseQuery) =>
     api

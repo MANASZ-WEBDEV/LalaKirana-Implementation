@@ -76,6 +76,18 @@ router.post(
   }
 );
 
+router.get(
+  '/suppliers/:id/ledger',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await purchasesService.getSupplierLedger(req.params.id as string);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
 // ─── PURCHASE ORDERS ─────────────────────────────
 
 router.get(
