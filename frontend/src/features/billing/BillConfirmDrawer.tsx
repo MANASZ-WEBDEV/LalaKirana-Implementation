@@ -233,6 +233,7 @@ export function BillConfirmDrawer({ isOpen, onClose, statusMode }: BillConfirmDr
                 <div className={styles.summaryItems}>
                   {slot.items.map((item) => {
                     const itemDiscount = item.discount || 0;
+                    return (
                       <div key={item.product_id} className={styles.summaryItemRow}>
                         <span>
                           {item.product_name} x {item.qty}
