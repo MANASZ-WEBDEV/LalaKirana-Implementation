@@ -10,6 +10,7 @@ import {
   PurchaseQuerySchema,
   CreateExpenseSchema,
   ExpenseQuerySchema,
+  RecordPOPaymentSchema,
 } from './purchases.schema.js';
 import { authMiddleware } from '../../middleware/auth.middleware.js';
 import { requireOwner } from '../../middleware/role.middleware.js';
@@ -182,6 +183,22 @@ router.post(
     try {
       const userId = req.user!.id;
       const result = await purchasesService.payPurchaseOrder(req.params.id as string, userId);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.post(
+  '/:id/record-payment',
+  requireOwner,
+  validateRequest(RecordPOPaymentSchema),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.user!.id;
+      const { amount, note } = req.body;
+      const result = await purchasesService.recordPurchaseOrderPayment(req.params.id as string, amount, note, userId);
       res.json(result);
     } catch (err) {
       next(err);
