@@ -8,6 +8,16 @@ export const analyticsKeys = {
     [...analyticsKeys.all, 'trend', from, to, granularity] as const,
   topProducts: (from: string, to: string) => [...analyticsKeys.all, 'topProducts', from, to] as const,
   categories: (from: string, to: string) => [...analyticsKeys.all, 'categories', from, to] as const,
+  products: (from: string, to: string, sortBy: string, sortOrder: string, search: string, category: string, page: number, limit: number) =>
+    [...analyticsKeys.all, 'products', from, to, sortBy, sortOrder, search, category, page, limit] as const,
+  productDetail: (productId: string, from: string, to: string) =>
+    [...analyticsKeys.all, 'productDetail', productId, from, to] as const,
+  productTrend: (productId: string, from: string, to: string, granularity: string) =>
+    [...analyticsKeys.all, 'productTrend', productId, from, to, granularity] as const,
+  staffDiscounts: (from: string, to: string, granularity: string) =>
+    [...analyticsKeys.all, 'staffDiscounts', from, to, granularity] as const,
+  staffDiscountBills: (staffId: string, from: string, to: string, page: number, limit: number) =>
+    [...analyticsKeys.all, 'staffDiscountBills', staffId, from, to, page, limit] as const,
 };
 
 export function useAnalyticsOverview(from: string, to: string) {
@@ -54,3 +64,58 @@ export function useProfitBreakdown(from: string, to: string) {
     staleTime: 60_000,
   });
 }
+
+export function useAllProductsAnalytics(
+  from: string,
+  to: string,
+  sortBy: string = 'netRevenue',
+  sortOrder: 'asc' | 'desc' = 'desc',
+  search: string = '',
+  category: string = '',
+  page: number = 1,
+  limit: number = 25
+) {
+  return useQuery({
+    queryKey: analyticsKeys.products(from, to, sortBy, sortOrder, search, category, page, limit),
+    queryFn: () => analyticsApi.getAllProductsAnalytics(from, to, sortBy, sortOrder, search, category, page, limit),
+    enabled: !!from && !!to,
+    staleTime: 60_000,
+  });
+}
+
+export function useProductAnalytics(productId: string, from: string, to: string) {
+  return useQuery({
+    queryKey: analyticsKeys.productDetail(productId, from, to),
+    queryFn: () => analyticsApi.getProductAnalytics(productId, from, to),
+    enabled: !!productId && !!from && !!to,
+    staleTime: 60_000,
+  });
+}
+
+export function useProductTrend(productId: string, from: string, to: string, granularity: string = 'day') {
+  return useQuery({
+    queryKey: analyticsKeys.productTrend(productId, from, to, granularity),
+    queryFn: () => analyticsApi.getProductTrend(productId, from, to, granularity),
+    enabled: !!productId && !!from && !!to,
+    staleTime: 60_000,
+  });
+}
+
+export function useStaffDiscountAudit(from: string, to: string, granularity: string = 'day') {
+  return useQuery({
+    queryKey: analyticsKeys.staffDiscounts(from, to, granularity),
+    queryFn: () => analyticsApi.getStaffDiscountAudit(from, to, granularity),
+    enabled: !!from && !!to,
+    staleTime: 60_000,
+  });
+}
+
+export function useStaffDiscountBills(staffId: string, from: string, to: string, page: number = 1, limit: number = 20) {
+  return useQuery({
+    queryKey: analyticsKeys.staffDiscountBills(staffId, from, to, page, limit),
+    queryFn: () => analyticsApi.getStaffDiscountBills(staffId, from, to, page, limit),
+    enabled: !!staffId && !!from && !!to,
+    staleTime: 60_000,
+  });
+}
+

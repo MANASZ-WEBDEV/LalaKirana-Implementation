@@ -80,3 +80,119 @@ export interface CategoryBreakdown {
 
 export type DateRangePreset = 'today' | '7d' | '30d' | 'month' | 'ytd' | 'custom';
 export type Granularity = 'day' | 'week' | 'month';
+
+export interface AllProductsAnalyticsRow {
+  product_id: string;
+  product_name: string;
+  category_name: string | null;
+  is_loose: boolean;
+  unit: string;
+  totalQtySold: number;
+  grossRevenue: number;
+  totalDiscount: number;
+  netRevenue: number;
+  totalCost: number;
+  netProfit: number;
+  profitMargin: number;
+  billCount: number;
+  discountBillCount: number;
+}
+
+export interface AllProductsAnalyticsResponse {
+  products: AllProductsAnalyticsRow[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  summary: {
+    totalRevenue: number;
+    totalDiscount: number;
+    totalProfit: number;
+    productCount: number;
+    zeroSalesCount: number;
+  };
+}
+
+export interface ProductAnalytics {
+  product_id: string;
+  product_name: string;
+  category_name: string | null;
+  is_loose: boolean;
+  unit: string;
+  totalQtySold: number;
+  grossRevenue: number;
+  totalDiscount: number;
+  netRevenue: number;
+  totalCost: number;
+  grossProfit: number;
+  profitMargin: number;
+  avgSellingPrice: number;
+  billCount: number;
+  discountBillCount: number;
+  qtyDelta: number | null;
+  revenueDelta: number | null;
+  profitDelta: number | null;
+  discountDelta: number | null;
+  staffDiscounts: {
+    staff_id: string;
+    staff_name: string;
+    totalDiscount: number;
+    billCount: number;
+  }[];
+}
+
+export interface ProductTrendPoint {
+  date: string;
+  qtySold: number;
+  revenue: number;
+  cost: number;
+  profit: number;
+  discount: number;
+}
+
+export interface StaffDiscountSummary {
+  staff_id: string;
+  staff_name: string;
+  staff_role: string;
+  totalDiscount: number;
+  billCount: number;
+  avgDiscountPerBill: number;
+  breakdown: {
+    date: string;
+    discount: number;
+    billCount: number;
+  }[];
+  topProducts: {
+    product_id: string;
+    product_name: string;
+    totalDiscount: number;
+    billCount: number;
+  }[];
+}
+
+export interface StaffDiscountBillItem {
+  product_name: string;
+  qty: number;
+  unit_price: number;
+  discount: number;
+  subtotal: number;
+}
+
+export interface StaffDiscountBill {
+  bill_id: string;
+  bill_number: string;
+  created_at: string;
+  total: number;
+  discount_total: number;
+  customer_name: string | null;
+  items: StaffDiscountBillItem[];
+}
+
+export interface StaffDiscountBillsResponse {
+  bills: StaffDiscountBill[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
