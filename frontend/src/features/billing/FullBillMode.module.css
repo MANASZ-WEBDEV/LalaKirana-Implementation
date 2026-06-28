@@ -197,11 +197,13 @@
   background: var(--color-white);
   color: var(--color-on-surface);
   -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 .qtyInput::-webkit-outer-spin-button,
 .qtyInput::-webkit-inner-spin-button {
   -webkit-appearance: none;
+  appearance: none;
   margin: 0;
 }
 
