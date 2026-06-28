@@ -732,10 +732,10 @@ function PurchaseOrderItemsList({ poId }: { poId: string }) {
               <td style={{ textAlign: 'center' }}>{item.qty}</td>
               <td style={{ textAlign: 'right' }}>₹{cost.toFixed(2)}</td>
               <td style={{ textAlign: 'right' }}>
-                {item.mrp ? `₹${Number(item.mrp).toFixed(2)}` : <span style={{ color: 'var(--color-outline)', fontSize: '0.75rem', fontStyle: 'italic' }}>(unchanged)</span>}
+                {item.mrp ? `₹${Number(item.mrp).toFixed(2)}` : <span style={{ color: 'var(--color-outline)', fontWeight: 400 }}>—</span>}
               </td>
               <td style={{ textAlign: 'right' }}>
-                {item.sell_price ? `₹${sell.toFixed(2)}` : <span style={{ color: 'var(--color-outline)', fontSize: '0.75rem', fontStyle: 'italic' }}>(unchanged)</span>}
+                {item.sell_price ? `₹${sell.toFixed(2)}` : <span style={{ color: 'var(--color-outline)', fontWeight: 400 }}>—</span>}
               </td>
               <td style={{ 
                 textAlign: 'right', 
