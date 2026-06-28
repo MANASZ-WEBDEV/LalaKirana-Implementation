@@ -1,0 +1,178 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  height: 100%;
+}
+
+.subHeader {
+  font-size: 0.85rem;
+  color: var(--color-on-surface-variant);
+  border-bottom: 1px solid var(--color-outline-variant);
+  padding-bottom: 0.75rem;
+  margin: 0;
+}
+
+.billsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.billCard {
+  background: var(--color-surface-container);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast);
+}
+
+.billCard:hover {
+  transform: translateY(-2px);
+}
+
+.billHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px dashed var(--color-outline-variant);
+  padding-bottom: 0.5rem;
+}
+
+.billMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.billNumber {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-primary);
+  font-size: 0.95rem;
+}
+
+.billDate {
+  font-size: 0.75rem;
+  color: var(--color-on-surface-variant);
+}
+
+.billCustomer {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-on-surface);
+  background: var(--color-white);
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-outline-variant);
+}
+
+/* Item details inside bill card */
+.itemsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.itemRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  align-items: center;
+  color: var(--color-on-surface);
+}
+
+.itemHeaderRow {
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  border-bottom: 1px solid var(--color-outline-variant);
+  padding-bottom: 0.25rem;
+}
+
+.itemName {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.itemRate {
+  color: var(--color-on-surface-variant);
+}
+
+.itemDiscount {
+  color: var(--color-error);
+  font-weight: 600;
+}
+
+.itemTotal {
+  font-weight: 600;
+  text-align: right;
+}
+
+/* Bill card footer total summaries */
+.billSummary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--color-white);
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-outline-variant);
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.summaryTotal {
+  font-weight: 700;
+  color: var(--color-on-surface);
+}
+
+.summaryDiscount {
+  font-weight: 700;
+  color: var(--color-error);
+}
+
+/* Loading/Load More */
+.loadMoreWrapper {
+  display: flex;
+  justify-content: center;
+  padding: 1rem 0;
+}
+
+.loadMoreBtn {
+  background: var(--color-white);
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+  padding: 0.5rem 1.5rem;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.loadMoreBtn:hover:not(:disabled) {
+  background: var(--color-primary);
+  color: var(--color-white);
+}
+
+.loadMoreBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.loadingSkeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
