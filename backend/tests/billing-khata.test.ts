@@ -662,7 +662,7 @@ describe('Billing and Khata Transactional Endpoints', () => {
         .select('stock_qty')
         .eq('id', productLooseId)
         .single();
-      expect(Number(prod.stock_qty)).toBe(19.75);
+      expect(Number(prod!.stock_qty)).toBe(19.75);
     });
   });
 });
