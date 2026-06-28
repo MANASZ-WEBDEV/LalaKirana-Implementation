@@ -282,6 +282,94 @@ export const purchasesService = {
   },
 
   /**
+   * Record a partial or full payment towards a specific purchase order.
+   * Increments order amount_paid and adjusts supplier balance.
+   */
+  recordPurchaseOrderPayment: async (poId: string, amount: number, note: string | null, userId: string) => {
+    // 1. Fetch current PO details
+    const { data: po, error: fetchError } = await supabase
+      .from('purchase_orders')
+      .select('id, supplier_id, total, amount_paid, payment_status, status')
+      .eq('id', poId)
+      .single();
+
+    if (fetchError || !po) {
+      throw new Error('Purchase order not found');
+    }
+
+    if (po.status === 'cancelled') {
+      throw new Error('Cannot pay a cancelled purchase order');
+    }
+
+    if (po.payment_status === 'paid') {
+      throw new Error('Purchase order is already fully paid');
+    }
+
+    const total = Number(po.total);
+    const currentPaid = Number(po.amount_paid || 0);
+    const unpaid = total - currentPaid;
+
+    // Clamp or validate
+    if (amount <= 0) {
+      throw new Error('Payment amount must be greater than zero');
+    }
+    if (amount > unpaid) {
+      throw new Error(`Payment amount (₹${amount.toFixed(2)}) exceeds remaining balance due (₹${unpaid.toFixed(2)})`);
+    }
+
+    const newPaid = currentPaid + amount;
+    const newStatus = (newPaid >= total) ? 'paid' : 'partial';
+
+    // 2. Update purchase order paid amount & status
+    const { data: updatedPO, error: updateError } = await supabase
+      .from('purchase_orders')
+      .update({
+        payment_status: newStatus,
+        amount_paid: newPaid,
+      })
+      .eq('id', poId)
+      .select()
+      .single();
+
+    if (updateError) {
+      throw new Error(`Failed to update purchase order: ${updateError.message}`);
+    }
+
+    // 3. Subtract payment from supplier outstanding balance if supplier exists
+    if (po.supplier_id) {
+      const { data: supplier, error: suppFetchErr } = await supabase
+        .from('suppliers')
+        .select('total_balance')
+        .eq('id', po.supplier_id)
+        .single();
+      
+      if (!suppFetchErr && supplier) {
+        const newBalance = Number(supplier.total_balance) - amount;
+        await supabase
+          .from('suppliers')
+          .update({ total_balance: newBalance })
+          .eq('id', po.supplier_id);
+      }
+
+      // 4. Log audit repayment entry in supplier_repayments table
+      const auditNote = note?.trim() 
+        ? `${note.trim()} (PO-${po.id.slice(0, 8).toUpperCase()})`
+        : `Payment towards Purchase Order PO-${po.id.slice(0, 8).toUpperCase()}`;
+
+      await supabase
+        .from('supplier_repayments')
+        .insert([{
+          supplier_id: po.supplier_id,
+          amount: amount,
+          note: auditNote,
+          created_by: userId,
+        }]);
+    }
+
+    return updatedPO;
+  },
+
+  /**
    * Get a consolidated transaction statement (ledger) for a specific supplier.
    * Merges purchase orders and repayments, ordered by date descending.
    */

@@ -132,3 +132,12 @@ export type CreatePurchaseOrderInput = z.infer<typeof CreatePurchaseOrderSchema>
 export type PurchaseQuery = z.infer<typeof PurchaseQuerySchema>['query'];
 export type CreateExpenseInput = z.infer<typeof CreateExpenseSchema>['body'];
 export type ExpenseQuery = z.infer<typeof ExpenseQuerySchema>['query'];
+
+export const RecordPOPaymentSchema = z.object({
+  body: z.object({
+    amount: z.number().positive('Payment amount must be positive'),
+    note: z.string().max(250).optional().nullable(),
+  }),
+});
+
+export type RecordPOPaymentInput = z.infer<typeof RecordPOPaymentSchema>['body'];
