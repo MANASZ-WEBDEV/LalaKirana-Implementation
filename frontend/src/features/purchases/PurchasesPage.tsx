@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   usePurchaseOrders,
@@ -9,6 +9,8 @@ import {
   useSupplierRepayment,
   usePurchaseDetail,
   usePayPurchase,
+  useSupplierLedger,
+  useUpdateSupplier,
 } from './purchases.queries';
 import { NewExpenseForm } from './NewExpenseForm';
 import { Input } from '@/shared/ui/Input';
@@ -58,6 +60,24 @@ export default function PurchasesPage() {
   // Expanded PO State
   const [selectedPO, setSelectedPO] = useState<PurchaseOrder | null>(null);
 
+  // Supplier Details/Edit Modal State
+  const [selectedSupplierForDetails, setSelectedSupplierForDetails] = useState<Supplier | null>(null);
+  const [supplierModalTab, setSupplierModalTab] = useState<'edit' | 'ledger'>('edit');
+  const [editSupName, setEditSupName] = useState('');
+  const [editSupPhone, setEditSupPhone] = useState('');
+  const [editSupAddress, setEditSupAddress] = useState('');
+  const [editSupNote, setEditSupNote] = useState('');
+
+  useEffect(() => {
+    if (selectedSupplierForDetails) {
+      setEditSupName(selectedSupplierForDetails.name || '');
+      setEditSupPhone(selectedSupplierForDetails.phone || '');
+      setEditSupAddress(selectedSupplierForDetails.address || '');
+      setEditSupNote(selectedSupplierForDetails.note || '');
+      setSupplierModalTab('edit');
+    }
+  }, [selectedSupplierForDetails]);
+
   // Form States (Supplier Creation)
   const [supName, setSupName] = useState('');
   const [supPhone, setSupPhone] = useState('');
@@ -68,11 +88,16 @@ export default function PurchasesPage() {
   const { data: poData, isLoading: poLoading } = usePurchaseOrders({ page, limit: 15 });
   const { data: expData, isLoading: expLoading } = useExpenses({ page, limit: 15 });
   const { data: supData, isLoading: supLoading } = useSuppliers({ page, limit: 15 });
+  const { data: ledgerData, isLoading: ledgerLoading } = useSupplierLedger(
+    selectedSupplierForDetails?.id || '',
+    { enabled: !!selectedSupplierForDetails && supplierModalTab === 'ledger' }
+  );
 
   // Mutations
   const cancelPOMutation = useCancelPurchase();
   const createSupplierMutation = useCreateSupplier();
   const logSupplierRepayMutation = useSupplierRepayment(payingSupplier?.id || '');
+  const updateSupplierMutation = useUpdateSupplier(selectedSupplierForDetails?.id || '');
 
   // Handlers
   const handleCreateSupplierSubmit = async (e: React.FormEvent) => {
@@ -99,6 +124,32 @@ export default function PurchasesPage() {
       setSupNote('');
     } catch (err: any) {
       addToast('error', err.message || 'Failed to create supplier.');
+    }
+  };
+
+  const handleEditSupplierSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedSupplierForDetails) return;
+    if (!editSupName.trim()) {
+      addToast('error', 'Supplier name is required.');
+      return;
+    }
+    if (!editSupPhone.trim()) {
+      addToast('error', 'Phone number is required.');
+      return;
+    }
+
+    try {
+      await updateSupplierMutation.mutateAsync({
+        name: editSupName.trim(),
+        phone: editSupPhone.trim() || null,
+        address: editSupAddress.trim() || null,
+        note: editSupNote.trim() || null,
+      });
+      addToast('success', 'Supplier profile updated successfully.');
+      setSelectedSupplierForDetails(null);
+    } catch (err: any) {
+      addToast('error', err.message || 'Failed to update supplier profile.');
     }
   };
 
@@ -341,6 +392,7 @@ export default function PurchasesPage() {
                 columns={suppliersColumns}
                 data={supData?.suppliers || []}
                 rowKey={(s) => s.id}
+                onRowClick={(s) => setSelectedSupplierForDetails(s)}
               />
             )}
           </div>
@@ -692,6 +744,152 @@ export default function PurchasesPage() {
               </Button>
             </div>
           </form>
+        </Modal>
+      )}
+
+      {/* Supplier Details & History Modal */}
+      {selectedSupplierForDetails && (
+        <Modal
+          isOpen={selectedSupplierForDetails !== null}
+          onClose={() => setSelectedSupplierForDetails(null)}
+          title={`Supplier File — ${selectedSupplierForDetails.name}`}
+          maxWidth="600px"
+        >
+          <div className={styles.supplierDetailContainer}>
+            <div className={styles.modalTabs}>
+              <button
+                type="button"
+                className={`${styles.modalTabBtn} ${supplierModalTab === 'edit' ? styles.modalTabActive : ''}`}
+                onClick={() => setSupplierModalTab('edit')}
+              >
+                ✏️ Edit Profile
+              </button>
+              <button
+                type="button"
+                className={`${styles.modalTabBtn} ${supplierModalTab === 'ledger' ? styles.modalTabActive : ''}`}
+                onClick={() => setSupplierModalTab('ledger')}
+              >
+                📜 Ledger Statement
+              </button>
+            </div>
+
+            {supplierModalTab === 'edit' && (
+              <form onSubmit={handleEditSupplierSubmit} className={styles.modalForm}>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Supplier Name *</label>
+                  <Input
+                    value={editSupName}
+                    onChange={(e) => setEditSupName(e.target.value)}
+                    required
+                    placeholder="e.g. Tata Supplier"
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Phone Number *</label>
+                  <Input
+                    value={editSupPhone}
+                    onChange={(e) => setEditSupPhone(e.target.value)}
+                    required
+                    placeholder="e.g. 9876543210"
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Address</label>
+                  <Input
+                    value={editSupAddress}
+                    onChange={(e) => setEditSupAddress(e.target.value)}
+                    placeholder="e.g. Sindhi Colony"
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Private Notes</label>
+                  <textarea
+                    value={editSupNote}
+                    onChange={(e) => setEditSupNote(e.target.value)}
+                    className={styles.formTextarea}
+                    placeholder="e.g. Delivery schedules or pricing agreements..."
+                    rows={3}
+                  />
+                </div>
+                <div className={styles.poModalActions}>
+                  <Button
+                    variant="secondary"
+                    type="button"
+                    onClick={() => setSelectedSupplierForDetails(null)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={updateSupplierMutation.isPending}>
+                    {updateSupplierMutation.isPending ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                </div>
+              </form>
+            )}
+
+            {supplierModalTab === 'ledger' && (
+              <div className={styles.ledgerWrapper}>
+                {ledgerLoading ? (
+                  <div className={styles.loader}>Loading transaction history...</div>
+                ) : !ledgerData || ledgerData.length === 0 ? (
+                  <div className={styles.emptyLedger}>
+                    No purchases or repayments logged for this supplier.
+                  </div>
+                ) : (
+                  <div className={styles.ledgerTableScroll}>
+                    <table className={styles.ledgerTable}>
+                      <thead>
+                        <tr>
+                          <th>Date</th>
+                          <th>Type / Reference</th>
+                          <th style={{ textAlign: 'right' }}>Total Cost</th>
+                          <th style={{ textAlign: 'right' }}>Cash Paid</th>
+                          <th style={{ textAlign: 'right' }}>Payment</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {ledgerData.map((log: any) => {
+                          const isRepayment = log.type === 'repayment';
+                          return (
+                            <tr key={log.id} className={isRepayment ? styles.repaymentRow : ''}>
+                              <td style={{ whiteSpace: 'nowrap' }}>
+                                {new Date(log.date).toLocaleDateString('en-IN')}
+                              </td>
+                              <td>
+                                <strong style={{ color: isRepayment ? 'var(--color-primary)' : 'inherit' }}>
+                                  {log.label}
+                                </strong>
+                                {log.note && <div className={styles.ledgerNote}>{log.note}</div>}
+                              </td>
+                              <td style={{ textAlign: 'right' }}>
+                                {log.total !== null ? `₹${log.total.toFixed(2)}` : '—'}
+                              </td>
+                              <td style={{ textAlign: 'right', fontWeight: 600, color: isRepayment ? 'var(--color-primary)' : 'inherit' }}>
+                                ₹{log.amount_paid.toFixed(2)}
+                              </td>
+                              <td style={{ textAlign: 'right' }}>
+                                {log.payment_status ? (
+                                  <Badge variant={log.payment_status === 'paid' ? 'success' : log.payment_status === 'partial' ? 'warning' : 'error'}>
+                                    {log.payment_status}
+                                  </Badge>
+                                ) : (
+                                  '—'
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+                <div className={styles.poModalActions}>
+                  <Button variant="secondary" onClick={() => setSelectedSupplierForDetails(null)} style={{ marginLeft: 'auto' }}>
+                    Close
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
         </Modal>
       )}
     </div>
