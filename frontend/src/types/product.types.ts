@@ -15,6 +15,7 @@ export interface Product {
   low_stock_threshold: number;
   unit: 'kg' | 'g' | 'litre' | 'ml' | 'pcs';
   is_active: boolean;
+  is_loose: boolean;
   price_updated_at: string;
   created_at: string;
   category_name?: string;

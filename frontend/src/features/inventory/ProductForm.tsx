@@ -18,6 +18,7 @@ interface ProductFormProps {
     stock_qty?: number;
     low_stock_threshold: number;
     unit: 'kg' | 'g' | 'litre' | 'ml' | 'pcs';
+    is_loose: boolean;
   }) => void;
   loading: boolean;
   onCancel: () => void;
@@ -38,6 +39,7 @@ export function ProductForm({ initialData, onSubmit, loading, onCancel }: Produc
   const [stockQty, setStockQty] = useState<string>(initialData ? initialData.stock_qty.toString() : '0');
   const [lowStockThreshold, setLowStockThreshold] = useState<string>(initialData ? initialData.low_stock_threshold.toString() : '5');
   const [unit, setUnit] = useState<'kg' | 'g' | 'litre' | 'ml' | 'pcs'>(initialData?.unit || 'pcs');
+  const [isLoose, setIsLoose] = useState<boolean>(initialData?.is_loose || false);
 
   // Error states
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -79,9 +81,9 @@ export function ProductForm({ initialData, onSubmit, loading, onCancel }: Produc
       }
     }
 
-    const stockQtyNum = parseInt(stockQty);
+    const stockQtyNum = parseFloat(stockQty);
     if (!isEditMode && (isNaN(stockQtyNum) || stockQtyNum < 0)) {
-      newErrors.stock_qty = 'Initial stock quantity must be a non-negative integer';
+      newErrors.stock_qty = 'Initial stock quantity must be a non-negative number';
     }
 
     const thresholdNum = parseInt(lowStockThreshold);
@@ -104,6 +106,7 @@ export function ProductForm({ initialData, onSubmit, loading, onCancel }: Produc
       mrp: mrpNum,
       low_stock_threshold: thresholdNum,
       unit,
+      is_loose: isLoose,
       ...(isEditMode ? {} : { stock_qty: stockQtyNum }),
     });
   };
@@ -228,6 +231,18 @@ export function ProductForm({ initialData, onSubmit, loading, onCancel }: Produc
           placeholder="5"
           required
         />
+      </div>
+
+      <div className={styles.checkboxGroup}>
+        <label className={styles.checkboxLabel}>
+          <input
+            type="checkbox"
+            checked={isLoose}
+            onChange={(e) => setIsLoose(e.target.checked)}
+            className={styles.checkbox}
+          />
+          <span>Loose / Weight-Based Item (sold in grams/kg/litres)</span>
+        </label>
       </div>
 
       {/* Only show stock quantity field in Add Mode */}

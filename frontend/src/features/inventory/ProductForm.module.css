@@ -75,4 +75,29 @@
   font-weight: 500;
 }
 
+.checkboxGroup {
+  display: flex;
+  align-items: center;
+  margin-top: -0.5rem;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--color-on-surface);
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-sm);
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
 
