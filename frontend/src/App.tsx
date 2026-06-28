@@ -17,6 +17,9 @@ const InventoryPage = lazy(() => import('./features/inventory/InventoryPage'));
 const ProductFormPage = lazy(() => import('./features/inventory/ProductFormPage'));
 const BulkPricePage = lazy(() => import('./features/pricing/BulkPricePage'));
 const AnalyticsPage = lazy(() => import('./features/analytics/AnalyticsPage'));
+const AllProductsAnalyticsPage = lazy(() => import('./features/analytics/AllProductsAnalyticsPage'));
+const ProductAnalyticsPage = lazy(() => import('./features/analytics/ProductAnalyticsPage'));
+const StaffDiscountAuditPage = lazy(() => import('./features/analytics/StaffDiscountAuditPage'));
 const EODEntryPage = lazy(() => import('./features/eod/EODEntryPage'));
 const SettingsPage = lazy(() => import('./features/settings/SettingsPage'));
 const BillingPage = lazy(() => import('./features/billing/BillingPage'));
@@ -88,6 +91,9 @@ export default function App() {
                   <Route path="inventory/:id/edit" element={<ProductFormPage />} />
                   <Route path="pricing" element={<BulkPricePage />} />
                   <Route path="analytics" element={<AnalyticsPage />} />
+                  <Route path="analytics/products" element={<AllProductsAnalyticsPage />} />
+                  <Route path="analytics/product/:productId" element={<ProductAnalyticsPage />} />
+                  <Route path="analytics/staff-discounts" element={<StaffDiscountAuditPage />} />
                   <Route path="eod" element={<EODEntryPage />} />
                   <Route path="billing" element={<BillingPage />} />
                   <Route path="khata" element={<KhataPage />} />

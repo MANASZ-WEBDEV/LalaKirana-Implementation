@@ -179,6 +179,13 @@ function AnalyticsDashboard() {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
             <span>CSV</span>
           </button>
+          <button 
+            className={styles.exportBtn} 
+            onClick={() => navigate('/analytics/staff-discounts')}
+            style={{ marginLeft: '0.25rem' }}
+          >
+            <span>Staff Discount Audit</span>
+          </button>
         </div>
       </div>
 
@@ -402,7 +409,11 @@ function AnalyticsDashboard() {
                 <span className={styles.productProfit} style={{ color: 'inherit' }}>Profit</span>
               </div>
               {topProducts.slice(0, 10).map((p, idx) => (
-                <div key={p.product_id} className={styles.productRow}>
+                <div 
+                  key={p.product_id} 
+                  className={`${styles.productRow} ${styles.productRowClickable}`}
+                  onClick={() => navigate(`/analytics/product/${p.product_id}?preset=${preset}&from=${from}&to=${to}`)}
+                >
                   <span className={styles.productRank}>{idx + 1}</span>
                   <div className={styles.productInfo}>
                     <span className={styles.productName}>{p.product_name}</span>
@@ -421,6 +432,23 @@ function AnalyticsDashboard() {
                   </span>
                 </div>
               ))}
+              <div style={{ marginTop: '1.25rem', textAlign: 'right' }}>
+                <button
+                  onClick={() => navigate(`/analytics/products?preset=${preset}&from=${from}&to=${to}`)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--color-primary)',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    fontSize: '0.85rem',
+                    textDecoration: 'underline',
+                    padding: 0
+                  }}
+                >
+                  View all products &rarr;
+                </button>
+              </div>
             </div>
           ) : (
             <div className={styles.emptyState}>

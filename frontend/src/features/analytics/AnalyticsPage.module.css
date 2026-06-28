@@ -769,3 +769,12 @@
   font-weight: 600;
   display: inline-block;
 }
+
+.productRowClickable {
+  cursor: pointer;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+}
+
+.productRowClickable:hover {
+  background: var(--color-surface-container) !important;
+}
