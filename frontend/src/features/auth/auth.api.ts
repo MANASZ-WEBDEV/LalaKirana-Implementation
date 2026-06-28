@@ -11,12 +11,6 @@ export const authApi = {
   getMe: () =>
     api.get<{ user: User }>('/auth/me').then((r) => r.data),
 
-  forgotPassword: (email: string) =>
-    api.post<{ message: string }>('/auth/forgot-password', { email }).then((r) => r.data),
-
-  resetPassword: (data: any) =>
-    api.post<{ message: string }>('/auth/reset-password', data).then((r) => r.data),
-
   changePassword: (data: any) =>
     api.put<{ message: string }>('/auth/change-password', data).then((r) => r.data),
 

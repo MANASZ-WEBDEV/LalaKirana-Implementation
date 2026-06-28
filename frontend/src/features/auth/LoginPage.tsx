@@ -4,7 +4,6 @@ import { useLogin } from './auth.queries';
 import { useToastStore } from '@/shared/store/toastStore';
 import { Button } from '@/shared/ui/Button';
 import { Input } from '@/shared/ui/Input';
-import { ForgotPasswordModal } from './ForgotPasswordModal';
 import styles from './LoginPage.module.css';
 
 export default function LoginPage() {
@@ -12,7 +11,9 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
-  const [isForgotOpen, setIsForgotOpen] = useState(false);
+  const [showRecovery, setShowRecovery] = useState(false);
+  const [recoveryCode, setRecoveryCode] = useState('');
+  const [recoveryError, setRecoveryError] = useState('');
 
   const loginMutation = useLogin();
   const addToast = useToastStore((s) => s.addToast);
@@ -22,6 +23,7 @@ export default function LoginPage() {
     e.preventDefault();
     setEmailError('');
     setPasswordError('');
+    setRecoveryError('');
 
     let isValid = true;
     if (!email) {
@@ -40,13 +42,26 @@ export default function LoginPage() {
       isValid = false;
     }
 
+    if (showRecovery && !recoveryCode) {
+      setRecoveryError('Recovery override code is required');
+      isValid = false;
+    }
+
     if (!isValid) return;
 
     try {
-      await loginMutation.mutateAsync({ email, password });
+      await loginMutation.mutateAsync({
+        email,
+        password,
+        ...(showRecovery ? { recoveryCode } : {}),
+      });
       addToast('success', 'Logged in successfully');
       navigate('/dashboard');
     } catch (err: any) {
+      const showRecoveryField = err.response?.data?.showRecoveryCode === true;
+      if (showRecoveryField) {
+        setShowRecovery(true);
+      }
       const msg = err.response?.data?.message || 'Invalid email or password';
       addToast('error', msg);
     }
@@ -83,25 +98,29 @@ export default function LoginPage() {
               autoComplete="email"
             />
 
-            <div className={styles.passwordWrapper}>
+            <Input
+              label="Password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              error={passwordError}
+              placeholder="••••••"
+              required
+              autoComplete="current-password"
+            />
+
+            {showRecovery && (
               <Input
-                label="Password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                error={passwordError}
-                placeholder="••••••"
+                label="Recovery Override Code"
+                type="text"
+                value={recoveryCode}
+                onChange={(e) => setRecoveryCode(e.target.value)}
+                error={recoveryError}
+                placeholder="Enter ENV recovery code..."
                 required
-                autoComplete="current-password"
+                autoFocus
               />
-              <button
-                type="button"
-                className={styles.forgotBtn}
-                onClick={() => setIsForgotOpen(true)}
-              >
-                Forgot?
-              </button>
-            </div>
+            )}
 
             <Button
               type="submit"
@@ -113,11 +132,6 @@ export default function LoginPage() {
           </form>
         </div>
       </div>
-
-      <ForgotPasswordModal
-        isOpen={isForgotOpen}
-        onClose={() => setIsForgotOpen(false)}
-      />
     </div>
   );
 }

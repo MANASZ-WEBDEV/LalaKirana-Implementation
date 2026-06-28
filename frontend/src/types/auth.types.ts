@@ -26,4 +26,5 @@ export interface LoginResponse {
 export interface LoginInput {
   email: string;
   password: string;
+  recoveryCode?: string;
 }

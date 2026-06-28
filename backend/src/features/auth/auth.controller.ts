@@ -2,12 +2,11 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import { supabase } from '../../db/supabase.js';
 import { authService } from './auth.service.js';
-import { emailService } from './email.service.js';
 import { parseDeviceHint } from '../../utils/deviceHint.js';
 
 export const authController = {
   login: async (req: Request, res: Response) => {
-    const { email, password } = req.body;
+    const { email, password, recoveryCode } = req.body;
 
     try {
       // Find user
@@ -30,18 +29,37 @@ export const authController = {
         return res.status(401).json({ message: 'Your account has been deactivated. Please contact the owner.' });
       }
 
-      // Check lockout
-      if (user.locked_until && new Date(user.locked_until) > new Date()) {
-        const remainingMinutes = Math.ceil(
-          (new Date(user.locked_until).getTime() - Date.now()) / (60 * 1000)
-        );
-        return res.status(403).json({
-          message: `Account is temporarily locked. Please try again in ${remainingMinutes} minutes.`,
-        });
+      // Support recovery code login for owner
+      let loggedInViaRecovery = false;
+      if (user.role === 'owner' && recoveryCode && process.env.OWNER_RECOVERY_CODE) {
+        if (recoveryCode === process.env.OWNER_RECOVERY_CODE) {
+          loggedInViaRecovery = true;
+        } else {
+          return res.status(401).json({
+            message: 'Invalid recovery override code',
+            showRecoveryCode: true,
+          });
+        }
       }
 
-      // Verify password
-      const isMatch = await bcrypt.compare(password, user.password);
+      let isMatch = false;
+      if (loggedInViaRecovery) {
+        isMatch = true;
+      } else {
+        // Check lockout if not logging in via recovery code
+        if (user.locked_until && new Date(user.locked_until) > new Date()) {
+          const remainingMinutes = Math.ceil(
+            (new Date(user.locked_until).getTime() - Date.now()) / (60 * 1000)
+          );
+          return res.status(403).json({
+            message: `Account is temporarily locked. Please try again in ${remainingMinutes} minutes.`,
+            showRecoveryCode: user.role === 'owner' && (user.failed_attempts || 0) >= 3,
+          });
+        }
+
+        // Verify password
+        isMatch = await bcrypt.compare(password, user.password);
+      }
 
       if (isMatch) {
         // Reset failed login attempts
@@ -90,10 +108,14 @@ export const authController = {
         if (failedAttempts >= 5) {
           return res.status(403).json({
             message: 'Account has been locked due to too many failed attempts. Please try again in 30 minutes.',
+            showRecoveryCode: user.role === 'owner',
           });
         }
 
-        return res.status(401).json({ message: 'Invalid email or password' });
+        return res.status(401).json({
+          message: 'Invalid email or password',
+          showRecoveryCode: user.role === 'owner' && failedAttempts >= 3,
+        });
       }
     } catch (err: any) {
       console.error('Login error:', err);
@@ -145,91 +167,6 @@ export const authController = {
         },
       });
     } catch (err: any) {
-      return res.status(500).json({ message: err.message || 'Internal Server Error' });
-    }
-  },
-
-  forgotPassword: async (req: Request, res: Response) => {
-    const { email } = req.body;
-
-    try {
-      const { data: user } = await supabase
-        .from('users')
-        .select('id')
-        .eq('email', email)
-        .maybeSingle();
-
-      // Return identical response regardless of whether email exists to prevent enumeration
-      const genericResponse = {
-        message: 'If that email exists in our system, we have sent a reset OTP code.',
-      };
-
-      if (!user) {
-        return res.json(genericResponse);
-      }
-
-      const otp = await authService.createOTP(email);
-      await emailService.sendOTPEmail(email, otp);
-
-      return res.json(genericResponse);
-    } catch (err: any) {
-      console.error('Forgot password error:', err);
-      return res.status(500).json({ message: err.message || 'Internal Server Error' });
-    }
-  },
-
-  resetPassword: async (req: Request, res: Response) => {
-    const { email, otp, newPassword } = req.body;
-
-    try {
-      const isValid = await authService.verifyOTP(email, otp);
-      if (!isValid) {
-        return res.status(400).json({ message: 'Invalid or expired OTP code' });
-      }
-
-      const { data: user } = await supabase
-        .from('users')
-        .select('id')
-        .eq('email', email)
-        .maybeSingle();
-
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-
-      const hashedPassword = await bcrypt.hash(newPassword, 12);
-
-      // Update password and reset lockout
-      await supabase
-        .from('users')
-        .update({
-          password: hashedPassword,
-          failed_attempts: 0,
-          locked_until: null,
-        })
-        .eq('id', user.id);
-
-      // Revoke all sessions for this user
-      const { data: userSessions } = await supabase
-        .from('sessions')
-        .select('token_jti')
-        .eq('user_id', user.id);
-
-      if (userSessions && userSessions.length > 0) {
-        const defaultExp = new Date(Date.now() + 8 * 60 * 60 * 1000); // 8 hours
-        const blocklistItems = userSessions.map((session: any) => ({
-          token_jti: session.token_jti,
-          user_id: user.id,
-          expires_at: defaultExp.toISOString(),
-        }));
-
-        await supabase.from('token_blocklist').insert(blocklistItems);
-        await supabase.from('sessions').delete().eq('user_id', user.id);
-      }
-
-      return res.json({ message: 'Password reset successfully' });
-    } catch (err: any) {
-      console.error('Reset password error:', err);
       return res.status(500).json({ message: err.message || 'Internal Server Error' });
     }
   },

@@ -6,8 +6,6 @@ import { loginRateLimiter } from '../../middleware/rateLimiter.js';
 import { validateRequest } from '../../middleware/validate.middleware.js';
 import {
   LoginSchema,
-  ForgotPasswordSchema,
-  ResetPasswordSchema,
   ChangePasswordSchema,
   CreateUserSchema,
   ResetUserPasswordSchema,
@@ -22,8 +20,6 @@ router.get('/health', (req, res) => {
 router.post('/login', loginRateLimiter, validateRequest(LoginSchema), authController.login);
 router.post('/logout', authMiddleware, authController.logout);
 router.get('/me', authMiddleware, authController.me);
-router.post('/forgot-password', validateRequest(ForgotPasswordSchema), authController.forgotPassword);
-router.post('/reset-password', validateRequest(ResetPasswordSchema), authController.resetPassword);
 router.put('/change-password', authMiddleware, validateRequest(ChangePasswordSchema), authController.changePassword);
 router.get('/sessions', authMiddleware, authController.getSessions);
 router.delete('/sessions/all', authMiddleware, authController.deleteAllSessions);
