@@ -7,11 +7,7 @@ declare global {
       JWT_SECRET: string;
       JWT_EXPIRY: string;
       FRONTEND_URL: string;
-      SMTP_HOST?: string;
-      SMTP_PORT?: string;
-      SMTP_USER?: string;
-      SMTP_PASS?: string;
-      SMTP_FROM?: string;
+      OWNER_RECOVERY_CODE?: string;
       NODE_ENV?: 'development' | 'production' | 'test';
     }
   }
