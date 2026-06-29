@@ -11,6 +11,7 @@ import {
   usePayPurchase,
   useSupplierLedger,
   useUpdateSupplier,
+  useRecordPOPayment,
 } from './purchases.queries';
 import { NewExpenseForm } from './NewExpenseForm';
 import { Input } from '@/shared/ui/Input';
@@ -59,6 +60,11 @@ export default function PurchasesPage() {
 
   // Expanded PO State
   const [selectedPO, setSelectedPO] = useState<PurchaseOrder | null>(null);
+
+  // Direct PO Payment Modal State
+  const [poToPay, setPoToPay] = useState<PurchaseOrder | null>(null);
+  const [poPaymentAmount, setPoPaymentAmount] = useState('');
+  const [poPaymentNote, setPoPaymentNote] = useState('');
 
   // Supplier Details/Edit Modal State
   const [selectedSupplierForDetails, setSelectedSupplierForDetails] = useState<Supplier | null>(null);
@@ -331,8 +337,10 @@ export default function PurchasesPage() {
     setSelectedPO(po);
   };
 
-  const activePO = selectedPO || queryPOData;
+  const activePOFromList = poData?.purchaseOrders?.find((p) => p.id === selectedPO?.id);
+  const activePO = activePOFromList || selectedPO || queryPOData;
   const payPurchaseMutation = usePayPurchase(activePO?.id || '');
+  const recordPOPaymentMutation = useRecordPOPayment(poToPay?.id || '');
 
   const handleClosePO = () => {
     setSelectedPO(null);
@@ -350,6 +358,36 @@ export default function PurchasesPage() {
       addToast('success', 'Purchase order marked as paid and supplier balance adjusted.');
     } catch (err: any) {
       addToast('error', err.message || 'Failed to update payment status.');
+    }
+  };
+
+  const handlePOPaymentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!poToPay) return;
+    const amt = parseFloat(poPaymentAmount);
+    const unpaid = Number(poToPay.total) - Number(poToPay.amount_paid || 0);
+
+    if (isNaN(amt) || amt <= 0) {
+      addToast('error', 'Please enter a valid payment amount.');
+      return;
+    }
+
+    if (amt > unpaid) {
+      addToast('error', `Payment cannot exceed remaining balance of ₹${unpaid.toFixed(2)}`);
+      return;
+    }
+
+    try {
+      await recordPOPaymentMutation.mutateAsync({
+        amount: amt,
+        note: poPaymentNote.trim() || null,
+      });
+      addToast('success', `Successfully logged payment of ₹${amt.toFixed(2)} for PO-${poToPay.id.slice(0, 8).toUpperCase()}`);
+      setPoToPay(null);
+      setPoPaymentAmount('');
+      setPoPaymentNote('');
+    } catch (err: any) {
+      addToast('error', err.message || 'Failed to log purchase payment.');
     }
   };
 
@@ -618,6 +656,53 @@ export default function PurchasesPage() {
         </Modal>
       )}
 
+      {/* Log Repayment to Purchase Order Modal */}
+      {poToPay && (
+        <Modal
+          isOpen={poToPay !== null}
+          onClose={() => setPoToPay(null)}
+          title={`Log Repayment for PO-${poToPay.id.slice(0, 8).toUpperCase()}`}
+          maxWidth="450px"
+        >
+          <form onSubmit={handlePOPaymentSubmit} className={styles.modalForm}>
+            <div className={styles.debtHeader}>
+              <span>Outstanding Balance:</span>
+              <strong>₹{(Number(poToPay.total) - Number(poToPay.amount_paid || 0)).toFixed(2)}</strong>
+            </div>
+            <div className={styles.formGroup}>
+              <Input
+                label="Repayment Amount (₹) *"
+                type="number"
+                value={poPaymentAmount}
+                onChange={(e) => setPoPaymentAmount(e.target.value)}
+                required
+                min={0.01}
+                max={Number(poToPay.total) - Number(poToPay.amount_paid || 0)}
+                step="any"
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>Note (Optional)</label>
+              <input
+                type="text"
+                value={poPaymentNote}
+                onChange={(e) => setPoPaymentNote(e.target.value)}
+                className={styles.formInput}
+                placeholder="e.g. Paid via GPay bank transfer"
+              />
+            </div>
+            <div className={styles.modalActions}>
+              <Button variant="secondary" type="button" onClick={() => setPoToPay(null)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={recordPOPaymentMutation.isPending}>
+                {recordPOPaymentMutation.isPending ? 'Saving...' : 'Confirm Repayment'}
+              </Button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
       {/* Detailed PO Modal */}
       {activePO && (
         <Modal
@@ -644,6 +729,12 @@ export default function PurchasesPage() {
               </p>
               <p><strong>Date:</strong> {new Date(activePO.order_date).toLocaleDateString('en-IN')}</p>
               <p><strong>Total Cost:</strong> ₹{Number(activePO.total).toFixed(2)}</p>
+              <p><strong>Amount Paid:</strong> ₹{Number(activePO.amount_paid || 0).toFixed(2)}</p>
+              {Number(activePO.total) - Number(activePO.amount_paid || 0) > 0 && (
+                <p style={{ color: 'var(--color-error)' }}>
+                  <strong>Remaining Amount:</strong> ₹{(Number(activePO.total) - Number(activePO.amount_paid || 0)).toFixed(2)}
+                </p>
+              )}
               <p><strong>Total Units:</strong> {activePO.item_count}</p>
               <div className={styles.poStatusRow}>
                 <strong>Payment Status:</strong>
@@ -651,15 +742,29 @@ export default function PurchasesPage() {
                   {activePO.payment_status.toUpperCase()}
                 </Badge>
                 {isOwner && activePO.payment_status !== 'paid' && activePO.status !== 'cancelled' && (
-                  <Button
-                    size="sm"
-                    variant="primary"
-                    onClick={handleMarkAsPaid}
-                    loading={payPurchaseMutation.isPending}
-                    className={styles.markPaidBtn}
-                  >
-                    Mark as Paid
-                  </Button>
+                  <div className={styles.poActionButtons}>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => {
+                        setPoToPay(activePO);
+                        setPoPaymentAmount('');
+                        setPoPaymentNote('');
+                      }}
+                      className={styles.logPaymentBtn}
+                    >
+                      Log Payment
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="primary"
+                      onClick={handleMarkAsPaid}
+                      loading={payPurchaseMutation.isPending}
+                      className={styles.markPaidBtn}
+                    >
+                      Mark as Paid
+                    </Button>
+                  </div>
                 )}
               </div>
               {activePO.note && <p><strong>Note:</strong> {activePO.note}</p>}
