@@ -664,5 +664,38 @@ describe('Billing and Khata Transactional Endpoints', () => {
         .single();
       expect(Number(prod!.stock_qty)).toBe(19.75);
     });
+
+    it('should successfully update a product with quick weight prices and verify calculations', async () => {
+      // 1. Update productLooseId with quick_weight_prices
+      const updateRes = await request(app)
+        .put(`/api/v1/products/${productLooseId}`)
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({
+          quick_weight_prices: {
+            '0.05': 55.0,
+            '0.1': 100.0,
+            '0.25': 240.0,
+          },
+        });
+
+      expect(updateRes.status).toBe(200);
+      expect(updateRes.body.quick_weight_prices).toEqual({
+        '0.05': 55.0,
+        '0.1': 100.0,
+        '0.25': 240.0,
+      });
+
+      // 2. Fetch the product and verify quick_weight_prices is returned
+      const getRes = await request(app)
+        .get(`/api/v1/products/${productLooseId}`)
+        .set('Authorization', `Bearer ${ownerToken}`);
+      
+      expect(getRes.status).toBe(200);
+      expect(getRes.body.quick_weight_prices).toEqual({
+        '0.05': 55.0,
+        '0.1': 100.0,
+        '0.25': 240.0,
+      });
+    });
   });
 });
