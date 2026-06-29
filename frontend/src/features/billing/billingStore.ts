@@ -216,7 +216,7 @@ export const useBillingStore = create<BillingState>()(
 
         const newItems = activeSlot.items.map((item) => {
           if (item.product_id === productId) {
-            const clampedDiscount = Math.max(0, Math.min(discount, item.unit_price));
+            const clampedDiscount = Math.max(0, Math.min(discount, item.qty * item.unit_price));
             return { ...item, discount: clampedDiscount };
           }
           return item;

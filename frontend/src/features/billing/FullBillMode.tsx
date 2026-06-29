@@ -80,10 +80,10 @@ export function FullBillMode({ onCheckout }: FullBillModeProps) {
     }
   };
 
-  const cartTotal = slot.items.reduce((sum, item) => sum + item.qty * (item.unit_price - (item.discount || 0)), 0);
-  const totalSavings = slot.items.reduce((sum, item) => sum + item.qty * (item.discount || 0), 0);
+  const cartTotal = slot.items.reduce((sum, item) => sum + (item.qty * item.unit_price - (item.discount || 0)), 0);
+  const totalSavings = slot.items.reduce((sum, item) => sum + (item.discount || 0), 0);
   const hasStockErrors = slot.items.some((item) => item.qty > item.stock_qty);
-  const hasDiscountErrors = isStaff && slot.items.some((item) => (item.discount || 0) > staffLimit);
+  const hasDiscountErrors = isStaff && slot.items.some((item) => ((item.discount || 0) / item.qty) > staffLimit);
   const isCheckoutDisabled = slot.items.length === 0 || hasStockErrors || hasDiscountErrors;
 
   return (
@@ -121,7 +121,7 @@ export function FullBillMode({ onCheckout }: FullBillModeProps) {
                   <th className={styles.itemCol}>Product Item</th>
                   <th className={styles.qtyCol}>Quantity</th>
                   <th className={styles.rateCol}>Unit Price</th>
-                  <th className={styles.discountCol}>Discount (₹/unit)</th>
+                  <th className={styles.discountCol}>Discount</th>
                   <th className={styles.totalCol}>Subtotal</th>
                   <th className={styles.actionCol}></th>
                 </tr>
@@ -129,7 +129,7 @@ export function FullBillMode({ onCheckout }: FullBillModeProps) {
               <tbody>
                 {slot.items.map((item) => {
                   const isLowStock = item.stock_qty <= item.qty;
-                  const isOverLimit = isStaff && (item.discount || 0) > staffLimit;
+                  const isOverLimit = isStaff && ((item.discount || 0) / item.qty) > staffLimit;
                   return (
                     <tr key={item.product_id} className={isLowStock ? styles.lowStockRow : ''}>
                       <td className={styles.itemCol}>
@@ -219,7 +219,7 @@ export function FullBillMode({ onCheckout }: FullBillModeProps) {
                             type="number"
                             step="any"
                             min={0}
-                            max={item.unit_price}
+                            max={item.qty * item.unit_price}
                             value={item.discount || ''}
                             onChange={(e) => {
                               const val = parseFloat(e.target.value);
@@ -235,7 +235,7 @@ export function FullBillMode({ onCheckout }: FullBillModeProps) {
                           )}
                         </div>
                       </td>
-                      <td className={styles.totalCol}>₹{(item.qty * (item.unit_price - (item.discount || 0))).toFixed(2)}</td>
+                      <td className={styles.totalCol}>₹{(item.qty * item.unit_price - (item.discount || 0)).toFixed(2)}</td>
                       <td className={styles.actionCol}>
                         <button
                           type="button"

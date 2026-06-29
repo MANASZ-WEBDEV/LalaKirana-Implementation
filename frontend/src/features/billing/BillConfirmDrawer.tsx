@@ -129,11 +129,11 @@ export function BillConfirmDrawer({ isOpen, onClose, statusMode }: BillConfirmDr
 
   const isFull = slot.mode === 'full';
   const total = isFull
-    ? slot.items.reduce((sum, item) => sum + item.qty * (item.unit_price - (item.discount || 0)), 0)
+    ? slot.items.reduce((sum, item) => sum + (item.qty * item.unit_price - (item.discount || 0)), 0)
     : parseFloat(slot.quickAmount) || 0;
 
   const totalSavings = isFull
-    ? slot.items.reduce((sum, item) => sum + item.qty * (item.discount || 0), 0)
+    ? slot.items.reduce((sum, item) => sum + (item.discount || 0), 0)
     : 0;
 
   const handleSelectCustomer = (customer: Customer) => {
@@ -246,11 +246,11 @@ export function BillConfirmDrawer({ isOpen, onClose, statusMode }: BillConfirmDr
                           {itemDiscount > 0 && (
                             <span className={styles.summaryItemDiscount}>
                               {' '}
-                              (Disc: -₹{itemDiscount.toFixed(2)}/unit)
+                              (Disc: -₹{itemDiscount.toFixed(2)})
                             </span>
                           )}
                         </span>
-                        <span>₹{(item.qty * (item.unit_price - itemDiscount)).toFixed(2)}</span>
+                        <span>₹{(item.qty * item.unit_price - itemDiscount).toFixed(2)}</span>
                       </div>
                     );
                   })}

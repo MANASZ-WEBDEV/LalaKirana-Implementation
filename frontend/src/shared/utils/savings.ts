@@ -30,7 +30,7 @@ export function calculateSavings(
     const product = products.find(p => p.id === item.product_id);
     const mrp = product?.mrp ?? null;
     const discount = Number(item.discount || 0);
-    const subtotal = item.subtotal ?? (item.qty * (item.unit_price - discount));
+    const subtotal = item.subtotal ?? (item.qty * item.unit_price - discount);
 
     totalCharged += subtotal;
 
@@ -44,7 +44,7 @@ export function calculateSavings(
       itemSavings.push({
         name: item.product_name,
         mrp: refPrice,
-        price: item.unit_price - discount,
+        price: item.unit_price - (discount / item.qty),
         qty: item.qty,
         saved: itemSaved,
       });
