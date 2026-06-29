@@ -24,17 +24,28 @@ export function StaffTab() {
   const [newName, setNewName] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [newPhone, setNewPhone] = useState('');
   const [newRole, setNewRole] = useState<'staff' | 'owner'>('staff');
 
   // Reset password form state
   const [resetPassword, setResetPassword] = useState('');
 
   const handleCreateUser = async () => {
+    if (!newPhone.trim()) {
+      addToast('error', 'Phone number is required');
+      return;
+    }
+    if (!/^\d{10}$/.test(newPhone.trim())) {
+      addToast('error', 'Phone number must be exactly 10 digits and contain only numbers');
+      return;
+    }
+
     try {
       await createUserMutation.mutateAsync({
         name: newName,
         email: newEmail,
         password: newPassword,
+        phone: newPhone.trim(),
         role: newRole,
       });
       addToast('success', `Staff member "${newName}" created successfully`);
@@ -42,6 +53,7 @@ export function StaffTab() {
       setNewName('');
       setNewEmail('');
       setNewPassword('');
+      setNewPhone('');
       setNewRole('staff');
     } catch (err: any) {
       addToast('error', err.response?.data?.message || 'Failed to create user');
@@ -96,7 +108,10 @@ export function StaffTab() {
           <tbody>
             {users.map((user) => (
               <tr key={user.id}>
-                <td className={styles.nameCell}>{user.name}</td>
+                <td className={styles.nameCell}>
+                  <strong>{user.name}</strong>
+                  {user.phone && <div style={{ fontSize: '0.75rem', color: 'var(--color-outline)', marginTop: '0.15rem' }}>📞 {user.phone}</div>}
+                </td>
                 <td className={styles.emailCell}>{user.email}</td>
                 <td>
                   <Badge variant={user.role === 'owner' ? 'info' : 'neutral'}>
@@ -141,6 +156,14 @@ export function StaffTab() {
         <div className={styles.form}>
           <Input id="staff-name" label="Full Name" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Enter staff name..." />
           <Input id="staff-email" label="Email" type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="staff@example.com" />
+          <Input
+            id="staff-phone"
+            label="Phone Number"
+            value={newPhone}
+            onChange={(e) => setNewPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+            maxLength={10}
+            placeholder="e.g. 9876543210"
+          />
           <Input id="staff-password" label="Temporary Password" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Min 6 characters..." />
           <Select
             id="staff-role"
@@ -153,12 +176,12 @@ export function StaffTab() {
             ]}
           />
           <div className={styles.formActions}>
-            <Button variant="ghost" onClick={() => setShowAddModal(false)}>Cancel</Button>
+            <Button variant="ghost" onClick={() => { setShowAddModal(false); setNewPhone(''); }}>Cancel</Button>
             <Button
               variant="primary"
               onClick={handleCreateUser}
               loading={createUserMutation.isPending}
-              disabled={!newName || !newEmail || newPassword.length < 6}
+              disabled={!newName || !newEmail || !newPhone || newPassword.length < 6}
             >
               Create Staff
             </Button>

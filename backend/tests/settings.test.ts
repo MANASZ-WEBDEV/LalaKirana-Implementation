@@ -30,6 +30,7 @@ describe('Settings & User Management Endpoints', () => {
         name: 'Settings Owner',
         email: TEST_OWNER_EMAIL,
         password: hashedPassword,
+        phone: '9999999999',
         role: 'owner',
       })
       .select('id')
@@ -43,6 +44,7 @@ describe('Settings & User Management Endpoints', () => {
         name: 'Settings Staff',
         email: TEST_STAFF_EMAIL,
         password: hashedPassword,
+        phone: '8888888888',
         role: 'staff',
       })
       .select('id')
@@ -95,6 +97,7 @@ describe('Settings & User Management Endpoints', () => {
           name: 'New Staff Member',
           email: NEW_STAFF_EMAIL,
           password: 'tempPassword123',
+          phone: '7777777777',
           role: 'staff',
         });
 
@@ -120,6 +123,7 @@ describe('Settings & User Management Endpoints', () => {
           name: 'Fake Staff',
           email: 'fake-staff@lalakirana.in',
           password: 'tempPassword123',
+          phone: '6666666666',
           role: 'staff',
         });
 

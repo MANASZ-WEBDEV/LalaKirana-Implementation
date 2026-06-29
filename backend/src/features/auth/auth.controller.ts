@@ -338,7 +338,7 @@ export const authController = {
     try {
       const { data: users, error } = await supabase
         .from('users')
-        .select('id, name, email, role, is_active, created_at')
+        .select('id, name, email, phone, role, is_active, created_at')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -353,7 +353,7 @@ export const authController = {
   },
 
   createUser: async (req: Request, res: Response) => {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, phone, role } = req.body;
 
     try {
       // Check if email already exists
@@ -371,8 +371,8 @@ export const authController = {
 
       const { data: user, error } = await supabase
         .from('users')
-        .insert({ name, email, password: hashedPassword, role })
-        .select('id, name, email, role, is_active, created_at')
+        .insert({ name, email, password: hashedPassword, phone, role })
+        .select('id, name, email, phone, role, is_active, created_at')
         .single();
 
       if (error) {
