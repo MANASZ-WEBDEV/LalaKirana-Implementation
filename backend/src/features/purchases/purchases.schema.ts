@@ -8,6 +8,7 @@ export const CreateSupplierSchema = z.object({
   body: z.object({
     name: z.string().min(1, 'Supplier name is required').max(100),
     phone: z.string().min(10, 'Phone number must be at least 10 digits').max(15),
+    product_range: z.string().max(300).optional().nullable(),
     address: z.string().max(300).optional().nullable(),
     note: z.string().max(300).optional().nullable(),
   }),
@@ -17,6 +18,7 @@ export const UpdateSupplierSchema = z.object({
   body: z.object({
     name: z.string().min(1).max(100).optional(),
     phone: z.string().min(10, 'Phone number must be at least 10 digits').max(15).optional(),
+    product_range: z.string().max(300).optional().nullable(),
     address: z.string().max(300).optional().nullable(),
     note: z.string().max(300).optional().nullable(),
     is_active: z.boolean().optional(),

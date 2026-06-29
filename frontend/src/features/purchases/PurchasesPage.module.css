@@ -112,6 +112,12 @@
   font-weight: 600;
 }
 
+.productRangeText {
+  font-size: 0.8rem;
+  color: var(--color-on-surface-variant);
+  font-style: italic;
+}
+
 /* Pagination */
 .pagination {
   display: flex;

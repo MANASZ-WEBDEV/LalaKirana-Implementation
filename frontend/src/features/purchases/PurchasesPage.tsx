@@ -71,6 +71,7 @@ export default function PurchasesPage() {
   const [supplierModalTab, setSupplierModalTab] = useState<'edit' | 'ledger'>('edit');
   const [editSupName, setEditSupName] = useState('');
   const [editSupPhone, setEditSupPhone] = useState('');
+  const [editSupProductRange, setEditSupProductRange] = useState('');
   const [editSupAddress, setEditSupAddress] = useState('');
   const [editSupNote, setEditSupNote] = useState('');
 
@@ -78,6 +79,7 @@ export default function PurchasesPage() {
     if (selectedSupplierForDetails) {
       setEditSupName(selectedSupplierForDetails.name || '');
       setEditSupPhone(selectedSupplierForDetails.phone || '');
+      setEditSupProductRange(selectedSupplierForDetails.product_range || '');
       setEditSupAddress(selectedSupplierForDetails.address || '');
       setEditSupNote(selectedSupplierForDetails.note || '');
       setSupplierModalTab('edit');
@@ -89,6 +91,7 @@ export default function PurchasesPage() {
   // Form States (Supplier Creation)
   const [supName, setSupName] = useState('');
   const [supPhone, setSupPhone] = useState('');
+  const [supProductRange, setSupProductRange] = useState('');
   const [supAddress, setSupAddress] = useState('');
   const [supNote, setSupNote] = useState('');
 
@@ -120,14 +123,16 @@ export default function PurchasesPage() {
     try {
       await createSupplierMutation.mutateAsync({
         name: supName.trim(),
-        phone: supPhone.trim(),
+        phone: supPhone.trim() || null,
+        product_range: supProductRange.trim() || null,
         address: supAddress.trim() || null,
         note: supNote.trim() || null,
       });
-      addToast('success', `Supplier "${supName}" created successfully.`);
+      addToast('success', 'Supplier created successfully!');
       setShowSupplierModal(false);
       setSupName('');
       setSupPhone('');
+      setSupProductRange('');
       setSupAddress('');
       setSupNote('');
     } catch (err: any) {
@@ -151,6 +156,7 @@ export default function PurchasesPage() {
       await updateSupplierMutation.mutateAsync({
         name: editSupName.trim(),
         phone: editSupPhone.trim() || null,
+        product_range: editSupProductRange.trim() || null,
         address: editSupAddress.trim() || null,
         note: editSupNote.trim() || null,
       });
@@ -303,6 +309,13 @@ export default function PurchasesPage() {
     },
   ];
 
+  const truncateWords = (text: string | null | undefined, maxWords = 3) => {
+    if (!text) return '—';
+    const words = text.trim().split(/\s+/);
+    if (words.length <= maxWords) return text;
+    return words.slice(0, maxWords).join(' ') + '...';
+  };
+
   const suppliersColumns: ColumnConfig<Supplier>[] = [
     {
       key: 'name',
@@ -315,13 +328,21 @@ export default function PurchasesPage() {
       ),
     },
     {
-      key: 'address',
-      header: 'Address & Notes',
+      key: 'product_range',
+      header: 'Product Range',
       render: (s) => (
-        <div>
-          <div>{s.address || '-'}</div>
-          {s.note && <div className={styles.noteTip}>{s.note}</div>}
-        </div>
+        <span className={styles.productRangeText} title={s.product_range || undefined}>
+          {truncateWords(s.product_range, 3)}
+        </span>
+      ),
+    },
+    {
+      key: 'address',
+      header: 'Address',
+      render: (s) => (
+        <span title={s.address || undefined}>
+          {truncateWords(s.address, 3)}
+        </span>
       ),
     },
     {
@@ -600,6 +621,16 @@ export default function PurchasesPage() {
                 className={styles.formInput}
                 required
                 placeholder="e.g. 9876543210"
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>Product Range (Optional)</label>
+              <input
+                type="text"
+                value={supProductRange}
+                onChange={(e) => setSupProductRange(e.target.value)}
+                className={styles.formInput}
+                placeholder="e.g. Dairy, Oil, Snacks, Beverages"
               />
             </div>
             <div className={styles.formGroup}>
@@ -922,6 +953,14 @@ export default function PurchasesPage() {
                     onChange={(e) => setEditSupPhone(e.target.value)}
                     required
                     placeholder="e.g. 9876543210"
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Product Range</label>
+                  <Input
+                    value={editSupProductRange}
+                    onChange={(e) => setEditSupProductRange(e.target.value)}
+                    placeholder="e.g. Dairy, Oil, Snacks, Beverages"
                   />
                 </div>
                 <div className={styles.formGroup}>

@@ -24,10 +24,10 @@ export const purchasesApi = {
       }>('/purchases/suppliers', { params })
       .then((r) => r.data),
 
-  createSupplier: (data: { name: string; phone?: string | null; address?: string | null; note?: string | null }) =>
+  createSupplier: (data: { name: string; phone?: string | null; product_range?: string | null; address?: string | null; note?: string | null }) =>
     api.post<Supplier>('/purchases/suppliers', data).then((r) => r.data),
 
-  updateSupplier: (id: string, data: { name?: string; phone?: string | null; address?: string | null; note?: string | null }) =>
+  updateSupplier: (id: string, data: { name?: string; phone?: string | null; product_range?: string | null; address?: string | null; note?: string | null }) =>
     api.put<Supplier>(`/purchases/suppliers/${id}`, data).then((r) => r.data),
 
   logSupplierRepayment: (id: string, data: SupplierRepaymentInput) =>

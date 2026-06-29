@@ -32,7 +32,7 @@ export function useCreateSupplier() {
 export function useUpdateSupplier(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { name?: string; phone?: string | null; address?: string | null; note?: string | null }) =>
+    mutationFn: (data: { name?: string; phone?: string | null; product_range?: string | null; address?: string | null; note?: string | null }) =>
       purchasesApi.updateSupplier(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: purchasesKeys.suppliers() });

@@ -2,6 +2,7 @@ export interface Supplier {
   id: string;
   name: string;
   phone: string | null;
+  product_range: string | null;
   address: string | null;
   note: string | null;
   total_balance: number;

@@ -62,6 +62,7 @@ export const purchasesService = {
       .insert([{
         name: input.name.trim(),
         phone: input.phone || null,
+        product_range: input.product_range || null,
         address: input.address || null,
         note: input.note || null,
       }])
@@ -82,6 +83,7 @@ export const purchasesService = {
     const updateData: Record<string, any> = {};
     if (input.name !== undefined) updateData.name = input.name.trim();
     if (input.phone !== undefined) updateData.phone = input.phone;
+    if (input.product_range !== undefined) updateData.product_range = input.product_range;
     if (input.address !== undefined) updateData.address = input.address;
     if (input.note !== undefined) updateData.note = input.note;
     if (input.is_active !== undefined) updateData.is_active = input.is_active;
