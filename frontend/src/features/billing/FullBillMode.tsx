@@ -117,25 +117,51 @@ export function FullBillMode({ onCheckout }: FullBillModeProps) {
                               <span className={styles.looseQtyLabel}>g</span>
                             </div>
                             <div className={styles.quickWeightPills}>
-                              {[
-                                { label: '50g', value: 0.05 },
-                                { label: '100g', value: 0.1 },
-                                { label: '250g', value: 0.25 },
-                                { label: '500g', value: 0.5 },
-                                { label: '1kg', value: 1.0 },
-                                { label: '2kg', value: 2.0 },
-                              ].map((pill) => (
-                                <button
-                                  key={pill.label}
-                                  type="button"
-                                  onClick={() => updateCartQty(item.product_id, pill.value)}
-                                  className={`${styles.weightPill} ${
-                                    Math.abs(item.qty - pill.value) < 0.0001 ? styles.weightPillActive : ''
-                                  }`}
-                                >
-                                  {pill.label}
-                                </button>
-                              ))}
+                              {(() => {
+                                // Build pills from standard defaults + any custom weights configured on the product
+                                const standardPills = [
+                                  { label: '50g', value: 0.05 },
+                                  { label: '100g', value: 0.1 },
+                                  { label: '250g', value: 0.25 },
+                                  { label: '500g', value: 0.5 },
+                                  { label: '1kg', value: 1.0 },
+                                  { label: '2kg', value: 2.0 },
+                                ];
+                                const standardValues = new Set(standardPills.map((p) => p.value));
+
+                                // Add custom weight pills from product config
+                                const customPills = Object.keys(item.quick_weight_prices || {})
+                                  .map((k) => parseFloat(k))
+                                  .filter((v) => !isNaN(v) && !standardValues.has(v))
+                                  .map((v) => ({
+                                    label: v >= 1 ? `${v}kg` : `${Math.round(v * 1000)}g`,
+                                    value: v,
+                                  }));
+
+                                const allPills = [...standardPills, ...customPills].sort(
+                                  (a, b) => a.value - b.value
+                                );
+
+                                const hasFixedPrice = (val: number) => {
+                                  if (!item.quick_weight_prices) return false;
+                                  return Object.keys(item.quick_weight_prices).some(
+                                    (k) => Math.abs(parseFloat(k) - val) < 0.0001
+                                  );
+                                };
+
+                                return allPills.map((pill) => (
+                                  <button
+                                    key={pill.value}
+                                    type="button"
+                                    onClick={() => updateCartQty(item.product_id, pill.value)}
+                                    className={`${styles.weightPill} ${
+                                      Math.abs(item.qty - pill.value) < 0.0001 ? styles.weightPillActive : ''
+                                    } ${hasFixedPrice(pill.value) ? styles.weightPillFixed : ''}`}
+                                  >
+                                    {pill.label}
+                                  </button>
+                                ));
+                              })()}
                             </div>
                           </div>
                         ) : (

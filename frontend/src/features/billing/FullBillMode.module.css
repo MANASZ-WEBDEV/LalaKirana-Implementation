@@ -436,3 +436,25 @@
   border-color: var(--color-primary-container) !important;
   color: var(--color-white) !important;
 }
+
+.weightPillFixed {
+  border-color: var(--color-primary);
+  font-weight: 600;
+  position: relative;
+}
+
+.weightPillFixed::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+}
+
+.weightPillActive.weightPillFixed::after {
+  background-color: var(--color-white);
+}

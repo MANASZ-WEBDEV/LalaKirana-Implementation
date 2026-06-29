@@ -100,4 +100,180 @@
   cursor: pointer;
 }
 
+.flatPricesContainer {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  margin-top: -0.5rem;
+  animation: fadeIn var(--transition-fast) ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.flatPricesTitle {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+  margin: 0 0 0.25rem 0;
+}
+
+.flatPricesSubtitle {
+  font-size: 0.8rem;
+  color: var(--color-on-surface-variant);
+  margin: 0 0 1rem 0;
+  line-height: 1.4;
+}
+
+.flatPricesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 640px) {
+  .flatPricesGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 400px) {
+  .flatPricesGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.flatPriceItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.flatPriceLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+}
+
+.flatPriceInput {
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--color-on-surface);
+  outline: none;
+  background-color: var(--color-white);
+  transition: border-color var(--transition-fast);
+  width: 100%;
+}
+
+.flatPriceInput:focus {
+  border-color: var(--color-primary);
+}
+
+.flatPricesSectionLabel {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-outline);
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.flatPricesSectionLabel:first-of-type {
+  margin-top: 0;
+}
+
+.customWeightHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.removeCustomBtn {
+  background: none;
+  border: none;
+  color: var(--color-error);
+  cursor: pointer;
+  font-size: 0.7rem;
+  padding: 0.1rem 0.25rem;
+  border-radius: var(--radius-sm);
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity var(--transition-fast);
+}
+
+.removeCustomBtn:hover {
+  opacity: 1;
+  background-color: rgba(186, 26, 26, 0.06);
+}
+
+.addCustomRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.addCustomInputGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex: 1;
+  max-width: 180px;
+}
+
+.addCustomInput {
+  border: 1px dashed var(--color-outline-variant);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--color-on-surface);
+  outline: none;
+  background-color: var(--color-white);
+  transition: border-color var(--transition-fast);
+  width: 100%;
+}
+
+.addCustomInput:focus {
+  border-color: var(--color-primary);
+  border-style: solid;
+}
+
+.addCustomUnit {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+}
+
+.addCustomBtn {
+  background: none;
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.addCustomBtn:hover {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.customWeightError {
+  font-size: 0.75rem;
+  color: var(--color-error);
+  margin-top: 0.25rem;
+}
 

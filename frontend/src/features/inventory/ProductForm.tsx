@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Input } from '@/shared/ui/Input';
 import { Select } from '@/shared/ui/Select';
 import { Button } from '@/shared/ui/Button';
@@ -15,10 +15,11 @@ interface ProductFormProps {
     price: number;
     cost_price: number;
     mrp: number | null;
-    stock_qty?: number;
     low_stock_threshold: number;
     unit: 'kg' | 'g' | 'litre' | 'ml' | 'pcs';
     is_loose: boolean;
+    quick_weight_prices?: Record<string, number>;
+    stock_qty?: number;
   }) => void;
   loading: boolean;
   onCancel: () => void;
@@ -40,6 +41,66 @@ export function ProductForm({ initialData, onSubmit, loading, onCancel }: Produc
   const [lowStockThreshold, setLowStockThreshold] = useState<string>(initialData ? initialData.low_stock_threshold.toString() : '5');
   const [unit, setUnit] = useState<'kg' | 'g' | 'litre' | 'ml' | 'pcs'>(initialData?.unit || 'pcs');
   const [isLoose, setIsLoose] = useState<boolean>(initialData?.is_loose || false);
+  // Standard preset keys
+  const STANDARD_PRESETS = ['0.05', '0.1', '0.25', '0.5', '1', '2'];
+
+  const [quickWeightPrices, setQuickWeightPrices] = useState<Record<string, string>>(() => {
+    const initial = initialData?.quick_weight_prices || {};
+    const state: Record<string, string> = {};
+    // Seed standard presets
+    for (const key of STANDARD_PRESETS) {
+      state[key] = initial[key]?.toString() || '';
+    }
+    // Seed any custom keys from existing data
+    for (const key of Object.keys(initial)) {
+      if (!STANDARD_PRESETS.includes(key)) {
+        state[key] = initial[key]?.toString() || '';
+      }
+    }
+    return state;
+  });
+
+  // Custom weight addition state
+  const [customWeightGrams, setCustomWeightGrams] = useState('');
+  const [customWeightError, setCustomWeightError] = useState('');
+
+  // Sorted list of all configured weight keys
+  const sortedWeightKeys = useMemo(
+    () =>
+      Object.keys(quickWeightPrices).sort((a, b) => parseFloat(a) - parseFloat(b)),
+    [quickWeightPrices]
+  );
+
+  const handleAddCustomWeight = () => {
+    setCustomWeightError('');
+    const grams = parseFloat(customWeightGrams);
+    if (isNaN(grams) || grams <= 0) {
+      setCustomWeightError('Enter a positive weight in grams');
+      return;
+    }
+    const kgKey = (grams / 1000).toString();
+    if (quickWeightPrices[kgKey] !== undefined) {
+      setCustomWeightError(`${grams}g already exists`);
+      return;
+    }
+    setQuickWeightPrices((prev) => ({ ...prev, [kgKey]: '' }));
+    setCustomWeightGrams('');
+  };
+
+  const handleRemoveCustomWeight = (key: string) => {
+    setQuickWeightPrices((prev) => {
+      const copy = { ...prev };
+      delete copy[key];
+      return copy;
+    });
+  };
+
+  // Helper: format kg key to display label
+  const formatWeightLabel = (kgKey: string): string => {
+    const kg = parseFloat(kgKey);
+    if (kg >= 1) return `${kg}kg`;
+    return `${Math.round(kg * 1000)}g`;
+  };
 
   // Error states
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -98,6 +159,18 @@ export function ProductForm({ initialData, onSubmit, loading, onCancel }: Produc
 
     setErrors({});
 
+    const finalQuickPrices: Record<string, number> = {};
+    if (isLoose) {
+      Object.entries(quickWeightPrices).forEach(([w, pStr]) => {
+        if (pStr.trim()) {
+          const val = parseFloat(pStr);
+          if (!isNaN(val) && val >= 0) {
+            finalQuickPrices[w] = val;
+          }
+        }
+      });
+    }
+
     onSubmit({
       name: name.trim(),
       category_id: categoryId || null,
@@ -107,6 +180,7 @@ export function ProductForm({ initialData, onSubmit, loading, onCancel }: Produc
       low_stock_threshold: thresholdNum,
       unit,
       is_loose: isLoose,
+      quick_weight_prices: isLoose ? finalQuickPrices : {},
       ...(isEditMode ? {} : { stock_qty: stockQtyNum }),
     });
   };
@@ -244,6 +318,72 @@ export function ProductForm({ initialData, onSubmit, loading, onCancel }: Produc
           <span>Loose / Weight-Based Item (sold in grams/kg/litres)</span>
         </label>
       </div>
+
+      {isLoose && (
+        <div className={styles.flatPricesContainer}>
+          <h3 className={styles.flatPricesTitle}>Quick-Weight Preset Fixed Prices (₹)</h3>
+          <p className={styles.flatPricesSubtitle}>
+            Set flat prices for weight presets. These appear as quick-select pills during billing. Blank fields fall back to linear pricing.
+          </p>
+
+          <div className={styles.flatPricesGrid}>
+            {sortedWeightKeys.map((key) => (
+              <div key={key} className={styles.flatPriceItem}>
+                <div className={styles.customWeightHeader}>
+                  <label className={styles.flatPriceLabel}>{formatWeightLabel(key)}</label>
+                  <button
+                    type="button"
+                    className={styles.removeCustomBtn}
+                    onClick={() => handleRemoveCustomWeight(key)}
+                    title="Remove this weight"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={quickWeightPrices[key] || ''}
+                  onChange={(e) => {
+                    setQuickWeightPrices((prev) => ({
+                      ...prev,
+                      [key]: e.target.value,
+                    }));
+                  }}
+                  className={styles.flatPriceInput}
+                  placeholder="Base price"
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Add custom weight row */}
+          <div className={styles.addCustomRow}>
+            <div className={styles.addCustomInputGroup}>
+              <input
+                type="number"
+                step="1"
+                min="1"
+                value={customWeightGrams}
+                onChange={(e) => { setCustomWeightGrams(e.target.value); setCustomWeightError(''); }}
+                className={styles.addCustomInput}
+                placeholder="e.g. 125, 350"
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddCustomWeight(); } }}
+              />
+              <span className={styles.addCustomUnit}>g</span>
+            </div>
+            <button
+              type="button"
+              className={styles.addCustomBtn}
+              onClick={handleAddCustomWeight}
+            >
+              + Add Weight
+            </button>
+          </div>
+          {customWeightError && <span className={styles.customWeightError}>{customWeightError}</span>}
+        </div>
+      )}
 
       {/* Only show stock quantity field in Add Mode */}
       {!isEditMode && (
