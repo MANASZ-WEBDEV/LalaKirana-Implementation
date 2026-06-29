@@ -398,8 +398,8 @@ export const analyticsService = {
         p.totalRevenue += qty * Number(item.unit_price);
         p.totalCost += qty * Number(item.cost_price || 0);
         p.totalQty += qty;
-        p.totalDiscount += qty * Number(item.discount || 0);
-        p.netRevenue += Number(item.subtotal || (qty * (Number(item.unit_price) - Number(item.discount || 0))));
+        p.totalDiscount += Number(item.discount || 0);
+        p.netRevenue += Number(item.subtotal || (qty * Number(item.unit_price) - Number(item.discount || 0)));
         if (Number(item.discount || 0) > 0) {
           p.discountBillCount += 1;
         }
@@ -688,8 +688,8 @@ export const analyticsService = {
         p.totalQtySold += qty;
         p.grossRevenue += qty * Number(item.unit_price || 0);
         const itemDiscount = Number(item.discount || 0);
-        p.totalDiscount += qty * itemDiscount;
-        p.netRevenue += Number(item.subtotal || (qty * (Number(item.unit_price) - itemDiscount)));
+        p.totalDiscount += itemDiscount;
+        p.netRevenue += Number(item.subtotal || (qty * Number(item.unit_price) - itemDiscount));
         p.totalCost += qty * Number(item.cost_price || 0);
 
         productsInThisBill.add(item.product_id);
@@ -871,12 +871,12 @@ export const analyticsService = {
           grossRevenue += qty * Number(item.unit_price || 0);
           
           const disc = Number(item.discount || 0);
-          totalDiscount += qty * disc;
+          totalDiscount += disc;
           if (disc > 0) {
             hasDiscountOnProduct = true;
-            productDiscountInBill += qty * disc;
+            productDiscountInBill += disc;
           }
-          netRevenue += Number(item.subtotal || (qty * (Number(item.unit_price) - disc)));
+          netRevenue += Number(item.subtotal || (qty * Number(item.unit_price) - disc));
           totalCost += qty * Number(item.cost_price || 0);
         }
 
@@ -1027,8 +1027,8 @@ export const analyticsService = {
         const qty = Number(item.qty);
         bucket.qtySold += qty;
         const disc = Number(item.discount || 0);
-        bucket.discount += qty * disc;
-        bucket.revenue += Number(item.subtotal || (qty * (Number(item.unit_price) - disc)));
+        bucket.discount += disc;
+        bucket.revenue += Number(item.subtotal || (qty * Number(item.unit_price) - disc));
         bucket.cost += qty * Number(item.cost_price || 0);
       }
     }
@@ -1155,8 +1155,7 @@ export const analyticsService = {
           const itemDisc = Number(item.discount || 0);
           if (itemDisc <= 0 || !item.product_id) continue;
 
-          const qty = Number(item.qty);
-          const itemTotalDisc = qty * itemDisc;
+          const itemTotalDisc = itemDisc;
 
           if (!s.productsMap.has(item.product_id)) {
             s.productsMap.set(item.product_id, {

@@ -16,7 +16,7 @@ export const billingService = {
       const staffDiscountLimit = parseFloat(settings.staff_discount_limit || '50');
 
       for (const item of input.items || []) {
-        if (item.discount && item.discount > staffDiscountLimit) {
+        if (item.discount && (item.discount / item.qty) > staffDiscountLimit) {
           throw new Error(
             `Staff discount limit exceeded: Maximum allowed discount is ₹${staffDiscountLimit} per item.`
           );
