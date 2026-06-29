@@ -62,9 +62,9 @@ export const analyticsApi = {
       .get<StaffDiscountSummary[]>('/analytics/staff-discounts', { params: { from, to, granularity } })
       .then((r) => r.data),
 
-  getStaffDiscountBills: (staffId: string, from: string, to: string, page: number = 1, limit: number = 20) =>
+  getStaffDiscountBills: (staffId: string, from: string, to: string, page: number = 1, limit: number = 20, productId?: string) =>
     api
-      .get<StaffDiscountBillsResponse>(`/analytics/staff-discounts/${staffId}/bills`, { params: { from, to, page, limit } })
+      .get<StaffDiscountBillsResponse>(`/analytics/staff-discounts/${staffId}/bills`, { params: { from, to, page, limit, productId } })
       .then((r) => r.data),
 };
 

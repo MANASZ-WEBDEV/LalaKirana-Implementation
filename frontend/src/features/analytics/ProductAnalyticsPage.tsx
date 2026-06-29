@@ -438,6 +438,7 @@ function ProductAnalyticsDashboard() {
           staffName={selectedStaffName}
           from={from}
           to={to}
+          productId={productId}
         />
       )}
     </div>

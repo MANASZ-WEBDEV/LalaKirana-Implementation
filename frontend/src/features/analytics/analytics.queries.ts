@@ -16,8 +16,8 @@ export const analyticsKeys = {
     [...analyticsKeys.all, 'productTrend', productId, from, to, granularity] as const,
   staffDiscounts: (from: string, to: string, granularity: string) =>
     [...analyticsKeys.all, 'staffDiscounts', from, to, granularity] as const,
-  staffDiscountBills: (staffId: string, from: string, to: string, page: number, limit: number) =>
-    [...analyticsKeys.all, 'staffDiscountBills', staffId, from, to, page, limit] as const,
+  staffDiscountBills: (staffId: string, from: string, to: string, page: number, limit: number, productId?: string) =>
+    [...analyticsKeys.all, 'staffDiscountBills', staffId, from, to, page, limit, productId || ''] as const,
 };
 
 export function useAnalyticsOverview(from: string, to: string) {
@@ -110,10 +110,10 @@ export function useStaffDiscountAudit(from: string, to: string, granularity: str
   });
 }
 
-export function useStaffDiscountBills(staffId: string, from: string, to: string, page: number = 1, limit: number = 20) {
+export function useStaffDiscountBills(staffId: string, from: string, to: string, page: number = 1, limit: number = 20, productId?: string) {
   return useQuery({
-    queryKey: analyticsKeys.staffDiscountBills(staffId, from, to, page, limit),
-    queryFn: () => analyticsApi.getStaffDiscountBills(staffId, from, to, page, limit),
+    queryKey: analyticsKeys.staffDiscountBills(staffId, from, to, page, limit, productId),
+    queryFn: () => analyticsApi.getStaffDiscountBills(staffId, from, to, page, limit, productId),
     enabled: !!staffId && !!from && !!to,
     staleTime: 60_000,
   });

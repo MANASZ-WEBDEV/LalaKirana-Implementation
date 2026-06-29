@@ -12,6 +12,7 @@ interface StaffDiscountBillsDrawerProps {
   staffName: string;
   from: string;
   to: string;
+  productId?: string;
 }
 
 const formatCurrency = (val: number) =>
@@ -28,12 +29,13 @@ export function StaffDiscountBillsDrawer({
   staffName,
   from,
   to,
+  productId,
 }: StaffDiscountBillsDrawerProps) {
   const [page, setPage] = useState(1);
   const [accumulatedBills, setAccumulatedBills] = useState<StaffDiscountBill[]>([]);
   const limit = 10; // Load 10 bills at a time for fast loading
 
-  const { data, isLoading, isFetching } = useStaffDiscountBills(staffId, from, to, page, limit);
+  const { data, isLoading, isFetching } = useStaffDiscountBills(staffId, from, to, page, limit, productId);
 
   // Reset list if parameters change
   useEffect(() => {
