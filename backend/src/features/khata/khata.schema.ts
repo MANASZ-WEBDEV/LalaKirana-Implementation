@@ -6,7 +6,10 @@ const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-
 export const CreateCustomerSchema = z.object({
   body: z.object({
     name: z.string().min(1, 'Customer name is required').max(100),
-    phone: z.string().max(15).optional().nullable(),
+    phone: z.string().optional().nullable().refine(
+      (val) => !val || /^\d{10}$/.test(val),
+      { message: 'Phone number must be exactly 10 digits and contain only numbers' }
+    ),
     address: z.string().max(200).optional().nullable(),
   }),
 });
@@ -15,7 +18,10 @@ export const CreateCustomerSchema = z.object({
 export const UpdateCustomerSchema = z.object({
   body: z.object({
     name: z.string().min(1).max(100).optional(),
-    phone: z.string().max(15).optional().nullable(),
+    phone: z.string().optional().nullable().refine(
+      (val) => !val || /^\d{10}$/.test(val),
+      { message: 'Phone number must be exactly 10 digits and contain only numbers' }
+    ),
     address: z.string().max(200).optional().nullable(),
   }),
 });

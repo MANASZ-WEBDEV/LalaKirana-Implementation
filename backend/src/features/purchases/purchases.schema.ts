@@ -7,7 +7,7 @@ const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-
 export const CreateSupplierSchema = z.object({
   body: z.object({
     name: z.string().min(1, 'Supplier name is required').max(100),
-    phone: z.string().min(10, 'Phone number must be at least 10 digits').max(15),
+    phone: z.string().regex(/^\d{10}$/, 'Phone number must be exactly 10 digits and contain only numbers'),
     product_range: z.string().max(300).optional().nullable(),
     address: z.string().max(300).optional().nullable(),
     note: z.string().max(300).optional().nullable(),
@@ -17,7 +17,7 @@ export const CreateSupplierSchema = z.object({
 export const UpdateSupplierSchema = z.object({
   body: z.object({
     name: z.string().min(1).max(100).optional(),
-    phone: z.string().min(10, 'Phone number must be at least 10 digits').max(15).optional(),
+    phone: z.string().regex(/^\d{10}$/, 'Phone number must be exactly 10 digits and contain only numbers').optional(),
     product_range: z.string().max(300).optional().nullable(),
     address: z.string().max(300).optional().nullable(),
     note: z.string().max(300).optional().nullable(),

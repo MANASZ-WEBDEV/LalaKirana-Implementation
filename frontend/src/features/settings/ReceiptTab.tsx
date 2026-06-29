@@ -40,6 +40,11 @@ export function ReceiptTab() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (storePhone.trim() && !/^\d{10}$/.test(storePhone.trim())) {
+      addToast('error', 'Store phone number must be exactly 10 digits and contain only numbers.');
+      return;
+    }
+
     try {
       await updateSettingsMutation.mutateAsync({
         store_name: storeName.trim(),
@@ -97,8 +102,9 @@ export function ReceiptTab() {
             <Input
               label="Store Phone Contact"
               value={storePhone}
-              onChange={(e) => setStorePhone(e.target.value)}
-              placeholder="e.g. +91 9876543210"
+              onChange={(e) => setStorePhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+              maxLength={10}
+              placeholder="e.g. 9876543210"
             />
           </div>
 

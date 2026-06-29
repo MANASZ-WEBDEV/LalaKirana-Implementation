@@ -120,6 +120,11 @@ export default function PurchasesPage() {
       return;
     }
 
+    if (!/^\d{10}$/.test(supPhone.trim())) {
+      addToast('error', 'Phone number must be exactly 10 digits and contain only numbers.');
+      return;
+    }
+
     try {
       await createSupplierMutation.mutateAsync({
         name: supName.trim(),
@@ -149,6 +154,11 @@ export default function PurchasesPage() {
     }
     if (!editSupPhone.trim()) {
       addToast('error', 'Phone number is required.');
+      return;
+    }
+
+    if (!/^\d{10}$/.test(editSupPhone.trim())) {
+      addToast('error', 'Phone number must be exactly 10 digits and contain only numbers.');
       return;
     }
 
@@ -617,9 +627,10 @@ export default function PurchasesPage() {
               <input
                 type="text"
                 value={supPhone}
-                onChange={(e) => setSupPhone(e.target.value)}
+                onChange={(e) => setSupPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
                 className={styles.formInput}
                 required
+                maxLength={10}
                 placeholder="e.g. 9876543210"
               />
             </div>
@@ -950,8 +961,9 @@ export default function PurchasesPage() {
                   <label className={styles.formLabel}>Phone Number *</label>
                   <Input
                     value={editSupPhone}
-                    onChange={(e) => setEditSupPhone(e.target.value)}
+                    onChange={(e) => setEditSupPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
                     required
+                    maxLength={10}
                     placeholder="e.g. 9876543210"
                   />
                 </div>

@@ -37,6 +37,11 @@ export default function KhataPage() {
     e.preventDefault();
     if (!name.trim()) return;
 
+    if (phone.trim() && !/^\d{10}$/.test(phone.trim())) {
+      addToast('error', 'Phone number must be exactly 10 digits and contain only numbers.');
+      return;
+    }
+
     try {
       await createCustomerMutation.mutateAsync({
         name: name.trim(),
@@ -192,8 +197,9 @@ export default function KhataPage() {
               <input
                 type="text"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
                 className={styles.formInput}
+                maxLength={10}
                 placeholder="e.g. 9876543210"
               />
             </div>

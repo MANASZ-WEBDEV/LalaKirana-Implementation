@@ -63,6 +63,11 @@ export default function CustomerProfile() {
 
   const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (editPhone.trim() && !/^\d{10}$/.test(editPhone.trim())) {
+      addToast('error', 'Phone number must be exactly 10 digits and contain only numbers.');
+      return;
+    }
+
     try {
       await updateCustomerMutation.mutateAsync({
         name: editName.trim(),
@@ -176,7 +181,8 @@ export default function CustomerProfile() {
               <Input
                 label="Phone Number"
                 value={editPhone}
-                onChange={(e) => setEditPhone(e.target.value)}
+                onChange={(e) => setEditPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                maxLength={10}
               />
               <div className={styles.textareaWrapper}>
                 <label className={styles.textareaLabel}>Address</label>
