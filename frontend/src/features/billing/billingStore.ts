@@ -7,11 +7,13 @@ export interface CartItem {
   product_name: string;
   qty: number;
   unit_price: number;
+  base_price: number;
   cost_price: number;
   unit: string;
   stock_qty: number;
   discount: number;
   is_loose: boolean;
+  quick_weight_prices?: Record<string, number>;
 }
 
 export interface OrderSlot {
@@ -22,6 +24,26 @@ export interface OrderSlot {
   quickNote: string;
   customerName: string;
   customerId: string | null;
+}
+
+export function getEffectiveUnitPrice(
+  qty: number,
+  basePrice: number,
+  quickPrices: Record<string, number> = {}
+): number {
+  if (!quickPrices) return basePrice;
+  const matchedKey = Object.keys(quickPrices).find((k) => {
+    const val = parseFloat(k);
+    return !isNaN(val) && Math.abs(qty - val) < 0.0001;
+  });
+
+  if (matchedKey) {
+    const flatPrice = quickPrices[matchedKey];
+    if (flatPrice !== undefined && flatPrice > 0) {
+      return flatPrice / qty;
+    }
+  }
+  return basePrice;
 }
 
 interface BillingState {
@@ -121,24 +143,29 @@ export const useBillingStore = create<BillingState>()(
           newItems = activeSlot.items.map((item) => {
             if (item.product_id === productId) {
               const clampedQty = Math.min(item.qty + qty, item.stock_qty);
-              return { ...item, qty: clampedQty };
+              const newUnitPrice = getEffectiveUnitPrice(clampedQty, item.base_price, item.quick_weight_prices);
+              return { ...item, qty: clampedQty, unit_price: newUnitPrice };
             }
             return item;
           });
         } else {
           if (product.stock_qty <= 0) return; // Out of stock, don't add
+          const initialQty = Math.min(qty, product.stock_qty);
+          const initialUnitPrice = getEffectiveUnitPrice(initialQty, product.price, product.quick_weight_prices);
           newItems = [
             ...activeSlot.items,
             {
               product_id: product.id,
               product_name: product.name,
-              qty: Math.min(qty, product.stock_qty),
-              unit_price: product.price,
+              qty: initialQty,
+              unit_price: initialUnitPrice,
+              base_price: product.price,
               cost_price: product.cost_price,
               unit: product.unit,
               stock_qty: product.stock_qty,
               discount: 0,
               is_loose: !!product.is_loose,
+              quick_weight_prices: product.quick_weight_prices,
             },
           ];
         }
@@ -163,7 +190,8 @@ export const useBillingStore = create<BillingState>()(
         const newItems = activeSlot.items.map((item) => {
           if (item.product_id === productId) {
             const clampedQty = Math.min(qty, item.stock_qty);
-            return { ...item, qty: clampedQty };
+            const newUnitPrice = getEffectiveUnitPrice(clampedQty, item.base_price, item.quick_weight_prices);
+            return { ...item, qty: clampedQty, unit_price: newUnitPrice };
           }
           return item;
         });
