@@ -259,16 +259,24 @@ export const purchasesService = {
         .eq('id', po.supplier_id)
         .single();
       
-      if (!suppFetchErr && supplier) {
+      if (suppFetchErr) {
+        throw new Error(`Failed to fetch supplier balance: ${suppFetchErr.message}`);
+      }
+
+      if (supplier) {
         const newBalance = Number(supplier.total_balance) - unpaidAmount;
-        await supabase
+        const { error: balanceUpdateError } = await supabase
           .from('suppliers')
           .update({ total_balance: newBalance })
           .eq('id', po.supplier_id);
+
+        if (balanceUpdateError) {
+          throw new Error(`Failed to update supplier balance: ${balanceUpdateError.message}`);
+        }
       }
 
       // Log the payment in supplier_repayments table!
-      await supabase
+      const { error: repaymentInsertError } = await supabase
         .from('supplier_repayments')
         .insert([{
           supplier_id: po.supplier_id,
@@ -276,6 +284,10 @@ export const purchasesService = {
           note: `Settled Purchase Order PO-${po.id.slice(0, 8).toUpperCase()}`,
           created_by: userId,
         }]);
+
+      if (repaymentInsertError) {
+        throw new Error(`Failed to log repayment entry: ${repaymentInsertError.message}`);
+      }
     }
 
     return updatedPO;
@@ -343,12 +355,20 @@ export const purchasesService = {
         .eq('id', po.supplier_id)
         .single();
       
-      if (!suppFetchErr && supplier) {
+      if (suppFetchErr) {
+        throw new Error(`Failed to fetch supplier balance: ${suppFetchErr.message}`);
+      }
+
+      if (supplier) {
         const newBalance = Number(supplier.total_balance) - amount;
-        await supabase
+        const { error: balanceUpdateError } = await supabase
           .from('suppliers')
           .update({ total_balance: newBalance })
           .eq('id', po.supplier_id);
+
+        if (balanceUpdateError) {
+          throw new Error(`Failed to update supplier balance: ${balanceUpdateError.message}`);
+        }
       }
 
       // 4. Log audit repayment entry in supplier_repayments table
@@ -356,7 +376,7 @@ export const purchasesService = {
         ? `${note.trim()} (PO-${po.id.slice(0, 8).toUpperCase()})`
         : `Payment towards Purchase Order PO-${po.id.slice(0, 8).toUpperCase()}`;
 
-      await supabase
+      const { error: repaymentInsertError } = await supabase
         .from('supplier_repayments')
         .insert([{
           supplier_id: po.supplier_id,
@@ -364,6 +384,10 @@ export const purchasesService = {
           note: auditNote,
           created_by: userId,
         }]);
+
+      if (repaymentInsertError) {
+        throw new Error(`Failed to log repayment entry: ${repaymentInsertError.message}`);
+      }
     }
 
     return updatedPO;
@@ -374,10 +398,10 @@ export const purchasesService = {
    * Merges purchase orders and repayments, ordered by date descending.
    */
   getSupplierLedger: async (supplierId: string) => {
-    // 1. Fetch all POs for this supplier
+    // 1. Fetch all POs for this supplier (including initial_amount_paid for accurate ledger)
     const { data: pos, error: posErr } = await supabase
       .from('purchase_orders')
-      .select('id, order_date, total, amount_paid, payment_status, reference_number, note, status')
+      .select('id, order_date, total, amount_paid, initial_amount_paid, payment_status, reference_number, note, status, created_at')
       .eq('supplier_id', supplierId);
 
     if (posErr) {
@@ -394,37 +418,96 @@ export const purchasesService = {
       throw new Error(`Failed to fetch supplier repayments for ledger: ${repErr.message}`);
     }
 
-    // 3. Map both lists to a unified statement format
-    const poLogs = (pos || []).map((po: any) => ({
-      id: po.id,
-      date: po.order_date,
-      type: 'purchase_order' as const,
-      label: `PO-${po.id.slice(0, 8).toUpperCase()}${po.reference_number ? ` (Ref: ${po.reference_number})` : ''}`,
-      note: po.note,
-      total: Number(po.total),
-      amount_paid: Number(po.amount_paid || 0),
-      payment_status: po.payment_status,
-      status: po.status,
-      sortByDate: new Date(po.order_date).getTime(),
-    }));
+    // 3. Build unified statement entries
+    // Each PO always debits the FULL total (money owed to supplier).
+    // If the PO had an upfront cash payment (initial_amount_paid > 0 for non-credit POs),
+    // we emit a synthetic "Upfront Payment" credit entry so it's visible in the statement.
+    type LedgerEntry = {
+      id: string;
+      date: string;
+      type: 'purchase_order' | 'repayment' | 'upfront_payment';
+      label: string;
+      note: string | null;
+      debit: number;
+      credit: number;
+      payment_status: string;
+      status: string;
+      sortByDate: number;
+      sortOrder: number; // secondary sort: PO before its upfront payment
+    };
 
-    const repaymentLogs = (repayments || []).map((rep: any) => ({
-      id: rep.id,
-      date: rep.repayment_date,
-      type: 'repayment' as const,
-      label: 'Direct Repayment',
-      note: rep.note,
-      total: null,
-      amount_paid: Number(rep.amount),
-      payment_status: 'paid',
-      status: 'confirmed',
-      sortByDate: new Date(rep.repayment_date).getTime() + (new Date(rep.created_at).getTime() % 86400000) / 100000000,
-    }));
+    const entries: LedgerEntry[] = [];
 
-    // 4. Combine and sort by date descending
-    const ledger = [...poLogs, ...repaymentLogs].sort((a, b) => b.sortByDate - a.sortByDate);
+    for (const po of (pos || [])) {
+      const poTotal = Number(po.total);
+      const initialPaid = Number(po.initial_amount_paid ?? 0);
+      const poLabel = `PO-${po.id.slice(0, 8).toUpperCase()}${po.reference_number ? ` (Ref: ${po.reference_number})` : ''}`;
+      const poTime = new Date(po.created_at).getTime();
 
-    return ledger;
+      // PO entry: always shows full total as debit
+      entries.push({
+        id: po.id,
+        date: po.order_date,
+        type: 'purchase_order',
+        label: poLabel,
+        note: po.note,
+        debit: poTotal,
+        credit: 0,
+        payment_status: po.payment_status,
+        status: po.status,
+        sortByDate: poTime,
+        sortOrder: 0, // PO comes first
+      });
+
+      // Upfront payment entry: if any cash was paid at the time of creating the PO
+      if (initialPaid > 0 && po.payment_status !== 'credit') {
+        entries.push({
+          id: `${po.id}-upfront`,
+          date: po.order_date,
+          type: 'upfront_payment',
+          label: `Upfront Payment — ${poLabel}`,
+          note: po.payment_status === 'paid'
+            ? 'Full amount paid at purchase'
+            : `₹${initialPaid.toFixed(2)} paid at purchase time`,
+          debit: 0,
+          credit: initialPaid,
+          payment_status: 'paid',
+          status: 'confirmed',
+          sortByDate: poTime,
+          sortOrder: 1, // upfront payment comes right after its PO
+        });
+      }
+    }
+
+    // Subsequent repayment entries
+    for (const rep of (repayments || [])) {
+      entries.push({
+        id: rep.id,
+        date: rep.repayment_date,
+        type: 'repayment',
+        label: 'Repayment',
+        note: rep.note,
+        debit: 0,
+        credit: Number(rep.amount),
+        payment_status: 'paid',
+        status: 'confirmed',
+        sortByDate: new Date(rep.created_at).getTime(),
+        sortOrder: 2,
+      });
+    }
+
+    // 4. Sort chronologically (oldest first), then by sortOrder within same date
+    entries.sort((a, b) => a.sortByDate - b.sortByDate || a.sortOrder - b.sortOrder);
+
+    // 5. Compute running balance
+    let runningBalance = 0;
+    const ledger = entries.map((entry) => {
+      runningBalance += entry.debit - entry.credit;
+      return { ...entry, balance: runningBalance };
+    });
+
+    // Return newest-first for display
+    return ledger.reverse();
   },
 
   /**
