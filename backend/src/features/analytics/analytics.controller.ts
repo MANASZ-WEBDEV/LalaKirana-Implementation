@@ -162,6 +162,7 @@ export const analyticsController = {
       const to = typeof req.query.to === 'string' ? req.query.to : '';
       const page = req.query.page as string | undefined;
       const limit = req.query.limit as string | undefined;
+      const productId = req.query.productId as string | undefined;
       if (!from || !to) {
         return res.status(400).json({ message: 'Missing required query params: from, to (YYYY-MM-DD)' });
       }
@@ -170,7 +171,8 @@ export const analyticsController = {
         from as string,
         to as string,
         page ? parseInt(page) : undefined,
-        limit ? parseInt(limit) : undefined
+        limit ? parseInt(limit) : undefined,
+        productId
       );
       return res.json(data);
     } catch (err: any) {

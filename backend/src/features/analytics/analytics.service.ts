@@ -886,19 +886,21 @@ export const analyticsService = {
             discountBillCount++;
           }
 
-          const staffId = bill.created_by || 'unknown';
-          const staffName = (bill.users as any)?.name || 'Unknown Staff';
-          if (!staffMap.has(staffId)) {
-            staffMap.set(staffId, {
-              staff_id: staffId,
-              staff_name: staffName,
-              totalDiscount: 0,
-              billCount: 0,
-            });
+          if (productDiscountInBill > 0) {
+            const staffId = bill.created_by || 'unknown';
+            const staffName = (bill.users as any)?.name || 'Unknown Staff';
+            if (!staffMap.has(staffId)) {
+              staffMap.set(staffId, {
+                staff_id: staffId,
+                staff_name: staffName,
+                totalDiscount: 0,
+                billCount: 0,
+              });
+            }
+            const s = staffMap.get(staffId)!;
+            s.totalDiscount += productDiscountInBill;
+            s.billCount++;
           }
-          const s = staffMap.get(staffId)!;
-          s.totalDiscount += productDiscountInBill;
-          s.billCount++;
         }
       }
 
@@ -1205,26 +1207,50 @@ export const analyticsService = {
     from: string,
     to: string,
     page: number = 1,
-    limit: number = 20
+    limit: number = 20,
+    productId?: string
   ) => {
     const offset = (page - 1) * limit;
 
-    const { data, count, error } = await supabase
-      .from('bills')
-      .select(`
+    let selectString = `
+      id,
+      bill_number,
+      created_at,
+      total,
+      discount_total,
+      customers ( name ),
+      bill_items ( product_name, qty, unit_price, discount, subtotal )
+    `;
+
+    if (productId) {
+      selectString = `
         id,
         bill_number,
         created_at,
         total,
         discount_total,
         customers ( name ),
-        bill_items ( product_name, qty, unit_price, discount, subtotal )
-      `, { count: 'exact' })
+        bill_items!inner ( product_name, qty, unit_price, discount, subtotal, product_id )
+      `;
+    }
+
+    let query = supabase
+      .from('bills')
+      .select(selectString, { count: 'exact' })
       .eq('created_by', staffId)
-      .gt('discount_total', 0)
       .in('status', ['paid', 'khata'])
       .gte('created_at', `${from}T00:00:00`)
-      .lte('created_at', `${to}T23:59:59`)
+      .lte('created_at', `${to}T23:59:59`);
+
+    if (productId) {
+      query = query
+        .eq('bill_items.product_id', productId)
+        .gt('bill_items.discount', 0);
+    } else {
+      query = query.gt('discount_total', 0);
+    }
+
+    const { data, count, error } = await query
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
