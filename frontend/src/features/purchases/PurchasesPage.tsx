@@ -93,9 +93,9 @@ export default function PurchasesPage() {
   const [supNote, setSupNote] = useState('');
 
   // Queries
-  const { data: poData, isLoading: poLoading } = usePurchaseOrders({ page, limit: 15 });
-  const { data: expData, isLoading: expLoading } = useExpenses({ page, limit: 15 });
-  const { data: supData, isLoading: supLoading } = useSuppliers({ page, limit: 15 });
+  const { data: poData, isLoading: poLoading } = usePurchaseOrders({ page, limit: 12 });
+  const { data: expData, isLoading: expLoading } = useExpenses({ page, limit: 12 });
+  const { data: supData, isLoading: supLoading } = useSuppliers({ page, limit: 12 });
   const { data: ledgerData, isLoading: ledgerLoading } = useSupplierLedger(
     selectedSupplierForDetails?.id || '',
     { enabled: !!selectedSupplierForDetails && supplierModalTab === 'ledger' }
