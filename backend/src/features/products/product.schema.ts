@@ -13,6 +13,10 @@ export const CreateProductSchema = z.object({
     unit: z.enum(['kg', 'g', 'litre', 'ml', 'pcs']).default('pcs'),
     mrp: z.number().min(0, 'MRP must be non-negative').optional().nullable(),
     is_loose: z.boolean().default(false),
+    quick_weight_prices: z.record(
+      z.string(),
+      z.number().min(0, 'Price must be non-negative')
+    ).optional().nullable(),
   }),
 });
 
@@ -28,6 +32,10 @@ export const UpdateProductSchema = z.object({
     is_active: z.boolean().optional(),
     mrp: z.number().min(0, 'MRP must be non-negative').optional().nullable(),
     is_loose: z.boolean().optional(),
+    quick_weight_prices: z.record(
+      z.string(),
+      z.number().min(0, 'Price must be non-negative')
+    ).optional().nullable(),
   }),
 });
 
