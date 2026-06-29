@@ -11,6 +11,50 @@ interface FullBillModeProps {
   onCheckout: (status: 'paid' | 'khata') => void;
 }
 
+const getPresets = (item: any) => {
+  const isLiquid = item.unit === 'litre' || item.unit === 'ml';
+  const formatLabel = (v: number) => {
+    if (isLiquid) {
+      return v >= 1 ? `${v}L` : `${Math.round(v * 1000)}ml`;
+    }
+    return v >= 1 ? `${v}kg` : `${Math.round(v * 1000)}g`;
+  };
+
+  const standardValues = [0.05, 0.1, 0.25, 0.5, 1.0, 2.0];
+  const uniqueValues = new Set(standardValues);
+
+  // Add custom values configured on the product
+  if (item.quick_weight_prices) {
+    Object.keys(item.quick_weight_prices).forEach((k) => {
+      const v = parseFloat(k);
+      if (!isNaN(v)) {
+        uniqueValues.add(v);
+      }
+    });
+  }
+
+  return Array.from(uniqueValues)
+    .sort((a, b) => a - b)
+    .map((v) => {
+      // Determine price for this preset
+      let price = v * item.base_price;
+      if (item.quick_weight_prices) {
+        // Find matching key within tolerance
+        const matchedKey = Object.keys(item.quick_weight_prices).find(
+          (k) => Math.abs(parseFloat(k) - v) < 0.0001
+        );
+        if (matchedKey && item.quick_weight_prices[matchedKey] > 0) {
+          price = item.quick_weight_prices[matchedKey];
+        }
+      }
+      return {
+        value: v,
+        label: `${formatLabel(v)} (₹${price.toFixed(2)})`,
+        price,
+      };
+    });
+};
+
 export function FullBillMode({ onCheckout }: FullBillModeProps) {
   const { slots, activeSlotId, addToCart, updateCartQty, updateCartDiscount, removeFromCart, clearCart, setCustomer } =
     useBillingStore();
@@ -101,8 +145,30 @@ export function FullBillMode({ onCheckout }: FullBillModeProps) {
                       </td>
                       <td className={styles.qtyCol}>
                         {item.is_loose ? (
-                          <div className={styles.looseQtyWrapper}>
-                            <div className={styles.looseInputRow}>
+                          <div className={styles.looseQtyContainer}>
+                            <select
+                              value={
+                                getPresets(item).some((p) => Math.abs(p.value - item.qty) < 0.0001)
+                                  ? getPresets(item).find((p) => Math.abs(p.value - item.qty) < 0.0001)!.value.toString()
+                                  : 'custom'
+                              }
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                if (val !== 'custom') {
+                                  updateCartQty(item.product_id, parseFloat(val));
+                                }
+                              }}
+                              className={styles.presetSelect}
+                            >
+                              {getPresets(item).map((p) => (
+                                <option key={p.value} value={p.value}>
+                                  {p.label}
+                                </option>
+                              ))}
+                              <option value="custom">Custom Weight...</option>
+                            </select>
+
+                            <div className={styles.customInputWrapper}>
                               <input
                                 type="number"
                                 value={Math.round(item.qty * 1000)}
@@ -112,56 +178,12 @@ export function FullBillMode({ onCheckout }: FullBillModeProps) {
                                   const grams = parseInt(e.target.value, 10);
                                   updateCartQty(item.product_id, isNaN(grams) ? 0 : grams / 1000);
                                 }}
-                                className={styles.looseQtyInput}
+                                className={styles.customQtyInput}
+                                placeholder="Custom"
                               />
-                              <span className={styles.looseQtyLabel}>g</span>
-                            </div>
-                            <div className={styles.quickWeightPills}>
-                              {(() => {
-                                // Build pills from standard defaults + any custom weights configured on the product
-                                const standardPills = [
-                                  { label: '50g', value: 0.05 },
-                                  { label: '100g', value: 0.1 },
-                                  { label: '250g', value: 0.25 },
-                                  { label: '500g', value: 0.5 },
-                                  { label: '1kg', value: 1.0 },
-                                  { label: '2kg', value: 2.0 },
-                                ];
-                                const standardValues = new Set(standardPills.map((p) => p.value));
-
-                                // Add custom weight pills from product config
-                                const customPills = Object.keys(item.quick_weight_prices || {})
-                                  .map((k) => parseFloat(k))
-                                  .filter((v) => !isNaN(v) && !standardValues.has(v))
-                                  .map((v) => ({
-                                    label: v >= 1 ? `${v}kg` : `${Math.round(v * 1000)}g`,
-                                    value: v,
-                                  }));
-
-                                const allPills = [...standardPills, ...customPills].sort(
-                                  (a, b) => a.value - b.value
-                                );
-
-                                const hasFixedPrice = (val: number) => {
-                                  if (!item.quick_weight_prices) return false;
-                                  return Object.keys(item.quick_weight_prices).some(
-                                    (k) => Math.abs(parseFloat(k) - val) < 0.0001
-                                  );
-                                };
-
-                                return allPills.map((pill) => (
-                                  <button
-                                    key={pill.value}
-                                    type="button"
-                                    onClick={() => updateCartQty(item.product_id, pill.value)}
-                                    className={`${styles.weightPill} ${
-                                      Math.abs(item.qty - pill.value) < 0.0001 ? styles.weightPillActive : ''
-                                    } ${hasFixedPrice(pill.value) ? styles.weightPillFixed : ''}`}
-                                  >
-                                    {pill.label}
-                                  </button>
-                                ));
-                              })()}
+                              <span className={styles.customQtyUnit}>
+                                {item.unit === 'litre' || item.unit === 'ml' ? 'ml' : 'g'}
+                              </span>
                             </div>
                           </div>
                         ) : (
