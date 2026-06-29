@@ -176,6 +176,51 @@
   border-color: var(--color-primary);
 }
 
+.fallbackRateDivider {
+  height: 1px;
+  background-color: var(--color-outline-variant);
+  margin: 1.25rem 0;
+}
+
+.fallbackRateRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.fallbackRateLabel {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+}
+
+.fallbackRateHelper {
+  font-size: 0.78rem;
+  color: var(--color-on-surface-variant);
+  line-height: 1.4;
+  margin: 0 0 0.5rem 0;
+}
+
+.fallbackRateInput {
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--color-on-surface);
+  outline: none;
+  background-color: var(--color-white);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  max-width: 320px;
+  width: 100%;
+}
+
+.fallbackRateInput:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(0, 103, 99, 0.1);
+}
+
+
 .flatPricesSectionLabel {
   font-size: 0.7rem;
   font-weight: 700;

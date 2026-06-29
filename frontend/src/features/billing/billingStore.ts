@@ -43,6 +43,12 @@ export function getEffectiveUnitPrice(
       return flatPrice / qty;
     }
   }
+
+  // Fallback to custom sub-1kg rate if quantity is below 1kg and not matched to a preset pill
+  if (qty < 1.0 && quickPrices['under_1kg_rate'] !== undefined && quickPrices['under_1kg_rate'] > 0) {
+    return quickPrices['under_1kg_rate'];
+  }
+
   return basePrice;
 }
 

@@ -51,23 +51,29 @@ export function ProductForm({ initialData, onSubmit, loading, onCancel }: Produc
     for (const key of STANDARD_PRESETS) {
       state[key] = initial[key]?.toString() || '';
     }
-    // Seed any custom keys from existing data
+    // Seed any custom keys from existing data, excluding under_1kg_rate
     for (const key of Object.keys(initial)) {
-      if (!STANDARD_PRESETS.includes(key)) {
+      if (!STANDARD_PRESETS.includes(key) && key !== 'under_1kg_rate') {
         state[key] = initial[key]?.toString() || '';
       }
     }
     return state;
   });
 
+  const [under1kgRate, setUnder1kgRate] = useState<string>(
+    initialData?.quick_weight_prices?.under_1kg_rate?.toString() || ''
+  );
+
   // Custom weight addition state
   const [customWeightGrams, setCustomWeightGrams] = useState('');
   const [customWeightError, setCustomWeightError] = useState('');
 
-  // Sorted list of all configured weight keys
+  // Sorted list of all configured weight keys (excluding under_1kg_rate)
   const sortedWeightKeys = useMemo(
     () =>
-      Object.keys(quickWeightPrices).sort((a, b) => parseFloat(a) - parseFloat(b)),
+      Object.keys(quickWeightPrices)
+        .filter((key) => key !== 'under_1kg_rate')
+        .sort((a, b) => parseFloat(a) - parseFloat(b)),
     [quickWeightPrices]
   );
 
@@ -169,6 +175,12 @@ export function ProductForm({ initialData, onSubmit, loading, onCancel }: Produc
           }
         }
       });
+      if (under1kgRate.trim()) {
+        const val = parseFloat(under1kgRate);
+        if (!isNaN(val) && val >= 0) {
+          finalQuickPrices['under_1kg_rate'] = val;
+        }
+      }
     }
 
     onSubmit({
@@ -382,6 +394,28 @@ export function ProductForm({ initialData, onSubmit, loading, onCancel }: Produc
             </button>
           </div>
           {customWeightError && <span className={styles.customWeightError}>{customWeightError}</span>}
+
+          {/* Under 1kg Custom Fallback Rate */}
+          <div className={styles.fallbackRateDivider} />
+          <div className={styles.fallbackRateRow}>
+            <div className={styles.flatPriceItem}>
+              <label className={styles.fallbackRateLabel}>
+                Under 1kg/1L Custom Fallback Rate (₹/unit)
+              </label>
+              <p className={styles.fallbackRateHelper}>
+                If configured, any custom weights typed under 1kg/1L will use this rate per unit (e.g. ₹1000/kg) instead of the base selling price.
+              </p>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={under1kgRate}
+                onChange={(e) => setUnder1kgRate(e.target.value)}
+                className={styles.fallbackRateInput}
+                placeholder="Linear fallback (uses Base Price)"
+              />
+            </div>
+          </div>
         </div>
       )}
 
