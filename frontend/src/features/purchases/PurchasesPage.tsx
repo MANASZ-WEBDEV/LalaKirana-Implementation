@@ -233,11 +233,35 @@ export default function PurchasesPage() {
     {
       key: 'payment_status',
       header: 'Payment',
-      render: (po) => (
-        <Badge variant={po.payment_status === 'paid' ? 'success' : po.payment_status === 'partial' ? 'warning' : 'error'}>
-          {po.payment_status}
-        </Badge>
-      ),
+      render: (po) => {
+        const unpaid = Number(po.total) - Number(po.amount_paid || 0);
+        const isUnpaid = po.payment_status !== 'paid' && po.status !== 'cancelled' && unpaid > 0;
+        return (
+          <div className={styles.poPaymentCell}>
+            <Badge variant={po.payment_status === 'paid' ? 'success' : po.payment_status === 'partial' ? 'warning' : 'error'}>
+              {po.payment_status}
+            </Badge>
+            {isUnpaid && (
+              <>
+                <span className={styles.poRemainingAmt}>₹{unpaid.toFixed(0)} due</span>
+                {isOwner && (
+                  <button
+                    className={styles.poInlinePayBtn}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPoToPay(po);
+                      setPoPaymentAmount('');
+                      setPoPaymentNote('');
+                    }}
+                  >
+                    Pay
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+        );
+      },
     },
     {
       key: 'status',
@@ -948,39 +972,35 @@ export default function PurchasesPage() {
                         <tr>
                           <th>Date</th>
                           <th>Type / Reference</th>
-                          <th style={{ textAlign: 'right' }}>Total Cost</th>
-                          <th style={{ textAlign: 'right' }}>Cash Paid</th>
-                          <th style={{ textAlign: 'right' }}>Payment</th>
+                          <th style={{ textAlign: 'right' }}>Debit (₹)</th>
+                          <th style={{ textAlign: 'right' }}>Credit (₹)</th>
+                          <th style={{ textAlign: 'right' }}>Balance (₹)</th>
                         </tr>
                       </thead>
                       <tbody>
                         {ledgerData.map((log: any) => {
-                          const isRepayment = log.type === 'repayment';
+                          const isCredit = log.type === 'repayment' || log.type === 'upfront_payment';
+                          const debit = Number(log.debit || 0);
+                          const credit = Number(log.credit || 0);
                           return (
-                            <tr key={log.id} className={isRepayment ? styles.repaymentRow : ''}>
+                            <tr key={log.id} className={isCredit ? styles.repaymentRow : ''}>
                               <td style={{ whiteSpace: 'nowrap' }}>
                                 {new Date(log.date).toLocaleDateString('en-IN')}
                               </td>
                               <td>
-                                <strong style={{ color: isRepayment ? 'var(--color-primary)' : 'inherit' }}>
+                                <strong style={{ color: isCredit ? 'var(--color-primary)' : 'inherit' }}>
                                   {log.label}
                                 </strong>
                                 {log.note && <div className={styles.ledgerNote}>{log.note}</div>}
                               </td>
-                              <td style={{ textAlign: 'right' }}>
-                                {log.total !== null ? `₹${log.total.toFixed(2)}` : '—'}
+                              <td style={{ textAlign: 'right', color: debit > 0 ? 'var(--color-error)' : 'inherit', fontWeight: debit > 0 ? 600 : 400 }}>
+                                {debit > 0 ? `+${debit.toFixed(2)}` : '—'}
                               </td>
-                              <td style={{ textAlign: 'right', fontWeight: 600, color: isRepayment ? 'var(--color-primary)' : 'inherit' }}>
-                                ₹{log.amount_paid.toFixed(2)}
+                              <td style={{ textAlign: 'right', color: credit > 0 ? 'var(--color-primary)' : 'inherit', fontWeight: credit > 0 ? 600 : 400 }}>
+                                {credit > 0 ? `-${credit.toFixed(2)}` : '—'}
                               </td>
-                              <td style={{ textAlign: 'right' }}>
-                                {log.payment_status ? (
-                                  <Badge variant={log.payment_status === 'paid' ? 'success' : log.payment_status === 'partial' ? 'warning' : 'error'}>
-                                    {log.payment_status}
-                                  </Badge>
-                                ) : (
-                                  '—'
-                                )}
+                              <td style={{ textAlign: 'right', fontWeight: 600, color: log.balance > 0 ? 'var(--color-error)' : log.balance < 0 ? 'var(--color-primary)' : 'inherit' }}>
+                                {log.balance.toFixed(2)}
                               </td>
                             </tr>
                           );
