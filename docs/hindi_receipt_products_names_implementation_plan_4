@@ -1,0 +1,97 @@
+# Implementation Plan: Dynamic Bilingual Receipt Product Name Translation (Final)
+
+This plan details the final implementation details for the dynamic product name translator on print receipts, incorporating partial updates, caching rules, and dictionary merging.
+
+## Gaps Addressed & Design Decisions
+
+### 1. Database-Driven Dictionary with Categories
+* **Design**: Create a `receipt_translations` table in Supabase. Mappings will be grouped by category (`brand`, `product`, `qualifier`, or `general`).
+* **Table Schema**:
+  ```sql
+  CREATE TABLE receipt_translations (
+    id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    token      TEXT UNIQUE NOT NULL, -- e.g., 'atta', 'tata' (stored in lowercase)
+    hindi      TEXT NOT NULL,        -- e.g., 'आटा', 'टाटा'
+    category   TEXT NOT NULL DEFAULT 'general' CHECK (category IN ('brand', 'product', 'qualifier', 'general')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  );
+  ```
+
+### 2. Database Security Guards (Row Level Security / RLS)
+* **Design**: 
+  * Enable RLS on `receipt_translations`.
+  * `SELECT`: all authenticated users (needed by cashiers to print receipts).
+  * `INSERT / UPDATE / DELETE`: Owners only.
+
+### 3. Clean React Hook Wrapper with Merging Strategy
+* **Design**: Create a custom hook `useTranslateProductName` in the frontend:
+  * Fetch translations from the backend.
+  * **Dictionary Merging**: Combine the hardcoded offline backup with the database results: `{ ...offlineFallback, ...dbDict }`. This ensures database customizations win while maintaining all basic backup words if they are not yet in the DB.
+
+### 4. Endpoints & Schemas with Partial Update Support
+* **Design**: Create `UpdateTranslationSchema` where all parameters are optional (using Zod's `.partial()`). This allows Owners to make inline updates (e.g. updating just the `hindi` translation text) without resending the entire record.
+* **Cache Invalidation**: On successful `POST`, `PUT`, or `DELETE` mutations, trigger `queryClient.invalidateQueries({ queryKey: ['settings', 'translations'] })` so settings list changes apply instantly.
+
+### 5. Mixed Script Tokenizer & Stacked Bilingual Print Layout
+* **Design**: Tokenizer preserves symbols like `-` and `&`.
+* **Design**: In **bilingual mode**, stack layout to fit 58mm lines:
+  * Line 1: Render the Hindi translation (bold).
+  * Line 2: Render the English original (smaller, muted, indented).
+
+---
+
+## Proposed Changes
+
+### Database Layer
+#### [NEW] [037_create_receipt_translations.sql](file:///C:/Users/ABCD/.gemini/antigravity-ide/brain/9dc40da4-9b36-4d1d-9a8c-57009e1be397/migrations/037_create_receipt_translations.sql)
+* Create `receipt_translations` table.
+* Setup RLS policies.
+* Seed with ~80 common words.
+
+---
+
+### Backend API
+#### [NEW] [translations.schema.ts](file:///C:/Users/ABCD/.gemini/antigravity-ide/brain/9dc40da4-9b36-4d1d-9a8c-57009e1be397/backend/src/features/settings/translations.schema.ts)
+* Create `CreateTranslationSchema` (all fields required) and `UpdateTranslationSchema` (all fields optional).
+
+#### [NEW] [translations.service.ts](file:///C:/Users/ABCD/.gemini/antigravity-ide/brain/9dc40da4-9b36-4d1d-9a8c-57009e1be397/backend/src/features/settings/translations.service.ts)
+* CRUD queries supporting partial updates on the table.
+
+#### [MODIFY] [settings.routes.ts](file:///c:/MANAS/Projects/LK/Implementation/backend/src/features/settings/settings.routes.ts)
+* Mount `/store/translations` GET (auth check only) and POST/PUT/DELETE routes (restricted to Owner).
+
+---
+
+### Frontend Integration
+#### [MODIFY] [settings.api.ts](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/settings/settings.api.ts)
+* Add API requests.
+
+#### [MODIFY] [settings.queries.ts](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/settings/settings.queries.ts)
+* React-query queries and mutations (triggering `invalidateQueries` for `['settings', 'translations']` on success).
+
+#### [MODIFY] [receiptTranslations.ts](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/billing/receiptTranslations.ts)
+* Define the 25-word `offlineFallback` map.
+* Export `useTranslateProductName` hook that merges offline fallback with cached database data.
+* Implement tokenizer matching unknown fallback rules and punctuation preservation.
+
+#### [NEW] [receiptTranslations.test.ts](file:///C:/Users/ABCD/.gemini/antigravity-ide/brain/9dc40da4-9b36-4d1d-9a8c-57009e1be397/frontend/src/features/billing/receiptTranslations.test.ts)
+* Vitest unit tests verifying correct translations and fallback behaviors.
+
+#### [MODIFY] [ReceiptPreview.tsx](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/shared/ui/ReceiptPreview.tsx)
+* Use translation hook.
+* Update display of bilingual product names to stacked, 2-line layout.
+
+#### [MODIFY] [ReceiptTab.tsx](file:///c:/MANAS/Projects/LK/Implementation/frontend/src/features/settings/ReceiptTab.tsx)
+* Use translation hook in receipt preview.
+* Build translation management tab (grouped list view, search, add, inline edit, delete).
+
+---
+
+## Verification Plan
+
+### Automated Tests
+- Run `npx vitest run src/features/billing/receiptTranslations.test.ts` in frontend.
+
+### Manual Verification
+- Test receipt previews in all 3 language settings.
+- Verify adding, editing, and deleting a translation token in the Settings panel immediately updates the preview.
