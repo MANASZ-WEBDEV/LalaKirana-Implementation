@@ -568,7 +568,7 @@ export default function PurchasesPage() {
       <div className={styles.tabContent}>{renderActiveTab()}</div>
 
       {/* Pagination Footer */}
-      {totalPages > 1 && (
+      {totalPages >= 1 && (
         <div className={styles.pagination}>
           <button
             disabled={page === 1}
