@@ -8,6 +8,7 @@ export const settingsKeys = {
   sessions: ['settings', 'sessions'] as const,
   categories: ['inventory', 'categories'] as const,
   store: ['settings', 'store'] as const,
+  translations: ['settings', 'translations'] as const,
 };
 
 export function useUsers() {
@@ -134,6 +135,44 @@ export function useUpdateStoreSettings() {
     mutationFn: settingsApi.updateStoreSettings,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: settingsKeys.store });
+    },
+  });
+}
+
+export function useTranslations() {
+  return useQuery({
+    queryKey: settingsKeys.translations,
+    queryFn: settingsApi.getTranslations,
+  });
+}
+
+export function useCreateTranslation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: settingsApi.createTranslation,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: settingsKeys.translations });
+    },
+  });
+}
+
+export function useUpdateTranslation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: { token?: string; hindi?: string; category?: string } }) =>
+      settingsApi.updateTranslation(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: settingsKeys.translations });
+    },
+  });
+}
+
+export function useDeleteTranslation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: settingsApi.deleteTranslation,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: settingsKeys.translations });
     },
   });
 }

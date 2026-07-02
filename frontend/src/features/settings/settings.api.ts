@@ -39,4 +39,25 @@ export const settingsApi = {
 
   updateStoreSettings: (data: Record<string, string>) =>
     api.put<{ success: boolean }>('/settings/store', data).then((r) => r.data),
+
+  // Translations
+  getTranslations: () =>
+    api.get<ReceiptTranslation[]>('/settings/store/translations').then((r) => r.data),
+
+  createTranslation: (data: { token: string; hindi: string; category: string }) =>
+    api.post<ReceiptTranslation>('/settings/store/translations', data).then((r) => r.data),
+
+  updateTranslation: (id: string, data: { token?: string; hindi?: string; category?: string }) =>
+    api.put<ReceiptTranslation>(`/settings/store/translations/${id}`, data).then((r) => r.data),
+
+  deleteTranslation: (id: string) =>
+    api.delete<{ success: boolean }>(`/settings/store/translations/${id}`).then((r) => r.data),
 };
+
+export interface ReceiptTranslation {
+  id: string;
+  token: string;
+  hindi: string;
+  category: 'brand' | 'product' | 'qualifier' | 'general';
+  created_at: string;
+}
