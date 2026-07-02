@@ -139,3 +139,94 @@ export function formatThankYouPayment(name: string, lang: Language): string {
   }
   return `Thank you for your payment, ${name}!`;
 }
+
+// ============================================================
+// Product Name translation utilities and hook
+// ============================================================
+
+import { useTranslations } from '@/features/settings/settings.queries';
+
+export const offlineFallback: Record<string, string> = {
+  'atta': 'आटा',
+  'salt': 'नमक',
+  'sugar': 'चीनी',
+  'oil': 'तेल',
+  'milk': 'दूध',
+  'paneer': 'पनीर',
+  'ghee': 'घी',
+  'butter': 'मक्खन',
+  'curd': 'दही',
+  'dahi': 'दही',
+  'rice': 'चावल',
+  'dal': 'दाल',
+  'pulse': 'दाल',
+  'chana': 'चना',
+  'besan': 'बेसन',
+  'tea': 'चाय',
+  'chai': 'चाय',
+  'coffee': 'कॉफी',
+  'biscuit': 'बिस्कुट',
+  'biscuits': 'बिस्कुट',
+  'bread': 'ब्रेड',
+  'water': 'पानी',
+  'soap': 'साबुन',
+  'tata': 'टाटा',
+  'amul': 'अमूल',
+  'ashirvaad': 'आशीर्वाद'
+};
+
+export function translateWord(word: string, dictionary: Record<string, string>): string {
+  // Extract alphabetic characters and keep prefixes/suffixes intact (e.g. parenthesis, punctuation)
+  const match = word.match(/^([^\w\u0900-\u097F]*)(.*?)([^\w\u0900-\u097F]*)$/);
+  if (!match) return word;
+  
+  const prefix = match[1];
+  const core = match[2];
+  const suffix = match[3];
+  
+  const normalizedCore = core.toLowerCase().trim();
+  const translatedCore = dictionary[normalizedCore];
+  
+  if (translatedCore) {
+    return `${prefix}${translatedCore}${suffix}`;
+  }
+  
+  return word;
+}
+
+export function translateProductNameText(name: string, lang: Language, dictionary: Record<string, string>): string {
+  if (lang === 'english' || !name) {
+    return name;
+  }
+  
+  // Split on whitespace but preserve spacing tokens in the array
+  const tokens = name.split(/(\s+)/);
+  const translatedTokens = tokens.map((token) => {
+    if (/^\s+$/.test(token)) {
+      return token;
+    }
+    return translateWord(token, dictionary);
+  });
+  
+  return translatedTokens.join('');
+}
+
+export function useTranslateProductName() {
+  const { data: dbTranslations } = useTranslations();
+  
+  const dbDict: Record<string, string> = {};
+  if (dbTranslations) {
+    for (const t of dbTranslations) {
+      if (t.token) {
+        dbDict[t.token.toLowerCase().trim()] = t.hindi;
+      }
+    }
+  }
+  
+  // Merge dictionaries so that user-defined DB translations override fallback tokens
+  const dictionary = { ...offlineFallback, ...dbDict };
+  
+  return (name: string, lang: Language): string => {
+    return translateProductNameText(name, lang, dictionary);
+  };
+}
