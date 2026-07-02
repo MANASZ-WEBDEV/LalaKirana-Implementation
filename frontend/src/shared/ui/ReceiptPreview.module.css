@@ -297,3 +297,19 @@
   font-weight: 600;
   padding: 0.25rem 0;
 }
+
+.stackedName {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.primaryName {
+  font-weight: 700;
+}
+
+.secondaryName {
+  font-size: 0.725rem;
+  color: #555;
+  padding-left: 0.35rem; /* Slight indent */
+}

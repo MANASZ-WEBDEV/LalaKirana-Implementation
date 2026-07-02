@@ -10,6 +10,7 @@ import {
   formatFooterMessage,
   formatModeStatus,
   formatThankYouPayment,
+  useTranslateProductName,
 } from '@/features/billing/receiptTranslations';
 
 interface ReceiptPreviewProps {
@@ -31,6 +32,7 @@ interface ReceiptPreviewProps {
 export function ReceiptPreview({ bill, repayment }: ReceiptPreviewProps) {
   const { data: storeSettings, isLoading: isSettingsLoading } = useStoreSettings();
   const { data: productsData, isLoading: isProductsLoading } = useProducts();
+  const translateProductName = useTranslateProductName();
 
   const showRepayment = !!repayment;
   const lang = (storeSettings?.receipt_language || 'english') as Language;
@@ -224,10 +226,20 @@ export function ReceiptPreview({ bill, repayment }: ReceiptPreviewProps) {
                     ? `${Math.round(qtyVal * 1000)}g`
                     : `${qtyVal.toFixed(3).replace(/\.?0+$/, '')}kg`
                   : `${qtyVal}`;
+                const hindiName = translateProductName(item.product_name, 'hindi');
+                const isBilingual = lang === 'bilingual';
+                const showStacked = isBilingual && hindiName !== item.product_name;
                 return (
                   <div key={idx} className={styles.itemRow}>
                     <span className={styles.itemColName}>
-                      {item.product_name}
+                      {showStacked ? (
+                        <div className={styles.stackedName}>
+                          <span className={styles.primaryName}>{hindiName}</span>
+                          <span className={styles.secondaryName}>{item.product_name}</span>
+                        </div>
+                      ) : (
+                        lang === 'hindi' ? hindiName : item.product_name
+                      )}
                       {discountVal > 0 && (
                         <span className={styles.itemDiscountLabel}>
                           (Disc: -₹{discountVal.toFixed(2)})
