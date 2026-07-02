@@ -1,5 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useStoreSettings, useUpdateStoreSettings } from './settings.queries';
+import {
+  useStoreSettings,
+  useUpdateStoreSettings,
+  useTranslations,
+  useCreateTranslation,
+  useUpdateTranslation,
+  useDeleteTranslation,
+} from './settings.queries';
 import { Input } from '@/shared/ui/Input';
 import { Button } from '@/shared/ui/Button';
 import { Select } from '@/shared/ui/Select';
@@ -10,6 +17,7 @@ import {
   formatStoreName,
   formatFooterMessage,
   formatModeStatus,
+  useTranslateProductName,
 } from '@/features/billing/receiptTranslations';
 import styles from './ReceiptTab.module.css';
 
@@ -18,6 +26,12 @@ export function ReceiptTab() {
   const { data: currentSettings, isLoading } = useStoreSettings();
   const updateSettingsMutation = useUpdateStoreSettings();
 
+  // Translations queries & mutations
+  const { data: dbTranslations, isLoading: isTranslationsLoading } = useTranslations();
+  const createTranslationMutation = useCreateTranslation();
+  const updateTranslationMutation = useUpdateTranslation();
+  const deleteTranslationMutation = useDeleteTranslation();
+
   // Local Form state
   const [storeName, setStoreName] = useState('');
   const [storeAddress, setStoreAddress] = useState('');
@@ -25,6 +39,20 @@ export function ReceiptTab() {
   const [receiptFooter, setReceiptFooter] = useState('');
   const [receiptLanguage, setReceiptLanguage] = useState<Language>('english');
   const [staffDiscountLimit, setStaffDiscountLimit] = useState('50');
+
+  // Translation manager state
+  const [transSearch, setTransSearch] = useState('');
+  const [activeCategory, setActiveCategory] = useState<'all' | 'brand' | 'product' | 'qualifier' | 'general'>('all');
+  
+  // Add new translation state
+  const [newEnglish, setNewEnglish] = useState('');
+  const [newHindi, setNewHindi] = useState('');
+  const [newCategory, setNewCategory] = useState<'brand' | 'product' | 'qualifier' | 'general'>('product');
+
+  // Inline edit state
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editHindi, setEditHindi] = useState('');
+  const [editCategory, setEditCategory] = useState<'brand' | 'product' | 'qualifier' | 'general'>('product');
 
   // Sync state when data is loaded
   useEffect(() => {
@@ -60,6 +88,77 @@ export function ReceiptTab() {
     }
   };
 
+  const handleAddTranslation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const token = newEnglish.trim().toLowerCase();
+    const hindi = newHindi.trim();
+
+    if (!token || !hindi) {
+      addToast('error', 'Both English word and Hindi translation are required.');
+      return;
+    }
+
+    // Check if token already exists in db
+    const exists = (dbTranslations || []).some((t) => t.token.toLowerCase() === token);
+    if (exists) {
+      addToast('error', `A translation for word "${token}" already exists. Use the edit action to modify it.`);
+      return;
+    }
+
+    try {
+      await createTranslationMutation.mutateAsync({
+        token,
+        hindi,
+        category: newCategory,
+      });
+      addToast('success', `Added translation for "${token}" successfully.`);
+      setNewEnglish('');
+      setNewHindi('');
+    } catch (err: any) {
+      addToast('error', err.message || 'Failed to save translation.');
+    }
+  };
+
+  const handleStartEdit = (id: string, currentHindi: string, currentCat: 'brand' | 'product' | 'qualifier' | 'general') => {
+    setEditingId(id);
+    setEditHindi(currentHindi);
+    setEditCategory(currentCat);
+  };
+
+  const handleSaveEdit = async (id: string) => {
+    if (!editHindi.trim()) {
+      addToast('error', 'Hindi translation cannot be empty.');
+      return;
+    }
+
+    try {
+      await updateTranslationMutation.mutateAsync({
+        id,
+        data: {
+          hindi: editHindi.trim(),
+          category: editCategory,
+        },
+      });
+      addToast('success', 'Translation updated successfully.');
+      setEditingId(null);
+    } catch (err: any) {
+      addToast('error', err.message || 'Failed to update translation.');
+    }
+  };
+
+  const handleDeleteTranslation = async (id: string, token: string) => {
+    if (!window.confirm(`Are you sure you want to delete the receipt translation for "${token}"?`)) {
+      return;
+    }
+
+    try {
+      await deleteTranslationMutation.mutateAsync(id);
+      addToast('success', `Translation for "${token}" removed.`);
+    } catch (err: any) {
+      addToast('error', err.message || 'Failed to delete translation.');
+    }
+  };
+
   if (isLoading) {
     return <div className={styles.loading}>Loading store configuration...</div>;
   }
@@ -75,11 +174,20 @@ export function ReceiptTab() {
     customer_phone: '9876543210',
     created_by_name: 'Cashier Staff',
     bill_items: [
-      { product_name: 'Ch आशीर्वाद Atta 5kg', qty: 1, unit_price: 275.0, cost_price: 250.0 },
+      { product_name: 'Ch Ashirvaad Atta 5kg', qty: 1, unit_price: 275.0, cost_price: 250.0 },
       { product_name: 'Tata Salt 1kg', qty: 2, unit_price: 28.0, cost_price: 24.0 },
       { product_name: 'Parle-G Gold Biscuits', qty: 1, unit_price: 19.0, cost_price: 16.0 },
     ],
   };
+
+  // Filter translations
+  const filteredTranslations = (dbTranslations || []).filter((t) => {
+    const matchesSearch =
+      t.token.toLowerCase().includes(transSearch.toLowerCase()) ||
+      t.hindi.toLowerCase().includes(transSearch.toLowerCase());
+    const matchesCategory = activeCategory === 'all' || t.category === activeCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <div className={styles.container}>
@@ -169,7 +277,6 @@ export function ReceiptTab() {
         <div className={styles.previewPanel}>
           <h3 className={styles.sectionTitle}>Live Invoice Print Preview</h3>
           <div className={styles.previewContainer}>
-            {/* Override store settings from local form state in preview */}
             <ReceiptPreviewOverride
               bill={draftBill}
               overrideSettings={{
@@ -183,11 +290,203 @@ export function ReceiptTab() {
           </div>
         </div>
       </div>
+
+      {/* Dynamic Receipt Translations dictionary manager */}
+      <div className={styles.translationManagerCard}>
+        <div className={styles.managerHeader}>
+          <div>
+            <h3 className={styles.managerTitle}>Receipt Product Translation Dictionary</h3>
+            <p className={styles.managerSubtitle}>
+              Define custom Hindi translations for product brand names and grocery descriptors. Translations are computed dynamically at receipt printing time.
+            </p>
+          </div>
+          <div className={styles.searchBar}>
+            <Input
+              value={transSearch}
+              onChange={(e) => setTransSearch(e.target.value)}
+              placeholder="Search words or Hindi..."
+              type="text"
+            />
+          </div>
+        </div>
+
+        {/* Add translation inline form */}
+        <form onSubmit={handleAddTranslation} className={styles.addFormInline}>
+          <div className={styles.formGroup}>
+            <Input
+              label="English Word (e.g. kurkure)"
+              value={newEnglish}
+              onChange={(e) => setNewEnglish(e.target.value)}
+              required
+              placeholder="Case-insensitive keyword"
+            />
+          </div>
+          <div className={styles.formGroup}>
+            <Input
+              label="Hindi Translation (e.g. कुरकुरे)"
+              value={newHindi}
+              onChange={(e) => setNewHindi(e.target.value)}
+              required
+              placeholder="हिंदी शब्द"
+            />
+          </div>
+          <div className={styles.formGroup}>
+            <Select
+              label="Category"
+              value={newCategory}
+              onChange={(e) => setNewCategory(e.target.value as any)}
+              options={[
+                { value: 'brand', label: 'Brand (ब्रांड)' },
+                { value: 'product', label: 'Product (उत्पाद)' },
+                { value: 'qualifier', label: 'Qualifier (विशेषण)' },
+                { value: 'general', label: 'General (सामान्य)' },
+              ]}
+            />
+          </div>
+          <Button type="submit" disabled={createTranslationMutation.isPending}>
+            {createTranslationMutation.isPending ? 'Adding...' : 'Add Mapping'}
+          </Button>
+        </form>
+
+        {/* Category Filters */}
+        <div className={styles.categoryFilters}>
+          {(['all', 'brand', 'product', 'qualifier', 'general'] as const).map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              className={`${styles.filterBtn} ${activeCategory === cat ? styles.filterBtnActive : ''}`}
+              onClick={() => setActiveCategory(cat)}
+            >
+              {cat.toUpperCase()}
+            </button>
+          ))}
+        </div>
+
+        {/* Table list */}
+        <div className={styles.translationsTableWrapper}>
+          {isTranslationsLoading ? (
+            <div className={styles.loading}>Loading translation dictionary...</div>
+          ) : filteredTranslations.length === 0 ? (
+            <div className={styles.loading}>No translation tokens found matching the criteria.</div>
+          ) : (
+            <table className={styles.translationsTable}>
+              <thead>
+                <tr>
+                  <th>English Word (Key)</th>
+                  <th>Hindi Translation</th>
+                  <th>Category</th>
+                  <th style={{ width: '120px' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredTranslations.map((item) => {
+                  const isEditing = editingId === item.id;
+                  let badgeClass = styles.badgeGeneral;
+                  if (item.category === 'brand') badgeClass = styles.badgeBrand;
+                  else if (item.category === 'product') badgeClass = styles.badgeProduct;
+                  else if (item.category === 'qualifier') badgeClass = styles.badgeQualifier;
+
+                  return (
+                    <tr key={item.id}>
+                      <td style={{ fontWeight: 600, color: 'var(--color-primary)' }}>{item.token}</td>
+                      <td>
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            value={editHindi}
+                            onChange={(e) => setEditHindi(e.target.value)}
+                            className={styles.editInput}
+                            autoFocus
+                          />
+                        ) : (
+                          item.hindi
+                        )}
+                      </td>
+                      <td>
+                        {isEditing ? (
+                          <select
+                            value={editCategory}
+                            onChange={(e) => setEditCategory(e.target.value as any)}
+                            className={styles.editInput}
+                          >
+                            <option value="brand">Brand</option>
+                            <option value="product">Product</option>
+                            <option value="qualifier">Qualifier</option>
+                            <option value="general">General</option>
+                          </select>
+                        ) : (
+                          <span className={`${styles.badge} ${badgeClass}`}>{item.category}</span>
+                        )}
+                      </td>
+                      <td>
+                        <div className={styles.actionCell}>
+                          {isEditing ? (
+                            <>
+                              <button
+                                type="button"
+                                className={styles.iconBtn}
+                                onClick={() => handleSaveEdit(item.id)}
+                                title="Save changes"
+                              >
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="green" strokeWidth="2.5">
+                                  <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                              </button>
+                              <button
+                                type="button"
+                                className={styles.iconBtn}
+                                onClick={() => setEditingId(null)}
+                                title="Cancel"
+                              >
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="red" strokeWidth="2.5">
+                                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                type="button"
+                                className={styles.iconBtn}
+                                onClick={() => handleStartEdit(item.id, item.hindi, item.category)}
+                                title="Edit translation"
+                              >
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                  <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                </svg>
+                              </button>
+                              <button
+                                type="button"
+                                className={styles.iconBtn}
+                                onClick={() => handleDeleteTranslation(item.id, item.token)}
+                                title="Delete translation"
+                              >
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="red" strokeWidth="2">
+                                  <polyline points="3 6 5 6 21 6"></polyline>
+                                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                  <line x1="10" y1="11" x2="10" y2="17"></line>
+                                  <line x1="14" y1="11" x2="14" y2="17"></line>
+                                </svg>
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
 
-// Wrapper to inject local state into the preview
+// Wrapper to inject local state and translations into the live settings preview
 function ReceiptPreviewOverride({
   bill,
   overrideSettings,
@@ -199,6 +498,7 @@ function ReceiptPreviewOverride({
 }) {
   const storeName = formatStoreName(overrideSettings.store_name || 'LalaKirana', lang);
   const footerMessage = formatFooterMessage(overrideSettings.receipt_footer || 'Thank you! Visit again', lang);
+  const translateProductName = useTranslateProductName();
 
   return (
     <div className={styles.previewWrapper}>
@@ -253,14 +553,29 @@ function ReceiptPreviewOverride({
         </div>
         <div className={styles.divider}>--------------------------------</div>
         <div className={styles.itemsList}>
-          {bill.bill_items.map((item: any, idx: number) => (
-            <div key={idx} className={styles.itemRow}>
-              <span className={styles.itemColName}>{item.product_name}</span>
-              <span className={styles.qtyCol}>{item.qty}</span>
-              <span className={styles.rateCol}>₹{item.unit_price.toFixed(2)}</span>
-              <span className={styles.totalCol}>₹{(item.qty * item.unit_price).toFixed(2)}</span>
-            </div>
-          ))}
+          {bill.bill_items.map((item: any, idx: number) => {
+            const hindiName = translateProductName(item.product_name, 'hindi');
+            const isBilingual = lang === 'bilingual';
+            const showStacked = isBilingual && hindiName !== item.product_name;
+
+            return (
+              <div key={idx} className={styles.itemRow}>
+                <span className={styles.itemColName}>
+                  {showStacked ? (
+                    <div className={styles.stackedName}>
+                      <span className={styles.primaryName}>{hindiName}</span>
+                      <span className={styles.secondaryName}>{item.product_name}</span>
+                    </div>
+                  ) : (
+                    lang === 'hindi' ? hindiName : item.product_name
+                  )}
+                </span>
+                <span className={styles.qtyCol}>{item.qty}</span>
+                <span className={styles.rateCol}>₹{item.unit_price.toFixed(2)}</span>
+                <span className={styles.totalCol}>₹{(item.qty * item.unit_price).toFixed(2)}</span>
+              </div>
+            );
+          })}
         </div>
         <div className={styles.divider}>--------------------------------</div>
 

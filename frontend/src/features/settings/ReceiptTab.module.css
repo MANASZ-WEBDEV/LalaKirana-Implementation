@@ -252,3 +252,217 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Translation Manager Section */
+.translationManagerCard {
+  margin-top: 2rem;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.managerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.managerTitle {
+  font-weight: 600;
+  font-size: 1.15rem;
+  color: var(--color-on-surface);
+  margin: 0;
+}
+
+.managerSubtitle {
+  font-size: 0.85rem;
+  color: var(--color-on-surface-variant);
+  margin-top: 0.15rem;
+}
+
+.searchAndAddRow {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.categoryFilters {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--color-outline-variant);
+  padding-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.filterBtn {
+  background: transparent;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-on-surface-variant);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.filterBtn:hover {
+  background-color: var(--color-surface-container);
+  color: var(--color-on-surface);
+}
+
+.filterBtnActive {
+  background-color: var(--color-primary-container);
+  color: var(--color-primary);
+}
+
+.addFormInline {
+  display: grid;
+  grid-template-columns: 1.2fr 1.2fr 1fr auto;
+  gap: 0.75rem;
+  background-color: var(--color-surface-container-low);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--color-outline-variant);
+  margin-bottom: 1.25rem;
+  align-items: end;
+}
+
+.addFormInline .formGroup {
+  margin: 0;
+}
+
+.translationsTableWrapper {
+  overflow-x: auto;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.translationsTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+.translationsTable th {
+  background-color: var(--color-surface-container);
+  color: var(--color-on-surface);
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border-bottom: 2px solid var(--color-outline-variant);
+}
+
+.translationsTable td {
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid var(--color-outline-variant);
+  color: var(--color-on-surface);
+  vertical-align: middle;
+}
+
+.translationsTable tr:hover {
+  background-color: var(--color-surface-container-lowest);
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badgeBrand {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.badgeProduct {
+  background-color: #e0f2f1;
+  color: #00796b;
+}
+
+.badgeQualifier {
+  background-color: #fff3e0;
+  color: #e65100;
+}
+
+.badgeGeneral {
+  background-color: #eceff1;
+  color: #455a64;
+}
+
+.actionCell {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.iconBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.35rem;
+  border-radius: var(--radius-sm);
+  color: var(--color-on-surface-variant);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.iconBtn:hover {
+  background-color: var(--color-surface-container);
+  color: var(--color-on-surface);
+}
+
+.editInput {
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.9rem;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  outline: none;
+  background: var(--color-white);
+  color: var(--color-on-surface);
+}
+
+.inlineEditRow {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.searchBar {
+  max-width: 300px;
+}
+
+.stackedName {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.primaryName {
+  font-weight: 700;
+}
+
+.secondaryName {
+  font-size: 0.725rem;
+  color: #555;
+  padding-left: 0.35rem; /* Slight indent */
+}
