@@ -172,7 +172,20 @@ export const offlineFallback: Record<string, string> = {
   'soap': 'साबुन',
   'tata': 'टाटा',
   'amul': 'अमूल',
-  'ashirvaad': 'आशीर्वाद'
+  'ashirvaad': 'आशीर्वाद',
+  // Dry Fruits
+  'almond': 'बादाम',
+  'almonds': 'बादाम',
+  'cashew': 'काजू',
+  'cashews': 'काजू',
+  'kishmish': 'किशमिश',
+  'raisin': 'किशमिश',
+  'raisins': 'किशमिश',
+  'walnut': 'अखरोट',
+  'walnuts': 'अखरोट',
+  'pista': 'पिस्ता',
+  'pistachio': 'पिस्ता',
+  'pistachios': 'पिस्ता'
 };
 
 export function translateWord(word: string, dictionary: Record<string, string>): string {
