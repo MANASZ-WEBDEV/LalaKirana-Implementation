@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import { env } from './config/env.js';
 import dns from 'node:dns';
 dns.setDefaultResultOrder('ipv4first');
 
@@ -17,9 +17,7 @@ import storeSettingsRoutes from './features/settings/settings.routes.js';
 
 const app = express();
 
-const allowedOrigins = process.env.FRONTEND_URL
-  ? process.env.FRONTEND_URL.split(',').map((url) => url.trim())
-  : ['http://localhost:5173'];
+const allowedOrigins = env.FRONTEND_URL.split(',').map((url) => url.trim());
 
 app.use(
   cors({
@@ -59,7 +57,7 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   const status = err.status || 500;
   res.status(status).json({
     message: err.message || 'Internal Server Error',
-    error: process.env.NODE_ENV === 'development' ? err : undefined,
+    error: env.NODE_ENV === 'development' ? err : undefined,
   });
 });
 

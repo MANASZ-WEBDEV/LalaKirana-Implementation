@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcrypt';
 import { supabase } from '../../db/supabase.js';
+import { env } from '../../config/env.js';
 
 interface JWTPayload {
   id: string;
@@ -17,10 +18,7 @@ export const authService = {
     ip: string
   ): Promise<string> => {
     const jti = uuidv4();
-    const secret = process.env.JWT_SECRET;
-    if (!secret) {
-      throw new Error('JWT_SECRET is not configured');
-    }
+    const secret = env.JWT_SECRET;
 
     const payload: JWTPayload = {
       id: user.id,
@@ -29,7 +27,7 @@ export const authService = {
       jti,
     };
 
-    const expiresIn = process.env.JWT_EXPIRY || '8h';
+    const expiresIn = env.JWT_EXPIRY;
     const token = jwt.sign(payload, secret, { expiresIn: expiresIn as any });
 
 

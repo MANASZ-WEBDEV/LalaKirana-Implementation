@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import { supabase } from '../../db/supabase.js';
 import { authService } from './auth.service.js';
 import { parseDeviceHint } from '../../utils/deviceHint.js';
+import { env } from '../../config/env.js';
 
 export const authController = {
   login: async (req: Request, res: Response) => {
@@ -31,8 +32,8 @@ export const authController = {
 
       // Support recovery code login for owner
       let loggedInViaRecovery = false;
-      if (user.role === 'owner' && recoveryCode && process.env.OWNER_RECOVERY_CODE) {
-        if (recoveryCode === process.env.OWNER_RECOVERY_CODE) {
+      if (user.role === 'owner' && recoveryCode && env.OWNER_RECOVERY_CODE) {
+        if (recoveryCode === env.OWNER_RECOVERY_CODE) {
           loggedInViaRecovery = true;
         } else {
           return res.status(401).json({

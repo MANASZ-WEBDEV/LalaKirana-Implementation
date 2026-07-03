@@ -2,6 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { supabase } from '../db/supabase.js';
 
+import { env } from '../config/env.js';
+
 interface DecodedToken {
   id: string;
   email: string;
@@ -17,10 +19,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
   }
 
   const token = authHeader.split(' ')[1];
-  const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    return res.status(500).json({ message: 'JWT_SECRET is not configured' });
-  }
+  const secret = env.JWT_SECRET;
 
   try {
     const decoded = jwt.verify(token, secret) as DecodedToken;
