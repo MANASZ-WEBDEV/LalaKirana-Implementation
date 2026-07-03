@@ -89,7 +89,7 @@ export default function AnalyticsPage() {
   const user = useAuthStore((s) => s.user);
 
   // Owner-only guard
-  if (user?.role !== 'owner') {
+  if (user?.role !== 'owner' && user?.role !== 'master') {
     return (
       <div className={styles.guardContainer}>
         <div className={styles.guardIcon}>🔒</div>

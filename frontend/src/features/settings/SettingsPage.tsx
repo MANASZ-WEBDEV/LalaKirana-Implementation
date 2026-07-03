@@ -29,7 +29,7 @@ const tabs: TabDef[] = [
 
 export default function SettingsPage() {
   const user = useAuthStore((s) => s.user);
-  const isOwner = user?.role === 'owner';
+  const isOwner = user?.role === 'owner' || user?.role === 'master';
 
   const visibleTabs = tabs.filter((t) => !t.ownerOnly || isOwner);
   const [activeTab, setActiveTab] = useState<TabId>(visibleTabs[0]?.id || 'account');

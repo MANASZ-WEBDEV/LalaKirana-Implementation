@@ -29,7 +29,7 @@ export function ProductForm({ initialData, onSubmit, loading, onCancel }: Produc
   const isEditMode = !!initialData;
   const { data: categories } = useCategories();
   const user = useAuthStore((s) => s.user);
-  const isOwner = user?.role === 'owner';
+  const isOwner = user?.role === 'owner' || user?.role === 'master';
 
   // Form states
   const [name, setName] = useState(initialData?.name || '');

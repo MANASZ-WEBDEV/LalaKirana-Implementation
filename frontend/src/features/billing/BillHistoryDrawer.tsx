@@ -22,7 +22,7 @@ type DateFilter = 'today' | 'yesterday' | 'week' | 'month' | 'this_month' | 'las
 
 export function BillHistoryDrawer({ isOpen, onClose }: BillHistoryDrawerProps) {
   const user = useAuthStore((s) => s.user);
-  const isOwner = user?.role === 'owner';
+  const isOwner = user?.role === 'owner' || user?.role === 'master';
   const addToast = useToastStore((s) => s.addToast);
 
   const [searchParams, setSearchParams] = useSearchParams();

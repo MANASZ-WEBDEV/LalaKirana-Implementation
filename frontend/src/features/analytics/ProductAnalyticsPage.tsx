@@ -75,7 +75,7 @@ export default function ProductAnalyticsPage() {
   const user = useAuthStore((s) => s.user);
 
   // Owner-only guard
-  if (user?.role !== 'owner') {
+  if (user?.role !== 'owner' && user?.role !== 'master') {
     return (
       <div style={{ padding: '3rem 1.5rem', textAlign: 'center' }}>
         <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔒</div>

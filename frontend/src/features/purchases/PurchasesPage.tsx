@@ -36,7 +36,7 @@ export default function PurchasesPage() {
     enabled: !!poParam,
   });
   const user = useAuthStore((s) => s.user);
-  const isOwner = user?.role === 'owner';
+  const isOwner = user?.role === 'owner' || user?.role === 'master';
   const addToast = useToastStore((s) => s.addToast);
 
   // Tabs

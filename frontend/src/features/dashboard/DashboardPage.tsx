@@ -12,7 +12,7 @@ import styles from './DashboardPage.module.css';
 export default function DashboardPage() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
-  const isOwner = user?.role === 'owner';
+  const isOwner = user?.role === 'owner' || user?.role === 'master';
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
   const { data: lowStock, isLoading: lowStockLoading } = useLowStockProducts();
   const { data: priceChanges, isLoading: priceChangesLoading } = useRecentPriceChanges(8);

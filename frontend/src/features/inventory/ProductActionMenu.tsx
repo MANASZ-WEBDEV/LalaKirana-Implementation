@@ -22,7 +22,7 @@ export function ProductActionMenu({
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const user = useAuthStore((s) => s.user);
-  const isOwner = user?.role === 'owner';
+  const isOwner = user?.role === 'owner' || user?.role === 'master';
 
   useClickOutside(wrapperRef, () => setIsOpen(false));
 

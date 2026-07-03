@@ -24,7 +24,7 @@ export default function CustomerProfile() {
   const addToast = useToastStore((s) => s.addToast);
 
   const user = useAuthStore((s) => s.user);
-  const isOwner = user?.role === 'owner';
+  const isOwner = user?.role === 'owner' || user?.role === 'master';
 
   // States
   const [showRepayDrawer, setShowRepayDrawer] = useState(false);
