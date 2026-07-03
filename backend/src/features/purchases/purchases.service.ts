@@ -1,4 +1,5 @@
 import { supabase } from '../../db/supabase.js';
+import { logActivity } from '../activity/activity.service.js';
 import type {
   CreateSupplierInput,
   UpdateSupplierInput,
@@ -185,6 +186,16 @@ export const purchasesService = {
     if (itemsErr) {
       throw new Error(`Failed to fetch PO items after confirmation: ${itemsErr.message}`);
     }
+
+    // Log the activity
+    void logActivity({
+      userId,
+      actionType: 'purchase_created',
+      referenceId: poResult.id,
+      referenceLabel: poResult.reference_number || `PO-${poResult.id.substring(0, 8)}`,
+      amount: Number(poResult.total),
+      note: `Supplier: ${canonicalSupplierName}`,
+    });
 
     return {
       ...poResult,
@@ -679,6 +690,16 @@ export const purchasesService = {
     if (error) {
       throw new Error(`Failed to create expense: ${error.message}`);
     }
+
+    // Log the activity
+    void logActivity({
+      userId,
+      actionType: 'expense_logged',
+      referenceId: data.id,
+      referenceLabel: data.category,
+      amount: Number(data.amount),
+      note: data.description || undefined,
+    });
 
     return data;
   },
