@@ -1,6 +1,7 @@
 import { supabase } from '../../db/supabase.js';
 import type { ConfirmBillInput, BillHistoryQuery } from './billing.schema.js';
 import { storeSettingsService } from '../settings/settings.service.js';
+import { logActivity } from '../activity/activity.service.js';
 
 export const billingService = {
 
@@ -42,7 +43,19 @@ export const billingService = {
     }
 
     // Fetch the fully populated bill to return to the frontend
-    return billingService.getBillById(billId as string);
+    const bill = await billingService.getBillById(billId as string);
+
+    // Log the activity
+    void logActivity({
+      userId,
+      userRole,
+      actionType: 'bill_confirmed',
+      referenceId: bill.id,
+      referenceLabel: bill.bill_number,
+      amount: Number(bill.total),
+    });
+
+    return bill;
   },
 
   /**
@@ -51,6 +64,13 @@ export const billingService = {
    * Owner-only operation.
    */
   cancelBill: async (billId: string, reason: string, userId: string) => {
+    // Fetch bill details for logging
+    const { data: bill } = await supabase
+      .from('bills')
+      .select('bill_number, total')
+      .eq('id', billId)
+      .maybeSingle();
+
     // Call transactional PostgreSQL function
     const { error: txError } = await supabase
       .rpc('cancel_bill_transaction', {
@@ -62,6 +82,16 @@ export const billingService = {
     if (txError) {
       throw new Error(`Failed to cancel bill: ${txError.message}`);
     }
+
+    // Log the activity
+    void logActivity({
+      userId,
+      actionType: 'bill_cancelled',
+      referenceId: billId,
+      referenceLabel: bill?.bill_number || 'Unknown Bill',
+      amount: bill ? Number(bill.total) : undefined,
+      note: reason,
+    });
 
     return { message: 'Bill cancelled successfully' };
   },

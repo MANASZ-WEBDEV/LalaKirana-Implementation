@@ -8,8 +8,8 @@ import type { ActivityType, ActivityLogEntry, UserActivitySummary } from './acti
  */
 export async function logActivity(params: {
   userId: string;
-  userName: string;
-  userRole: string;
+  userName?: string;
+  userRole?: string;
   actionType: ActivityType;
   referenceId?: string;
   referenceLabel?: string;
@@ -18,12 +18,28 @@ export async function logActivity(params: {
   ipAddress?: string;
 }): Promise<void> {
   try {
+    let userName = params.userName;
+    let userRole = params.userRole;
+
+    if (!userName || !userRole) {
+      const { data: user } = await supabase
+        .from('users')
+        .select('name, role')
+        .eq('id', params.userId)
+        .maybeSingle();
+
+      if (user) {
+        userName = userName || user.name;
+        userRole = userRole || user.role;
+      }
+    }
+
     const { error } = await supabase
       .from('activity_log')
       .insert({
         user_id: params.userId,
-        user_name: params.userName,
-        user_role: params.userRole,
+        user_name: userName || 'Unknown User',
+        user_role: userRole || 'staff',
         action_type: params.actionType,
         reference_id: params.referenceId || null,
         reference_label: params.referenceLabel || null,
