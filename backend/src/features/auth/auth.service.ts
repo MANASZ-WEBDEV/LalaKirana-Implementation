@@ -7,13 +7,13 @@ import { env } from '../../config/env.js';
 interface JWTPayload {
   id: string;
   email: string;
-  role: 'owner' | 'staff';
+  role: 'master' | 'owner' | 'staff';
   jti: string;
 }
 
 export const authService = {
   generateToken: async (
-    user: { id: string; email: string; role: 'owner' | 'staff' },
+    user: { id: string; email: string; role: 'master' | 'owner' | 'staff' },
     deviceHint: string,
     ip: string
   ): Promise<string> => {

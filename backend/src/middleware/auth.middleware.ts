@@ -7,7 +7,7 @@ import { env } from '../config/env.js';
 interface DecodedToken {
   id: string;
   email: string;
-  role: 'owner' | 'staff';
+  role: 'master' | 'owner' | 'staff';
   jti: string;
   exp: number;
 }
