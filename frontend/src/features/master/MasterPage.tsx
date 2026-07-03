@@ -54,6 +54,9 @@ export default function MasterPage() {
   // Reset Password State
   const [newPassword, setNewPassword] = useState('');
 
+  // Active Tab state
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'activity' | 'audit'>('overview');
+
   const isLoading = isOverviewLoading || isUsersLoading;
 
   // Helpers
@@ -152,8 +155,6 @@ export default function MasterPage() {
 
   // Find active owners
   const activeOwners = overview?.owners?.filter((o: any) => o.is_active).map((o: any) => o.name).join(', ') || 'None';
-
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'activity' | 'audit'>('overview');
 
   return (
     <div className={styles.container}>
