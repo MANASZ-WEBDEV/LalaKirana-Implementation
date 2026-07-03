@@ -4,6 +4,7 @@ import { supabase } from '../../db/supabase.js';
 import { authService } from './auth.service.js';
 import { parseDeviceHint } from '../../utils/deviceHint.js';
 import { env } from '../../config/env.js';
+import { logActivity } from '../activity/activity.service.js';
 
 export const authController = {
   login: async (req: Request, res: Response) => {
@@ -83,6 +84,14 @@ export const authController = {
           ip
         );
 
+        void logActivity({
+          userId: user.id,
+          userName: user.name,
+          userRole: user.role,
+          actionType: 'login',
+          ipAddress: ip,
+        });
+
         return res.json({
           user: {
             id: user.id,
@@ -135,6 +144,13 @@ export const authController = {
         : new Date(Date.now() + 8 * 60 * 60 * 1000); // fallback 8h
 
       await authService.revokeToken(req.user.jti, req.user.id, expiresAt);
+
+      void logActivity({
+        userId: req.user.id,
+        userRole: req.user.role,
+        actionType: 'logout',
+        ipAddress: (req.ip || 'unknown').replace(/^::ffff:/, ''),
+      });
 
       return res.json({ message: 'Logged out successfully' });
     } catch (err: any) {
@@ -202,6 +218,13 @@ export const authController = {
         .from('users')
         .update({ password: hashedPassword })
         .eq('id', user.id);
+
+      void logActivity({
+        userId: req.user.id,
+        userRole: req.user.role,
+        actionType: 'password_changed',
+        ipAddress: (req.ip || 'unknown').replace(/^::ffff:/, ''),
+      });
 
       // Revoke all other sessions for this user (except current session)
       const currentJti = req.user.jti;
