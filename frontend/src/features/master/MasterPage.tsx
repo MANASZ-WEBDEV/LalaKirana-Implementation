@@ -14,6 +14,7 @@ import { Modal } from '@/shared/ui/Modal';
 import { ConfirmDialog } from '@/shared/ui/ConfirmDialog';
 import { Badge } from '@/shared/ui/Badge';
 import { useToastStore } from '@/shared/store/toastStore';
+import { ActivityFeed } from '../activity/ActivityFeed';
 import styles from './MasterPage.module.css';
 
 interface UserItem {
@@ -152,6 +153,8 @@ export default function MasterPage() {
   // Find active owners
   const activeOwners = overview?.owners?.filter((o: any) => o.is_active).map((o: any) => o.name).join(', ') || 'None';
 
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'activity' | 'audit'>('overview');
+
   return (
     <div className={styles.container}>
       {/* Header */}
@@ -165,123 +168,178 @@ export default function MasterPage() {
         </Button>
       </div>
 
-      {/* Stats Cards */}
-      <div className={styles.statsGrid}>
-        <StatCard
-          label="Today's Revenue"
-          value={overview ? formatCurrency(overview.revenueToday) : '₹0'}
-        />
-        <StatCard
-          label="Today's Order Count"
-          value={overview?.ordersToday ?? 0}
-        />
-        <StatCard
-          label="Shop Owner(s)"
-          value={activeOwners}
-        />
-        <StatCard
-          label="Active Staff Count"
-          value={overview?.activeStaffCount ?? 0}
-        />
-      </div>
+      {/* Tabs Navigation */}
+      <nav className={styles.tabBar}>
+        <button
+          className={`${styles.tabBtn} ${activeTab === 'overview' ? styles.tabActive : ''}`}
+          onClick={() => setActiveTab('overview')}
+        >
+          Shop Overview
+        </button>
+        <button
+          className={`${styles.tabBtn} ${activeTab === 'users' ? styles.tabActive : ''}`}
+          onClick={() => setActiveTab('users')}
+        >
+          User Management
+        </button>
+        <button
+          className={`${styles.tabBtn} ${activeTab === 'activity' ? styles.tabActive : ''}`}
+          onClick={() => setActiveTab('activity')}
+        >
+          Activity Log
+        </button>
+        <button
+          className={`${styles.tabBtn} ${activeTab === 'audit' ? styles.tabActive : ''}`}
+          onClick={() => setActiveTab('audit')}
+        >
+          Master Audit Trail
+        </button>
+      </nav>
 
-      {/* Users Management Grid */}
-      <div className={styles.sectionCard}>
-        <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>User Administration</h2>
-        </div>
-        <div className={styles.tableWrapper}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th className={styles.alignRight}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user: UserItem) => (
-                <tr key={user.id}>
-                  <td className={styles.nameCell}>
-                    <strong>{user.name}</strong>
-                    {user.phone && <div style={{ fontSize: '0.75rem', color: 'var(--color-outline)', marginTop: '0.15rem' }}>📞 {user.phone}</div>}
-                  </td>
-                  <td className={styles.emailCell}>{user.email}</td>
-                  <td>
-                    <Badge variant={user.role === 'master' ? 'error' : user.role === 'owner' ? 'info' : 'neutral'}>
-                      {user.role}
-                    </Badge>
-                  </td>
-                  <td>
-                    <Badge variant={user.is_active !== false ? 'success' : 'error'}>
-                      {user.is_active !== false ? 'Active' : 'Inactive'}
-                    </Badge>
-                  </td>
-                  <td className={styles.actionsCell}>
-                    {user.role !== 'master' && (
-                      <>
-                        <button
-                          className={styles.actionBtn}
-                          onClick={() => handleToggleRole(user)}
-                          title="Toggle between Staff and Owner"
-                        >
-                          Make {user.role === 'owner' ? 'Staff' : 'Owner'}
-                        </button>
-                        <button
-                          className={styles.actionBtn}
-                          onClick={() => setShowResetModal(user.id)}
-                          title="Override and Reset Password"
-                        >
-                          Reset Password
-                        </button>
-                        {user.is_active !== false && (
-                          <button
-                            className={`${styles.actionBtn} ${styles.dangerBtn}`}
-                            onClick={() => setShowDeactivateDialog(user.id)}
-                            title="Deactivate and revoke active sessions"
-                          >
-                            Deactivate
-                          </button>
-                        )}
-                      </>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Audit Logs list */}
-      <div className={styles.sectionCard}>
-        <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Master Action Audit Trail</h2>
-        </div>
-        <div className={styles.auditLogList}>
-          {overview?.recentLogs && overview.recentLogs.length > 0 ? (
-            overview.recentLogs.map((log: any) => (
-              <div key={log.id} className={styles.auditLogItem}>
-                <div className={styles.auditLogContent}>
-                  <span className={styles.auditLogAction}>
-                    {log.action.replace('_', ' ').toUpperCase()}
-                  </span>
-                  <span className={styles.auditLogNote}>{log.note}</span>
-                </div>
-                <div className={styles.auditLogMeta}>
-                  <span className={styles.auditLogUser}>By: {log.master_name}</span>
-                  <span>{formatDateTime(log.created_at)}</span>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--color-outline)' }}>
-              No master actions logged yet.
+      {/* Tab Content Area */}
+      <div className={styles.tabContent}>
+        {activeTab === 'overview' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            {/* Stats Cards */}
+            <div className={styles.statsGrid}>
+              <StatCard
+                label="Today's Revenue"
+                value={overview ? formatCurrency(overview.revenueToday) : '₹0'}
+              />
+              <StatCard
+                label="Today's Order Count"
+                value={overview?.ordersToday ?? 0}
+              />
+              <StatCard
+                label="Shop Owner(s)"
+                value={activeOwners}
+              />
+              <StatCard
+                label="Active Staff Count"
+                value={overview?.activeStaffCount ?? 0}
+              />
             </div>
-          )}
-        </div>
+
+            <div className={styles.sectionCard}>
+              <h2 className={styles.sectionTitle}>Dashboard Hub</h2>
+              <p style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.875rem', lineHeight: '1.5' }}>
+                Welcome to the LalaKirana Master Control Center. Select the tabs above to manage owner credentials, view live transactions and stock movement operations logs, or review superuser audit trails.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'users' && (
+          /* Users Management Grid */
+          <div className={styles.sectionCard}>
+            <div className={styles.sectionHeader}>
+              <h2 className={styles.sectionTitle}>User Administration</h2>
+            </div>
+            <div className={styles.tableWrapper}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th className={styles.alignRight}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((user: UserItem) => (
+                    <tr key={user.id}>
+                      <td className={styles.nameCell}>
+                        <strong>{user.name}</strong>
+                        {user.phone && <div style={{ fontSize: '0.75rem', color: 'var(--color-outline)', marginTop: '0.15rem' }}>📞 {user.phone}</div>}
+                      </td>
+                      <td className={styles.emailCell}>{user.email}</td>
+                      <td>
+                        <Badge variant={user.role === 'master' ? 'error' : user.role === 'owner' ? 'info' : 'neutral'}>
+                          {user.role}
+                        </Badge>
+                      </td>
+                      <td>
+                        <Badge variant={user.is_active !== false ? 'success' : 'error'}>
+                          {user.is_active !== false ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </td>
+                      <td className={styles.actionsCell}>
+                        {user.role !== 'master' && (
+                          <>
+                            <button
+                              className={styles.actionBtn}
+                              onClick={() => handleToggleRole(user)}
+                              title="Toggle between Staff and Owner"
+                            >
+                              Make {user.role === 'owner' ? 'Staff' : 'Owner'}
+                            </button>
+                            <button
+                              className={styles.actionBtn}
+                              onClick={() => setShowResetModal(user.id)}
+                              title="Override and Reset Password"
+                            >
+                              Reset Password
+                            </button>
+                            {user.is_active !== false && (
+                              <button
+                                className={`${styles.actionBtn} ${styles.dangerBtn}`}
+                                onClick={() => setShowDeactivateDialog(user.id)}
+                                title="Deactivate and revoke active sessions"
+                              >
+                                Deactivate
+                              </button>
+                            )}
+                          </>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'activity' && (
+          <div className={styles.sectionCard}>
+            <div className={styles.sectionHeader}>
+              <h2 className={styles.sectionTitle}>Cross-Shop Operations Activity Log</h2>
+            </div>
+            <ActivityFeed />
+          </div>
+        )}
+
+        {activeTab === 'audit' && (
+          /* Audit Logs list */
+          <div className={styles.sectionCard}>
+            <div className={styles.sectionHeader}>
+              <h2 className={styles.sectionTitle}>Master Action Audit Trail</h2>
+            </div>
+            <div className={styles.auditLogList}>
+              {overview?.recentLogs && overview.recentLogs.length > 0 ? (
+                overview.recentLogs.map((log: any) => (
+                  <div key={log.id} className={styles.auditLogItem}>
+                    <div className={styles.auditLogContent}>
+                      <span className={styles.auditLogAction}>
+                        {log.action.replace('_', ' ').toUpperCase()}
+                      </span>
+                      <span className={styles.auditLogNote}>{log.note}</span>
+                    </div>
+                    <div className={styles.auditLogMeta}>
+                      <span className={styles.auditLogUser}>By: {log.master_name}</span>
+                      <span>{formatDateTime(log.created_at)}</span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--color-outline)' }}>
+                  No master actions logged yet.
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Add Owner Modal */}
