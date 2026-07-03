@@ -1,4 +1,5 @@
 import { supabase } from '../../db/supabase.js';
+import { logActivity } from '../activity/activity.service.js';
 
 export const inventoryService = {
   adjustStock: async (
@@ -82,6 +83,16 @@ export const inventoryService = {
       // but in standard production we would use an RPC or postgres trigger transaction.
       throw new Error(`Failed to write stock log: ${logError.message}`);
     }
+
+    // Log the activity
+    void logActivity({
+      userId,
+      actionType: 'stock_adjusted',
+      referenceId: productId,
+      referenceLabel: product.name,
+      amount: adjustData.qty,
+      note: `Stock adjusted (${adjustData.type}): ${adjustData.qty} ${product.unit}. Reason: ${adjustData.reason}. Note: ${adjustData.note || 'None'}`,
+    });
 
     return updatedProduct;
   },
