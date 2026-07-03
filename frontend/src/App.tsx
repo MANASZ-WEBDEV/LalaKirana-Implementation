@@ -28,6 +28,7 @@ const CustomerProfile = lazy(() => import('./features/khata/CustomerProfile'));
 const PurchasesPage = lazy(() => import('./features/purchases/PurchasesPage'));
 const NewPurchaseForm = lazy(() => import('./features/purchases/NewPurchaseForm'));
 const NotFoundPage = lazy(() => import('./features/error/NotFoundPage'));
+const MasterPage = lazy(() => import('./features/master/MasterPage'));
 
 // Protected Route Guard
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -39,6 +40,12 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   return !isAuthenticated ? <>{children}</> : <Navigate to="/dashboard" replace />;
+}
+
+// Master Route Guard
+function MasterRoute({ children }: { children: React.ReactNode }) {
+  const user = useAuthStore((s) => s.user);
+  return user?.role === 'master' ? <>{children}</> : <Navigate to="/dashboard" replace />;
 }
 
 // Suspense Fallback
@@ -101,6 +108,14 @@ export default function App() {
                   <Route path="purchases" element={<PurchasesPage />} />
                   <Route path="purchases/new" element={<NewPurchaseForm />} />
                   <Route path="settings" element={<SettingsPage />} />
+                  <Route
+                    path="master"
+                    element={
+                      <MasterRoute>
+                        <MasterPage />
+                      </MasterRoute>
+                    }
+                  />
                   <Route path="*" element={<NotFoundPage />} />
                 </Route>
                 <Route path="*" element={<NotFoundPage />} />
