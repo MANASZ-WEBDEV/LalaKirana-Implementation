@@ -1,0 +1,342 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Header Card */
+.headerCard {
+  background: var(--color-white);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.backBtn {
+  background: none;
+  border: 1px solid var(--color-outline-variant);
+  color: var(--color-on-surface-variant);
+  height: 38px;
+  padding: 0 16px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.backBtn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.userTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.userName {
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-on-surface);
+  margin: 0;
+}
+
+.userEmail {
+  font-size: 13px;
+  color: var(--color-on-surface-variant);
+  margin-top: 4px;
+}
+
+.roleBadge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.5px;
+}
+
+.roleMaster { background: #f3e8fd; color: #7627d2; }
+.roleOwner { background: #fef7e0; color: #b06000; }
+.roleStaff { background: #e6f4ea; color: #137333; }
+
+.statusBadge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.statusActive {
+  background: #e6f4ea;
+  color: #137333;
+}
+
+.statusInactive {
+  background: #fce8e6;
+  color: #c5221f;
+}
+
+.periodSelectors {
+  display: flex;
+  gap: 12px;
+}
+
+.selectGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.selectLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+  text-transform: uppercase;
+}
+
+.selectInput {
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  background: var(--color-white);
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-on-surface);
+}
+
+/* Layout Grid */
+.profileGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
+
+.mainColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sidebarColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+.sectionTitle {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Stats Section */
+.statsSection {
+  background: var(--color-white);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+}
+
+.statCard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.statLabel {
+  font-size: 12px;
+  color: var(--color-on-surface-variant);
+}
+
+.statVal {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-on-surface);
+}
+
+.moneyColor {
+  color: var(--color-primary);
+  font-family: var(--font-mono);
+}
+
+/* Activity List */
+.activitySection {
+  background: var(--color-white);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.activityList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.activityItem {
+  border-bottom: 1px solid var(--color-outline-variant);
+  padding-bottom: 12px;
+}
+
+.activityItem:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.activityHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.actionType {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-on-surface-variant);
+  background: var(--color-surface-container);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.5px;
+}
+
+.activityTime {
+  font-size: 11px;
+  color: var(--color-outline);
+}
+
+.activityBody {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.refLabel {
+  font-weight: 600;
+  color: var(--color-on-surface);
+}
+
+.refAmount {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--color-on-surface);
+}
+
+.actNote {
+  width: 100%;
+  color: var(--color-on-surface-variant);
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* Login Card */
+.loginCard {
+  background: var(--color-white);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  height: 100%;
+}
+
+.loginList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.loginItem {
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--color-outline-variant);
+}
+
+.loginItem:last-child {
+  border-bottom: none;
+}
+
+.loginTime {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-on-surface);
+}
+
+.loginIp {
+  font-size: 11px;
+  color: var(--color-outline);
+  margin-top: 4px;
+}
+
+.centerState, .centerStateError, .emptyText {
+  padding: 40px 16px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--color-on-surface-variant);
+  background: var(--color-white);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.centerStateError {
+  color: var(--color-error);
+}
+
+.emptyText {
+  box-shadow: none;
+  border: none;
+  padding: 20px 0;
+}
+
+@media (max-width: 800px) {
+  .profileGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .headerCard {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .headerLeft {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
