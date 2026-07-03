@@ -3,6 +3,7 @@ import { useDashboardStats, useLowStockProducts, useRecentPriceChanges } from '.
 import { StatCard } from '@/shared/ui/StatCard';
 import { LowStockAlert } from './LowStockAlert';
 import { RecentPriceChanges } from './RecentPriceChanges';
+import { TodayStaffActivity } from './TodayStaffActivity';
 import { Skeleton } from '@/shared/ui/Skeleton';
 import { Button } from '@/shared/ui/Button';
 import { useAuthStore } from '@/shared/store/authStore';
@@ -105,6 +106,12 @@ export default function DashboardPage() {
           changes={priceChanges || []}
         />
       </div>
+
+      {isOwner && (
+        <div style={{ marginTop: '1.5rem' }}>
+          <TodayStaffActivity />
+        </div>
+      )}
     </div>
   );
 }
