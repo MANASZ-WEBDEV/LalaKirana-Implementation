@@ -38,7 +38,8 @@ export const productsController = {
 
   createProduct: async (req: Request, res: Response) => {
     try {
-      const product = await productsService.createProduct(req.body);
+      const userId = req.user!.id;
+      const product = await productsService.createProduct(req.body, userId);
       if (req.user?.role !== 'owner') {
         product.cost_price = null as any;
       }
@@ -70,7 +71,8 @@ export const productsController = {
   softDeleteProduct: async (req: Request, res: Response) => {
     try {
       const id = req.params.id as string;
-      const product = await productsService.softDeleteProduct(id);
+      const userId = req.user!.id;
+      const product = await productsService.softDeleteProduct(id, userId);
       return res.json({ message: 'Product deactivated successfully', product });
     } catch (err: any) {
       console.error('Delete product error:', err);

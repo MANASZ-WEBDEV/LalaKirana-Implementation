@@ -1,4 +1,5 @@
 import { supabase } from '../../db/supabase.js';
+import { logActivity } from '../activity/activity.service.js';
 
 export interface ProductFilters {
   category_id?: string;
@@ -59,16 +60,19 @@ export const productsService = {
     };
   },
 
-  createProduct: async (productData: {
-    name: string;
-    category_id?: string | null;
-    price: number;
-    cost_price: number;
-    stock_qty?: number;
-    low_stock_threshold?: number;
-    unit?: string;
-    mrp?: number | null;
-  }) => {
+  createProduct: async (
+    productData: {
+      name: string;
+      category_id?: string | null;
+      price: number;
+      cost_price: number;
+      stock_qty?: number;
+      low_stock_threshold?: number;
+      unit?: string;
+      mrp?: number | null;
+    },
+    userId: string
+  ) => {
     const { data, error } = await supabase
       .from('products')
       .insert([productData])
@@ -78,6 +82,13 @@ export const productsService = {
     if (error) {
       throw new Error(`Failed to create product: ${error.message}`);
     }
+
+    void logActivity({
+      userId,
+      actionType: 'product_created',
+      referenceId: data.id,
+      referenceLabel: data.name,
+    });
 
     return data;
   },
@@ -97,6 +108,13 @@ export const productsService = {
     },
     userId: string
   ) => {
+    // Fetch current product state before update for logging
+    const { data: currentProduct } = await supabase
+      .from('products')
+      .select('name, price')
+      .eq('id', id)
+      .maybeSingle();
+
     const { data, error } = await supabase
       .from('products')
       .update(updateData)
@@ -125,12 +143,29 @@ export const productsService = {
           .update({ changed_by: userId })
           .eq('id', historyData[0].id);
       }
+
+      // Log price change event
+      void logActivity({
+        userId,
+        actionType: 'price_changed',
+        referenceId: id,
+        referenceLabel: data.name,
+        note: `Price: ₹${currentProduct?.price || 0} -> ₹${updateData.price}`,
+      });
+    } else {
+      // Log general product edit event
+      void logActivity({
+        userId,
+        actionType: 'product_edited',
+        referenceId: id,
+        referenceLabel: data.name,
+      });
     }
 
     return data;
   },
 
-  softDeleteProduct: async (id: string) => {
+  softDeleteProduct: async (id: string, userId: string) => {
     // Soft delete means setting is_active = false
     const { data, error } = await supabase
       .from('products')
@@ -142,6 +177,14 @@ export const productsService = {
     if (error) {
       throw new Error(`Failed to deactivate product: ${error.message}`);
     }
+
+    void logActivity({
+      userId,
+      actionType: 'product_edited',
+      referenceId: id,
+      referenceLabel: data.name,
+      note: 'Product deactivated',
+    });
 
     return data;
   },
