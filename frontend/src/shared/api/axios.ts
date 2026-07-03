@@ -1,7 +1,15 @@
 import axios from 'axios';
 import { useToastStore } from '../store/toastStore';
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1';
+let rawApiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1';
+
+// Automatically append /api/v1 if not present in the custom environment variable
+if (rawApiUrl && !rawApiUrl.includes('/api/v1')) {
+  const cleanUrl = rawApiUrl.endsWith('/') ? rawApiUrl.slice(0, -1) : rawApiUrl;
+  rawApiUrl = `${cleanUrl}/api/v1`;
+}
+
+const apiBaseUrl = rawApiUrl;
 
 export const api = axios.create({
   baseURL: apiBaseUrl,
