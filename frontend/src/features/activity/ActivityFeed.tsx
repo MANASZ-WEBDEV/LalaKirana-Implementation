@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useActivityFeed } from './activity.queries';
 import { useUsers } from '../settings/settings.queries';
-import { ActivityType } from './activity.api';
+import type { ActivityType } from './activity.api';
 import styles from './ActivityFeed.module.css';
 
 // Action type labels and helper metadata
