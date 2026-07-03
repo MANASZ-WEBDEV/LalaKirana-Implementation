@@ -53,18 +53,23 @@ export const activityService = {
    * Get per-user activity summary for a given date (or today).
    * Returns: bills count, revenue, avg bill value, stock adjustments, price changes, last active.
    */
-  getSummary: async (date?: string): Promise<UserActivitySummary[]> => {
+  getSummary: async (date?: string, currentUserRole?: string): Promise<UserActivitySummary[]> => {
     const targetDate = date || new Date().toISOString().split('T')[0];
     const startOfDay = `${targetDate}T00:00:00`;
     const endOfDay = `${targetDate}T23:59:59`;
 
     // Fetch all activity for the day
-    const { data: logs, error } = await supabase
+    let query = supabase
       .from('activity_log')
       .select('*')
       .gte('created_at', startOfDay)
-      .lte('created_at', endOfDay)
-      .order('created_at', { ascending: false });
+      .lte('created_at', endOfDay);
+
+    if (currentUserRole === 'owner') {
+      query = query.neq('user_role', 'master');
+    }
+
+    const { data: logs, error } = await query.order('created_at', { ascending: false });
 
     if (error) {
       throw new Error(`Failed to fetch activity summary: ${error.message}`);
@@ -141,13 +146,18 @@ export const activityService = {
     search?: string;
     page: number;
     limit: number;
+    currentUserRole?: string;
   }) => {
-    const { page, limit, date_from, date_to, user_id, action_type, search } = filters;
+    const { page, limit, date_from, date_to, user_id, action_type, search, currentUserRole } = filters;
     const offset = (page - 1) * limit;
 
     let query = supabase
       .from('activity_log')
       .select('*', { count: 'exact' });
+
+    if (currentUserRole === 'owner') {
+      query = query.neq('user_role', 'master');
+    }
 
     if (date_from) {
       query = query.gte('created_at', `${date_from}T00:00:00`);
@@ -271,14 +281,19 @@ export const activityService = {
     date_to?: string;
     page: number;
     limit: number;
+    currentUserRole?: string;
   }) => {
-    const { page, limit, user_id, date_from, date_to } = filters;
+    const { page, limit, user_id, date_from, date_to, currentUserRole } = filters;
     const offset = (page - 1) * limit;
 
     let query = supabase
       .from('activity_log')
       .select('*', { count: 'exact' })
       .in('action_type', ['login', 'logout']);
+
+    if (currentUserRole === 'owner') {
+      query = query.neq('user_role', 'master');
+    }
 
     if (user_id) {
       query = query.eq('user_id', user_id);
