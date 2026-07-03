@@ -221,7 +221,7 @@ export const khataService = {
       referenceId: customerId,
       referenceLabel: customer?.name || 'Unknown Customer',
       amount: input.amount,
-      note: input.note,
+      note: input.note || undefined,
     });
 
     return data as any;

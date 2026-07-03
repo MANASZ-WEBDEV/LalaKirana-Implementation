@@ -73,13 +73,14 @@ router.get(
   validateRequest(ActivityUserProfileSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id } = req.params;
-      const { month, year } = req.query as any;
+      const id = req.params.id as string;
+      const month = req.query.month ? Number(req.query.month) : undefined;
+      const year = req.query.year ? Number(req.query.year) : undefined;
       
       const profile = await activityService.getUserProfile(
         id,
-        month ? Number(month) : undefined,
-        year ? Number(year) : undefined
+        month,
+        year
       );
 
       // Prevent Owner from accessing Master activity profile
