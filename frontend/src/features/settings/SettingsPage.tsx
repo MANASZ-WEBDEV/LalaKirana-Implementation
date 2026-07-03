@@ -5,9 +5,12 @@ import { SessionsTab } from './SessionsTab';
 import { CategoriesTab } from './CategoriesTab';
 import { AccountTab } from './AccountTab';
 import { ReceiptTab } from './ReceiptTab';
+import { StaffSummaryTable } from '../activity/StaffSummaryTable';
+import { ActivityFeed } from '../activity/ActivityFeed';
+import { StaffProfile } from '../activity/StaffProfile';
 import styles from './SettingsPage.module.css';
 
-type TabId = 'staff' | 'sessions' | 'categories' | 'account' | 'receipt';
+type TabId = 'staff' | 'sessions' | 'categories' | 'account' | 'receipt' | 'activity';
 
 interface TabDef {
   id: TabId;
@@ -21,6 +24,7 @@ const tabs: TabDef[] = [
   { id: 'categories', label: 'Categories', ownerOnly: true },
   { id: 'account', label: 'Account', ownerOnly: false },
   { id: 'receipt', label: 'Receipt Settings', ownerOnly: true },
+  { id: 'activity', label: 'Staff Activity', ownerOnly: true },
 ];
 
 export default function SettingsPage() {
@@ -29,6 +33,7 @@ export default function SettingsPage() {
 
   const visibleTabs = tabs.filter((t) => !t.ownerOnly || isOwner);
   const [activeTab, setActiveTab] = useState<TabId>(visibleTabs[0]?.id || 'account');
+  const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null);
 
   const renderTab = () => {
     switch (activeTab) {
@@ -42,6 +47,19 @@ export default function SettingsPage() {
         return <AccountTab />;
       case 'receipt':
         return <ReceiptTab />;
+      case 'activity':
+        if (selectedStaffId) {
+          return <StaffProfile userId={selectedStaffId} onBack={() => setSelectedStaffId(null)} />;
+        }
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            <StaffSummaryTable onSelectUser={(id) => setSelectedStaffId(id)} />
+            <div style={{ borderTop: '1px solid var(--color-outline-variant)', paddingTop: '2rem' }}>
+              <h3 style={{ marginBottom: '1.25rem', fontSize: '15px', fontWeight: 600, color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Live Activity Log</h3>
+              <ActivityFeed />
+            </div>
+          </div>
+        );
       default:
         return null;
     }
