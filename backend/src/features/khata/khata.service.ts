@@ -1,4 +1,5 @@
 import { supabase } from '../../db/supabase.js';
+import { logActivity } from '../activity/activity.service.js';
 import type {
   CreateCustomerInput,
   UpdateCustomerInput,
@@ -51,7 +52,7 @@ export const khataService = {
   /**
    * Create a new customer.
    */
-  createCustomer: async (input: CreateCustomerInput) => {
+  createCustomer: async (input: CreateCustomerInput, userId: string) => {
     const { data, error } = await supabase
       .from('customers')
       .insert([{
@@ -65,6 +66,13 @@ export const khataService = {
     if (error) {
       throw new Error(`Failed to create customer: ${error.message}`);
     }
+
+    void logActivity({
+      userId,
+      actionType: 'customer_created',
+      referenceId: data.id,
+      referenceLabel: data.name,
+    });
 
     return data;
   },
@@ -199,6 +207,22 @@ export const khataService = {
     if (error) {
       throw new Error(`Failed to log repayment: ${error.message}`);
     }
+
+    // Fetch customer details for logging
+    const { data: customer } = await supabase
+      .from('customers')
+      .select('name')
+      .eq('id', customerId)
+      .maybeSingle();
+
+    void logActivity({
+      userId,
+      actionType: 'khata_repayment',
+      referenceId: customerId,
+      referenceLabel: customer?.name || 'Unknown Customer',
+      amount: input.amount,
+      note: input.note,
+    });
 
     return data as any;
   },

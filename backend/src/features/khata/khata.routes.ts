@@ -42,7 +42,8 @@ router.post(
   validateRequest(CreateCustomerSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const customer = await khataService.createCustomer(req.body);
+      const userId = req.user!.id;
+      const customer = await khataService.createCustomer(req.body, userId);
       res.status(201).json(customer);
     } catch (err) {
       next(err);
