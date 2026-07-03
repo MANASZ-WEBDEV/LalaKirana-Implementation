@@ -47,12 +47,17 @@ export default function LoginPage() {
     if (!isValid) return;
 
     try {
-      await loginMutation.mutateAsync({
+      const resData = await loginMutation.mutateAsync({
         email,
         password,
         ...(showRecovery ? { recoveryCode } : {}),
       });
       addToast('success', 'Logged in successfully');
+      
+      if (resData.user.role === 'staff') {
+        addToast('info', 'Your activity is logged for shop management purposes');
+      }
+      
       navigate('/dashboard');
     } catch (err: any) {
       const showRecoveryField = err.response?.data?.showRecoveryCode === true;
