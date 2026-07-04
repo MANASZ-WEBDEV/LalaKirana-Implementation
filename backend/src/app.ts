@@ -19,6 +19,9 @@ import activityRoutes from './features/activity/activity.routes.js';
 
 const app = express();
 
+// Trust proxy settings (vital for correct IP rate-limiting behind Nginx/reverse proxies)
+app.set('trust proxy', 1);
+
 const allowedOrigins = env.FRONTEND_URL.split(',').map((url) => url.trim());
 
 app.use(
