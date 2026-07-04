@@ -422,7 +422,7 @@ export const authController = {
   },
 
   resetUserPassword: async (req: Request, res: Response) => {
-    const userId = req.params.id;
+    const userId = req.params.id as string;
     const { newPassword } = req.body;
 
     try {
@@ -473,7 +473,7 @@ export const authController = {
   },
 
   deactivateUser: async (req: Request, res: Response) => {
-    const userId = req.params.id;
+    const userId = req.params.id as string;
 
     try {
       // Cannot deactivate self
@@ -526,7 +526,7 @@ export const authController = {
   },
 
   activateUser: async (req: Request, res: Response) => {
-    const userId = req.params.id;
+    const userId = req.params.id as string;
 
     try {
       const { error } = await supabase
