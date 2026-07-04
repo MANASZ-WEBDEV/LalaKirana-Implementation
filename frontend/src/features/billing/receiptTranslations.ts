@@ -173,6 +173,8 @@ export const offlineFallback: Record<string, string> = {
   'tata': 'टाटा',
   'amul': 'अमूल',
   'ashirvaad': 'आशीर्वाद',
+  'shudh': 'शुद्ध',
+  'chakki': 'चक्की',
   // Dry Fruits
   'almond': 'बादाम',
   'almonds': 'बादाम',

@@ -226,4 +226,6 @@ INSERT INTO receipt_translations (token, hindi, category) VALUES
 ('pouch', 'पाउच', 'qualifier'),
 ('small', 'छोटा', 'qualifier'),
 ('medium', 'मध्यम', 'qualifier'),
-('large', 'बड़ा', 'qualifier') ON CONFLICT (token) DO UPDATE SET hindi = EXCLUDED.hindi, category = EXCLUDED.category;
+('large', 'बड़ा', 'qualifier'),
+('shudh', 'शुद्ध', 'qualifier'),
+('chakki', 'चक्की', 'general') ON CONFLICT (token) DO UPDATE SET hindi = EXCLUDED.hindi, category = EXCLUDED.category;
