@@ -39,7 +39,7 @@ router.get(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userRole = req.user?.role;
-      if (userRole !== 'owner') {
+      if (userRole !== 'owner' && userRole !== 'master') {
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
         const maxAllowedDate = sevenDaysAgo.toISOString().split('T')[0];
@@ -51,7 +51,7 @@ router.get(
 
       let result = await billingService.getBills(req.query as any);
 
-      if (userRole !== 'owner') {
+      if (userRole !== 'owner' && userRole !== 'master') {
         result.bills = result.bills.map((bill: any) => ({
           ...bill,
           bill_items: (bill.bill_items || []).map((item: any) => ({
@@ -93,7 +93,7 @@ router.get(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const bill = await billingService.getBillById(req.params.id as string);
-      if (req.user?.role !== 'owner') {
+      if (req.user?.role !== 'owner' && req.user?.role !== 'master') {
         if (bill.bill_items) {
           bill.bill_items = bill.bill_items.map((item: any) => ({
             ...item,
