@@ -59,7 +59,7 @@ export function ReceiptTab() {
     if (currentSettings) {
       setStoreName(currentSettings.store_name || '');
       setStoreAddress(currentSettings.store_address || '');
-      setStorePhone(currentSettings.store_phone || '');
+      setStorePhone((currentSettings.store_phone || '').replace(/\D/g, '').slice(-10));
       setReceiptFooter(currentSettings.receipt_footer || '');
       setReceiptLanguage((currentSettings.receipt_language as Language) || 'english');
       setStaffDiscountLimit(currentSettings.staff_discount_limit || '50');
