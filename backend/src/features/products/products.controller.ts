@@ -10,9 +10,9 @@ export const productsController = {
         low_stock: req.query.low_stock === 'true',
       };
       
-      const includeInactive = req.user?.role === 'owner';
+      const includeInactive = req.user?.role === 'owner' || req.user?.role === 'master';
       let products = await productsService.getAllProducts(filters, includeInactive);
-      if (req.user?.role !== 'owner') {
+      if (req.user?.role !== 'owner' && req.user?.role !== 'master') {
         products = products.map((p) => ({ ...p, cost_price: null }));
       }
       return res.json(products);
@@ -26,7 +26,7 @@ export const productsController = {
     try {
       const id = req.params.id as string;
       const product = await productsService.getProductById(id);
-      if (req.user?.role !== 'owner') {
+      if (req.user?.role !== 'owner' && req.user?.role !== 'master') {
         product.cost_price = null as any;
       }
       return res.json(product);
@@ -40,7 +40,7 @@ export const productsController = {
     try {
       const userId = req.user!.id;
       const product = await productsService.createProduct(req.body, userId);
-      if (req.user?.role !== 'owner') {
+      if (req.user?.role !== 'owner' && req.user?.role !== 'master') {
         product.cost_price = null as any;
       }
       return res.status(201).json(product);
@@ -52,13 +52,13 @@ export const productsController = {
 
   updateProduct: async (req: Request, res: Response) => {
     try {
-      if (req.user?.role !== 'owner' && req.body.hasOwnProperty('is_active')) {
+      if (req.user?.role !== 'owner' && req.user?.role !== 'master' && req.body.hasOwnProperty('is_active')) {
         return res.status(403).json({ message: 'Forbidden: Staff cannot update active status of a product' });
       }
       const id = req.params.id as string;
       const userId = req.user!.id;
       const product = await productsService.updateProduct(id, req.body, userId);
-      if (req.user?.role !== 'owner') {
+      if (req.user?.role !== 'owner' && req.user?.role !== 'master') {
         product.cost_price = null as any;
       }
       return res.json(product);
