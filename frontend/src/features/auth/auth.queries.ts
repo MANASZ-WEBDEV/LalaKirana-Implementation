@@ -15,8 +15,25 @@ export function useLogin() {
   return useMutation({
     mutationFn: authApi.login,
     onSuccess: (data) => {
-      login(data.user, data.token);
-      queryClient.setQueryData(authKeys.me(), { user: data.user });
+      if (!data.requires2FA && data.user && data.token) {
+        login(data.user, data.token);
+        queryClient.setQueryData(authKeys.me(), { user: data.user });
+      }
+    },
+  });
+}
+
+export function useVerify2fa() {
+  const login = useAuthStore((s) => s.login);
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: authApi.verify2fa,
+    onSuccess: (data) => {
+      if (data.user && data.token) {
+        login(data.user, data.token);
+        queryClient.setQueryData(authKeys.me(), { user: data.user });
+      }
     },
   });
 }

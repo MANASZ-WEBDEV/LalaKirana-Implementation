@@ -43,3 +43,10 @@ export const VerifyPinSchema = z.object({
     pin: z.string().regex(/^\d{4}$/, 'PIN must be exactly 4 digits'),
   }),
 });
+
+export const Verify2faSchema = z.object({
+  body: z.object({
+    code: z.string().regex(/^\d{6}$/, '2FA code must be exactly 6 digits'),
+    preAuthToken: z.string().min(1, 'Pre-auth token is required'),
+  }),
+});

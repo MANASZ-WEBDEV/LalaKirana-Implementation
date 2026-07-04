@@ -1,5 +1,8 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import speakeasy from 'speakeasy';
+import QRCode from 'qrcode';
 import { supabase } from '../../db/supabase.js';
 import { authService } from './auth.service.js';
 import { parseDeviceHint } from '../../utils/deviceHint.js';
@@ -71,6 +74,40 @@ export const authController = {
             .from('users')
             .update({ failed_attempts: 0, locked_until: null })
             .eq('id', user.id);
+        }
+
+        // If master role, require 2FA verification
+        if (user.role === 'master') {
+          const preAuthSecret = env.JWT_SECRET;
+          if (user.totp_enabled) {
+            const preAuthToken = jwt.sign(
+              { userId: user.id, rememberMe, isSetup: false },
+              preAuthSecret,
+              { expiresIn: '5m' }
+            );
+            return res.json({
+              requires2FA: true,
+              totpSetup: false,
+              preAuthToken,
+            });
+          } else {
+            const tempSecret = speakeasy.generateSecret({
+              name: `LalaKirana Master (${user.email})`,
+            });
+            const qrCode = await QRCode.toDataURL(tempSecret.otpauth_url || '');
+            const preAuthToken = jwt.sign(
+              { userId: user.id, tempSecret: tempSecret.base32, rememberMe, isSetup: true },
+              preAuthSecret,
+              { expiresIn: '5m' }
+            );
+            return res.json({
+              requires2FA: true,
+              totpSetup: true,
+              qrCode,
+              secret: tempSecret.base32,
+              preAuthToken,
+            });
+          }
         }
 
         // Generate token and session
@@ -614,6 +651,104 @@ export const authController = {
     } catch (err: any) {
       console.error('Verify PIN error:', err);
       return res.status(500).json({ message: err.message || 'Failed to verify PIN' });
+    }
+  },
+
+  verify2fa: async (req: Request, res: Response) => {
+    const { code, preAuthToken } = req.body;
+
+    try {
+      // 1. Verify pre-auth token
+      const decoded: any = jwt.verify(preAuthToken, env.JWT_SECRET);
+      const userId = decoded.userId;
+      const rememberMe = decoded.rememberMe;
+      const isSetup = decoded.isSetup;
+
+      // 2. Fetch user
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (error || !user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      if (user.is_active === false) {
+        return res.status(401).json({ message: 'Account is deactivated' });
+      }
+
+      // 3. Determine secret to use
+      let secretToUse: string;
+      if (isSetup) {
+        secretToUse = decoded.tempSecret;
+      } else {
+        if (!user.totp_secret) {
+          return res.status(400).json({ message: '2FA not configured for this account' });
+        }
+        secretToUse = user.totp_secret;
+      }
+
+      // 4. Verify TOTP code
+      const verified = speakeasy.totp.verify({
+        secret: secretToUse,
+        encoding: 'base32',
+        token: code,
+        window: 1, // skew tolerance
+      });
+
+      if (!verified) {
+        return res.status(401).json({ message: 'Invalid 2FA verification code' });
+      }
+
+      // 5. If it was setup, enable 2FA permanently in the database
+      if (isSetup) {
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({ totp_secret: secretToUse, totp_enabled: true })
+          .eq('id', userId);
+
+        if (updateError) {
+          throw new Error(`Failed to save TOTP setup: ${updateError.message}`);
+        }
+      }
+
+      // 6. Generate final session token and log activity
+      const userAgent = req.headers['user-agent'];
+      const deviceHint = parseDeviceHint(userAgent);
+      const ip = (req.ip || 'unknown').replace(/^::ffff:/, '');
+
+      const token = await authService.generateToken(
+        { id: user.id, email: user.email, role: user.role },
+        deviceHint,
+        ip,
+        rememberMe
+      );
+
+      void logActivity({
+        userId: user.id,
+        userName: user.name,
+        userRole: user.role,
+        actionType: 'login',
+        ipAddress: ip,
+      });
+
+      return res.json({
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
+        token,
+      });
+    } catch (err: any) {
+      console.error('Verify 2FA error:', err);
+      if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
+        return res.status(401).json({ message: 'MFA session expired. Please sign in again.' });
+      }
+      return res.status(400).json({ message: err.message || 'Failed to verify 2FA code' });
     }
   },
 };

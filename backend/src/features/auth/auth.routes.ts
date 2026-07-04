@@ -11,6 +11,7 @@ import {
   ResetUserPasswordSchema,
   UpdatePinSchema,
   VerifyPinSchema,
+  Verify2faSchema,
 } from './auth.schema.js';
 
 const router = Router();
@@ -20,6 +21,7 @@ router.get('/health', (req, res) => {
 });
 
 router.post('/login', loginRateLimiter, validateRequest(LoginSchema), authController.login);
+router.post('/verify-2fa', validateRequest(Verify2faSchema), authController.verify2fa);
 router.post('/logout', authMiddleware, authController.logout);
 router.get('/me', authMiddleware, authController.me);
 router.put('/change-password', authMiddleware, validateRequest(ChangePasswordSchema), authController.changePassword);

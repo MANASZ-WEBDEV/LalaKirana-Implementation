@@ -5,6 +5,9 @@ export const authApi = {
   login: (data: LoginInput) =>
     api.post<LoginResponse>('/auth/login', data).then((r) => r.data),
 
+  verify2fa: (data: { code: string; preAuthToken: string }) =>
+    api.post<LoginResponse>('/auth/verify-2fa', data).then((r) => r.data),
+
   logout: () =>
     api.post<{ message: string }>('/auth/logout').then((r) => r.data),
 

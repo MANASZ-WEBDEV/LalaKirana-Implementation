@@ -20,8 +20,13 @@ export interface Session {
 }
 
 export interface LoginResponse {
-  token: string;
-  user: User;
+  token?: string;
+  user?: User;
+  requires2FA?: boolean;
+  totpSetup?: boolean;
+  qrCode?: string;
+  secret?: string;
+  preAuthToken?: string;
 }
 
 export interface LoginInput {
