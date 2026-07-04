@@ -119,12 +119,12 @@ export const masterService = {
 
     const { data: bills, error: billsError } = await supabase
       .from('bills')
-      .select('grand_total')
+      .select('total')
       .gte('created_at', todayStart.toISOString());
 
     if (billsError) throw billsError;
 
-    const revenueToday = bills.reduce((sum, bill) => sum + Number(bill.grand_total || 0), 0);
+    const revenueToday = bills.reduce((sum, bill) => sum + Number(bill.total || 0), 0);
     const ordersToday = bills.length;
 
     // 4. Get last 20 audit log actions
