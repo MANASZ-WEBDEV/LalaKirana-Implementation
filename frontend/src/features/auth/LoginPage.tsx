@@ -14,6 +14,7 @@ export default function LoginPage() {
   const [showRecovery, setShowRecovery] = useState(false);
   const [recoveryCode, setRecoveryCode] = useState('');
   const [recoveryError, setRecoveryError] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
 
   const loginMutation = useLogin();
   const addToast = useToastStore((s) => s.addToast);
@@ -50,6 +51,7 @@ export default function LoginPage() {
       const resData = await loginMutation.mutateAsync({
         email,
         password,
+        rememberMe,
         ...(showRecovery ? { recoveryCode } : {}),
       });
       addToast('success', 'Logged in successfully');
@@ -123,6 +125,18 @@ export default function LoginPage() {
                 autoFocus
               />
             )}
+
+            <div className={styles.rememberMeContainer}>
+              <label className={styles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className={styles.checkboxInput}
+                />
+                <span>Keep me logged in on this device</span>
+              </label>
+            </div>
 
             <Button
               type="submit"

@@ -28,4 +28,5 @@ export interface LoginInput {
   email: string;
   password: string;
   recoveryCode?: string;
+  rememberMe?: boolean;
 }

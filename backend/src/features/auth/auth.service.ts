@@ -15,7 +15,8 @@ export const authService = {
   generateToken: async (
     user: { id: string; email: string; role: 'master' | 'owner' | 'staff' },
     deviceHint: string,
-    ip: string
+    ip: string,
+    rememberMe?: boolean
   ): Promise<string> => {
     const jti = uuidv4();
     const secret = env.JWT_SECRET;
@@ -27,7 +28,13 @@ export const authService = {
       jti,
     };
 
-    const expiresIn = env.JWT_EXPIRY;
+    let expiresIn = env.JWT_EXPIRY || '8h';
+    if (user.role === 'master') {
+      expiresIn = '2h';
+    } else if (rememberMe) {
+      expiresIn = '30d';
+    }
+
     const token = jwt.sign(payload, secret, { expiresIn: expiresIn as any });
 
 

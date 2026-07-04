@@ -108,6 +108,29 @@
   margin-top: 0.75rem;
 }
 
+.rememberMeContainer {
+  display: flex;
+  align-items: center;
+  margin-top: -0.25rem;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-on-surface-variant);
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkboxInput {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
 @media (max-width: 868px) {
   .brandPanel {
     display: none;

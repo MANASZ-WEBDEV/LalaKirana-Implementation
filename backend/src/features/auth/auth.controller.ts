@@ -9,7 +9,7 @@ import { masterService } from '../master/master.service.js';
 
 export const authController = {
   login: async (req: Request, res: Response) => {
-    const { email, password, recoveryCode } = req.body;
+    const { email, password, recoveryCode, rememberMe } = req.body;
 
     try {
       // Find user
@@ -82,7 +82,8 @@ export const authController = {
         const token = await authService.generateToken(
           { id: user.id, email: user.email, role: user.role },
           deviceHint,
-          ip
+          ip,
+          rememberMe
         );
 
         void logActivity({
