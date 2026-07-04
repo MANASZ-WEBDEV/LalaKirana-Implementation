@@ -45,6 +45,16 @@ export function useDeactivateUser() {
   });
 }
 
+export function useActivateUser() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) => settingsApi.activateUser(userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: settingsKeys.users });
+    },
+  });
+}
+
 export function useSessions() {
   return useQuery({
     queryKey: settingsKeys.sessions,

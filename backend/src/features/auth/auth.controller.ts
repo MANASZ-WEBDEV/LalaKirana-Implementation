@@ -524,4 +524,34 @@ export const authController = {
       return res.status(400).json({ message: err.message || 'Failed to deactivate user' });
     }
   },
+
+  activateUser: async (req: Request, res: Response) => {
+    const userId = req.params.id;
+
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({ is_active: true })
+        .eq('id', userId);
+
+      if (error) {
+        throw new Error(`Failed to activate user: ${error.message}`);
+      }
+
+      // Log to master audit trail if performed by a master user
+      if (req.user?.role === 'master') {
+        void masterService.logAction(
+          req.user.id,
+          'activate_user',
+          userId,
+          `Activated user ${userId} via settings`
+        );
+      }
+
+      return res.json({ message: 'User activated successfully' });
+    } catch (err: any) {
+      console.error('Activate user error:', err);
+      return res.status(400).json({ message: err.message || 'Failed to activate user' });
+    }
+  },
 };

@@ -22,6 +22,9 @@ export const settingsApi = {
   deactivateUser: (userId: string) =>
     api.delete<{ message: string }>(`/auth/users/${userId}`).then((r) => r.data),
 
+  activateUser: (userId: string) =>
+    api.post<{ message: string }>(`/auth/users/${userId}/activate`).then((r) => r.data),
+
   getSessions: () =>
     api.get<Session[]>('/auth/sessions').then((r) => r.data),
 

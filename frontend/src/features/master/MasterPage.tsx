@@ -5,6 +5,7 @@ import {
   useMasterCreateOwner,
   useMasterChangeRole,
   useMasterDeactivateUser,
+  useMasterActivateUser,
   useMasterResetPassword,
 } from './master.queries';
 import { StatCard } from '@/shared/ui/StatCard';
@@ -38,6 +39,7 @@ export default function MasterPage() {
   const createOwnerMutation = useMasterCreateOwner();
   const changeRoleMutation = useMasterChangeRole();
   const deactivateMutation = useMasterDeactivateUser();
+  const activateMutation = useMasterActivateUser();
   const resetPasswordMutation = useMasterResetPassword();
 
   // Modals & Dialogs State
@@ -132,6 +134,16 @@ export default function MasterPage() {
       refetchUsers();
     } catch (err: any) {
       addToast('error', err.response?.data?.message || 'Failed to deactivate user');
+    }
+  };
+
+  const handleActivateUser = async (userId: string) => {
+    try {
+      await activateMutation.mutateAsync(userId);
+      addToast('success', 'User activated and ready.');
+      refetchUsers();
+    } catch (err: any) {
+      addToast('error', err.response?.data?.message || 'Failed to activate user');
     }
   };
 
@@ -267,22 +279,22 @@ export default function MasterPage() {
                       </td>
                       <td className={styles.actionsCell}>
                         {user.role !== 'master' && (
-                          <>
-                            <button
-                              className={styles.actionBtn}
-                              onClick={() => handleToggleRole(user)}
-                              title="Toggle between Staff and Owner"
-                            >
-                              Make {user.role === 'owner' ? 'Staff' : 'Owner'}
-                            </button>
-                            <button
-                              className={styles.actionBtn}
-                              onClick={() => setShowResetModal(user.id)}
-                              title="Override and Reset Password"
-                            >
-                              Reset Password
-                            </button>
-                            {user.is_active !== false && (
+                          user.is_active !== false ? (
+                            <>
+                              <button
+                                className={styles.actionBtn}
+                                onClick={() => handleToggleRole(user)}
+                                title="Toggle between Staff and Owner"
+                              >
+                                Make {user.role === 'owner' ? 'Staff' : 'Owner'}
+                              </button>
+                              <button
+                                className={styles.actionBtn}
+                                onClick={() => setShowResetModal(user.id)}
+                                title="Override and Reset Password"
+                              >
+                                Reset Password
+                              </button>
                               <button
                                 className={`${styles.actionBtn} ${styles.dangerBtn}`}
                                 onClick={() => setShowDeactivateDialog(user.id)}
@@ -290,8 +302,17 @@ export default function MasterPage() {
                               >
                                 Deactivate
                               </button>
-                            )}
-                          </>
+                            </>
+                          ) : (
+                            <button
+                              className={styles.actionBtn}
+                              style={{ color: 'var(--color-success, #2e7d32)' }}
+                              onClick={() => handleActivateUser(user.id)}
+                              title="Activate user account"
+                            >
+                              Activate
+                            </button>
+                          )
                         )}
                       </td>
                     </tr>

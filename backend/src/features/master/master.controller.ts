@@ -89,6 +89,28 @@ export const masterController = {
     }
   },
 
+  activateUser: async (req: Request, res: Response) => {
+    const id = req.params.id as string;
+    const masterId = req.user!.id;
+
+    try {
+      const user = await masterService.activateUser(id);
+
+      // Log audit
+      await masterService.logAction(
+        masterId,
+        'activate_user',
+        id,
+        `Activated account for ${user.email}`
+      );
+
+      return res.json(user);
+    } catch (err: any) {
+      console.error('Error activating user:', err);
+      return res.status(500).json({ message: err.message || 'Internal Server Error' });
+    }
+  },
+
   resetAnyPassword: async (req: Request, res: Response) => {
     const id = req.params.id as string;
     const { newPassword } = req.body;

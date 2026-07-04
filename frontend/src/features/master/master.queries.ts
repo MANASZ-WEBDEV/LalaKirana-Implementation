@@ -58,6 +58,17 @@ export function useMasterDeactivateUser() {
   });
 }
 
+export function useMasterActivateUser() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) => api.post(`/master/users/${userId}/activate`).then((r) => r.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: masterKeys.users() });
+      queryClient.invalidateQueries({ queryKey: masterKeys.overview() });
+    },
+  });
+}
+
 export function useMasterResetPassword() {
   return useMutation({
     mutationFn: ({ userId, newPassword }: { userId: string; newPassword: string }) =>

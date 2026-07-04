@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useUsers, useCreateUser, useResetUserPassword, useDeactivateUser } from './settings.queries';
+import { useUsers, useCreateUser, useResetUserPassword, useDeactivateUser, useActivateUser } from './settings.queries';
 import { Button } from '@/shared/ui/Button';
 import { Input } from '@/shared/ui/Input';
 import { Select } from '@/shared/ui/Select';
@@ -14,6 +14,7 @@ export function StaffTab() {
   const createUserMutation = useCreateUser();
   const resetPasswordMutation = useResetUserPassword();
   const deactivateMutation = useDeactivateUser();
+  const activateMutation = useActivateUser();
   const addToast = useToastStore((s) => s.addToast);
 
   const [showAddModal, setShowAddModal] = useState(false);
@@ -83,6 +84,15 @@ export function StaffTab() {
     }
   };
 
+  const handleActivate = async (userId: string) => {
+    try {
+      await activateMutation.mutateAsync(userId);
+      addToast('success', 'User activated successfully');
+    } catch (err: any) {
+      addToast('error', err.response?.data?.message || 'Failed to activate user');
+    }
+  };
+
   if (isLoading) {
     return <div className={styles.loadingText}>Loading staff...</div>;
   }
@@ -124,20 +134,31 @@ export function StaffTab() {
                   </Badge>
                 </td>
                 <td className={styles.actionsCell}>
-                  <button
-                    className={styles.actionBtn}
-                    onClick={() => setShowResetModal(user.id)}
-                    title="Reset Password"
-                  >
-                    Reset Password
-                  </button>
-                  {user.is_active !== false && (
+                  {user.is_active !== false ? (
+                    <>
+                      <button
+                        className={styles.actionBtn}
+                        onClick={() => setShowResetModal(user.id)}
+                        title="Reset Password"
+                      >
+                        Reset Password
+                      </button>
+                      <button
+                        className={`${styles.actionBtn} ${styles.dangerBtn}`}
+                        onClick={() => setShowDeactivateDialog(user.id)}
+                        title="Deactivate User"
+                      >
+                        Deactivate
+                      </button>
+                    </>
+                  ) : (
                     <button
-                      className={`${styles.actionBtn} ${styles.dangerBtn}`}
-                      onClick={() => setShowDeactivateDialog(user.id)}
-                      title="Deactivate User"
+                      className={styles.actionBtn}
+                      style={{ color: 'var(--color-success, #2e7d32)' }}
+                      onClick={() => handleActivate(user.id)}
+                      title="Activate User"
                     >
-                      Deactivate
+                      Activate
                     </button>
                   )}
                 </td>

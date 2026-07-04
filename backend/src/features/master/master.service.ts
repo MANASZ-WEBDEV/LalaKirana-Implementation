@@ -77,6 +77,18 @@ export const masterService = {
     return user;
   },
 
+  activateUser: async (userId: string) => {
+    const { data: user, error } = await supabase
+      .from('users')
+      .update({ is_active: true })
+      .eq('id', userId)
+      .select('id, name, email, is_active')
+      .single();
+
+    if (error) throw error;
+    return user;
+  },
+
   resetUserPassword: async (userId: string, newPassword: string) => {
     const hashedPassword = await bcrypt.hash(newPassword, 12);
 
