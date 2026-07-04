@@ -5,6 +5,7 @@ import { authService } from './auth.service.js';
 import { parseDeviceHint } from '../../utils/deviceHint.js';
 import { env } from '../../config/env.js';
 import { logActivity } from '../activity/activity.service.js';
+import { masterService } from '../master/master.service.js';
 
 export const authController = {
   login: async (req: Request, res: Response) => {
@@ -403,6 +404,16 @@ export const authController = {
         throw new Error(`Failed to create user: ${error.message}`);
       }
 
+      // Log to master audit trail if performed by a master user
+      if (req.user?.role === 'master') {
+        void masterService.logAction(
+          req.user.id,
+          'create_user',
+          user.id,
+          `Created ${role} account for ${email}`
+        );
+      }
+
       return res.status(201).json(user);
     } catch (err: any) {
       console.error('Create user error:', err);
@@ -442,6 +453,16 @@ export const authController = {
 
         await supabase.from('token_blocklist').insert(blocklistItems);
         await supabase.from('sessions').delete().eq('user_id', userId);
+      }
+
+      // Log to master audit trail if performed by a master user
+      if (req.user?.role === 'master') {
+        void masterService.logAction(
+          req.user.id,
+          'reset_password',
+          userId,
+          `Reset password for user ${userId} via settings`
+        );
       }
 
       return res.json({ message: 'Password reset successfully and all sessions terminated' });
@@ -485,6 +506,16 @@ export const authController = {
 
         await supabase.from('token_blocklist').insert(blocklistItems);
         await supabase.from('sessions').delete().eq('user_id', userId);
+      }
+
+      // Log to master audit trail if performed by a master user
+      if (req.user?.role === 'master') {
+        void masterService.logAction(
+          req.user.id,
+          'deactivate_user',
+          userId,
+          `Deactivated user ${userId} via settings`
+        );
       }
 
       return res.json({ message: 'User deactivated and all sessions terminated' });
