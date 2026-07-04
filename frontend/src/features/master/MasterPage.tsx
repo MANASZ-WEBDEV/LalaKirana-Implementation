@@ -234,10 +234,72 @@ export default function MasterPage() {
             </div>
 
             <div className={styles.sectionCard}>
-              <h2 className={styles.sectionTitle}>Dashboard Hub</h2>
-              <p style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.875rem', lineHeight: '1.5' }}>
-                Welcome to the LalaKirana Master Control Center. Select the tabs above to manage owner credentials, view live transactions and stock movement operations logs, or review superuser audit trails.
-              </p>
+              <div className={styles.hubHeader}>
+                <h2 className={styles.sectionTitle}>Dashboard Hub</h2>
+                <div className={styles.statusIndicator}>
+                  <span className={styles.pulseDot}></span>
+                  System Status: Online
+                </div>
+              </div>
+              
+              <div className={styles.hubGrid}>
+                {/* Shortcuts Column */}
+                <div className={styles.shortcutsContainer}>
+                  <span className={styles.shortcutsTitle}>Quick Shortcuts</span>
+                  <div className={styles.shortcutsGrid}>
+                    <button className={styles.shortcutCard} onClick={() => setShowAddModal(true)}>
+                      <span className={styles.shortcutIcon}>👤</span>
+                      <div className={styles.shortcutContent}>
+                        <span className={styles.shortcutName}>Create Shop Owner</span>
+                        <span className={styles.shortcutDesc}>Provision new store administrator</span>
+                      </div>
+                    </button>
+
+                    <button className={styles.shortcutCard} onClick={() => setActiveTab('users')}>
+                      <span className={styles.shortcutIcon}>👥</span>
+                      <div className={styles.shortcutContent}>
+                        <span className={styles.shortcutName}>Manage Users</span>
+                        <span className={styles.shortcutDesc}>Reset passwords & toggle roles</span>
+                      </div>
+                    </button>
+
+                    <button className={styles.shortcutCard} onClick={() => setActiveTab('activity')}>
+                      <span className={styles.shortcutIcon}>⚡</span>
+                      <div className={styles.shortcutContent}>
+                        <span className={styles.shortcutName}>Activity Monitor</span>
+                        <span className={styles.shortcutDesc}>Track live store operations</span>
+                      </div>
+                    </button>
+
+                    <button className={styles.shortcutCard} onClick={() => setActiveTab('audit')}>
+                      <span className={styles.shortcutIcon}>🔒</span>
+                      <div className={styles.shortcutContent}>
+                        <span className={styles.shortcutName}>Audit Trails</span>
+                        <span className={styles.shortcutDesc}>Review Master security logs</span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Metrics Column */}
+                <div className={styles.shortcutsContainer}>
+                  <span className={styles.shortcutsTitle}>System Info</span>
+                  <div className={styles.metricsContainer}>
+                    <div className={styles.metricRow}>
+                      <span className={styles.metricLabel}>Active Environment</span>
+                      <span className={styles.metricValue}>Production</span>
+                    </div>
+                    <div className={styles.metricRow}>
+                      <span className={styles.metricLabel}>Security Level</span>
+                      <span className={styles.metricValue} style={{ color: 'var(--color-primary)' }}>SSL Secured</span>
+                    </div>
+                    <div className={styles.metricRow}>
+                      <span className={styles.metricLabel}>API Status</span>
+                      <span className={styles.metricValue}>v1 (Healthy)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}

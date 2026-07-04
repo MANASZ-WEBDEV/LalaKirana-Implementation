@@ -277,3 +277,165 @@
 .tabContent {
   padding-top: 8px;
 }
+
+/* Premium Dashboard Hub styling */
+.hubHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--color-outline-variant);
+  padding-bottom: 0.75rem;
+}
+
+.statusIndicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-success, #2e7d32);
+  background-color: var(--color-success-container, #e8f5e9);
+  padding: 4px 10px;
+  border-radius: 100px;
+}
+
+.pulseDot {
+  width: 6px;
+  height: 6px;
+  background-color: currentColor;
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 125, 50, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(46, 125, 50, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 125, 50, 0); }
+}
+
+.hubGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+}
+
+@media (max-width: 1024px) {
+  .hubGrid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+.shortcutsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.shortcutsTitle {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-outline);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.shortcutsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 640px) {
+  .shortcutsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.shortcutCard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: all var(--transition-normal);
+  text-align: left;
+}
+
+.shortcutCard:hover {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-container);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.shortcutIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-container);
+  color: var(--color-primary);
+  font-size: 1.25rem;
+}
+
+.shortcutCard:hover .shortcutIcon {
+  background-color: var(--color-white);
+}
+
+.shortcutContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.shortcutName {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-on-surface);
+}
+
+.shortcutDesc {
+  font-size: 0.75rem;
+  color: var(--color-on-surface-variant);
+}
+
+.metricsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-outline-variant);
+}
+
+.metricRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8125rem;
+  border-bottom: 1px dashed var(--color-outline-variant);
+  padding-bottom: 0.5rem;
+}
+
+.metricRow:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.metricLabel {
+  color: var(--color-on-surface-variant);
+  font-weight: 500;
+}
+
+.metricValue {
+  font-weight: 600;
+  color: var(--color-on-surface);
+}
+
