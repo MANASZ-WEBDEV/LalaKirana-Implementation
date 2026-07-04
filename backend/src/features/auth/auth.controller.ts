@@ -304,7 +304,7 @@ export const authController = {
       }
 
       // A user can delete their own session, but only the owner can delete other users' sessions
-      if (session.user_id !== req.user.id && req.user.role !== 'owner') {
+      if (session.user_id !== req.user.id && req.user.role !== 'owner' && req.user.role !== 'master') {
         return res.status(403).json({ message: 'Forbidden: Cannot terminate another user\'s session' });
       }
 
