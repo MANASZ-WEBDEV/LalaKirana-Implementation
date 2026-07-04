@@ -555,4 +555,65 @@ export const authController = {
       return res.status(400).json({ message: err.message || 'Failed to activate user' });
     }
   },
+
+  updatePin: async (req: Request, res: Response) => {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const { pin } = req.body;
+
+    try {
+      const hashedPin = await bcrypt.hash(pin, 12);
+
+      const { error } = await supabase
+        .from('users')
+        .update({ unlock_pin: hashedPin })
+        .eq('id', req.user.id);
+
+      if (error) {
+        throw new Error(`Failed to update PIN: ${error.message}`);
+      }
+
+      return res.json({ message: 'Unlock PIN updated successfully' });
+    } catch (err: any) {
+      console.error('Update PIN error:', err);
+      return res.status(400).json({ message: err.message || 'Failed to update PIN' });
+    }
+  },
+
+  verifyPin: async (req: Request, res: Response) => {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const { pin } = req.body;
+
+    try {
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('unlock_pin')
+        .eq('id', req.user.id)
+        .maybeSingle();
+
+      if (error || !user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      if (!user.unlock_pin) {
+        return res.status(400).json({ message: 'PIN not configured. Please set it in Account settings.' });
+      }
+
+      const isMatch = await bcrypt.compare(pin, user.unlock_pin);
+
+      if (!isMatch) {
+        return res.status(401).json({ message: 'Incorrect PIN' });
+      }
+
+      return res.json({ success: true, message: 'PIN verified successfully' });
+    } catch (err: any) {
+      console.error('Verify PIN error:', err);
+      return res.status(500).json({ message: err.message || 'Failed to verify PIN' });
+    }
+  },
 };

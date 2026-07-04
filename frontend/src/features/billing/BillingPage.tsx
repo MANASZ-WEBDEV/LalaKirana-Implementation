@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useBillingStore } from './billingStore';
 import { OrderSlot } from './OrderSlot';
 import { FullBillMode } from './FullBillMode';
@@ -8,16 +8,94 @@ import { BillConfirmDrawer } from './BillConfirmDrawer';
 import { BillHistoryDrawer } from './BillHistoryDrawer';
 import { Button } from '@/shared/ui/Button';
 import { useKeyboardShortcuts } from '@/shared/hooks/useKeyboardShortcuts';
+import { api } from '@/shared/api/axios';
+import { useAuthStore } from '@/shared/store/authStore';
+import { useToastStore } from '@/shared/store/toastStore';
 import styles from './BillingPage.module.css';
 
 export default function BillingPage() {
   const { slots, activeSlotId, addSlot, setActiveSlotId } = useBillingStore();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const logout = useAuthStore((s) => s.logout);
+  const addToast = useToastStore((s) => s.addToast);
 
   // Dialog / Drawer states
   const [showConfirmDrawer, setShowConfirmDrawer] = useState(false);
   const [checkoutMode, setCheckoutMode] = useState<'paid' | 'khata'>('paid');
   const [showHistoryDrawer, setShowHistoryDrawer] = useState(false);
+
+  // Lock screen states
+  const [isScreenLocked, setIsScreenLocked] = useState(false);
+  const [pinDigits, setPinDigits] = useState('');
+  const [isVerifyingPin, setIsVerifyingPin] = useState(false);
+  const pinInputRef = useRef<HTMLInputElement>(null);
+
+  // Inactivity lock handler (30 minutes)
+  useEffect(() => {
+    const INACTIVITY_TIMEOUT = 30 * 60 * 1000;
+    let timer: any;
+
+    const resetTimer = () => {
+      clearTimeout(timer);
+      if (!isScreenLocked) {
+        timer = setTimeout(() => {
+          setIsScreenLocked(true);
+        }, INACTIVITY_TIMEOUT);
+      }
+    };
+
+    if (!isScreenLocked) {
+      window.addEventListener('mousemove', resetTimer);
+      window.addEventListener('keypress', resetTimer);
+      resetTimer();
+    }
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('mousemove', resetTimer);
+      window.removeEventListener('keypress', resetTimer);
+    };
+  }, [isScreenLocked]);
+
+  // Focus hidden input when screen is locked
+  useEffect(() => {
+    if (isScreenLocked) {
+      setPinDigits('');
+      setTimeout(() => {
+        pinInputRef.current?.focus();
+      }, 100);
+    }
+  }, [isScreenLocked]);
+
+  const handlePinChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, '').slice(0, 4);
+    setPinDigits(value);
+
+    if (value.length === 4) {
+      setIsVerifyingPin(true);
+      try {
+        await api.post('/auth/verify-pin', { pin: value });
+        setIsScreenLocked(false);
+        setPinDigits('');
+        addToast('success', 'Terminal unlocked successfully');
+      } catch (err: any) {
+        setPinDigits('');
+        addToast('error', err.response?.data?.message || 'Incorrect PIN');
+        // Refocus input
+        setTimeout(() => {
+          pinInputRef.current?.focus();
+        }, 100);
+      } finally {
+        setIsVerifyingPin(false);
+      }
+    }
+  };
+
+  const handleDifferentUser = () => {
+    logout();
+    navigate('/login');
+  };
 
   useEffect(() => {
     if (searchParams.get('bill')) {
@@ -53,6 +131,53 @@ export default function BillingPage() {
     setCheckoutMode(status);
     setShowConfirmDrawer(true);
   };
+
+  if (isScreenLocked) {
+    return (
+      <div className={styles.lockOverlay} onClick={() => pinInputRef.current?.focus()}>
+        <div className={styles.lockCard} onClick={(e) => e.stopPropagation()}>
+          <div className={styles.lockIcon}>🔒</div>
+          <h2 className={styles.lockTitle}>Screen Locked</h2>
+          <p className={styles.lockSubtitle}>Inactive for 30 minutes</p>
+
+          <div className={styles.pinContainer}>
+            <span style={{ fontSize: '0.875rem', color: 'var(--color-outline)' }}>
+              Enter PIN to continue
+            </span>
+            <div className={styles.pinInputWrapper}>
+              <input
+                ref={pinInputRef}
+                type="password"
+                maxLength={4}
+                value={pinDigits}
+                onChange={handlePinChange}
+                disabled={isVerifyingPin}
+                className={styles.hiddenInput}
+                autoFocus
+              />
+              <div className={styles.pinDigitsRow}>
+                {[0, 1, 2, 3].map((index) => {
+                  const isFilled = pinDigits.length > index;
+                  return (
+                    <div
+                      key={index}
+                      className={`${styles.pinDigit} ${isFilled ? styles.pinDigitFilled : ''}`}
+                    >
+                      {isFilled ? '•' : ''}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <button type="button" onClick={handleDifferentUser} className={styles.differentUserBtn}>
+            Or: Sign in as different user
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>

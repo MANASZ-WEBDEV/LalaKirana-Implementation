@@ -89,6 +89,12 @@ export function useChangePassword() {
   });
 }
 
+export function useUpdatePin() {
+  return useMutation({
+    mutationFn: (pin: string) => settingsApi.updatePin(pin),
+  });
+}
+
 export function useSettingsCategories() {
   return useQuery({
     queryKey: settingsKeys.categories,

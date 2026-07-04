@@ -37,6 +37,9 @@ export const settingsApi = {
   changePassword: (currentPassword: string, newPassword: string) =>
     api.put<{ message: string }>('/auth/change-password', { currentPassword, newPassword }).then((r) => r.data),
 
+  updatePin: (pin: string) =>
+    api.put<{ message: string }>('/auth/update-pin', { pin }).then((r) => r.data),
+
   getStoreSettings: () =>
     api.get<Record<string, string>>('/settings/store').then((r) => r.data),
 

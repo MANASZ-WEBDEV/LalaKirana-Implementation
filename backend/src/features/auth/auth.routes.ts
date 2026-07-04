@@ -9,6 +9,8 @@ import {
   ChangePasswordSchema,
   CreateUserSchema,
   ResetUserPasswordSchema,
+  UpdatePinSchema,
+  VerifyPinSchema,
 } from './auth.schema.js';
 
 const router = Router();
@@ -21,6 +23,8 @@ router.post('/login', loginRateLimiter, validateRequest(LoginSchema), authContro
 router.post('/logout', authMiddleware, authController.logout);
 router.get('/me', authMiddleware, authController.me);
 router.put('/change-password', authMiddleware, validateRequest(ChangePasswordSchema), authController.changePassword);
+router.put('/update-pin', authMiddleware, validateRequest(UpdatePinSchema), authController.updatePin);
+router.post('/verify-pin', authMiddleware, validateRequest(VerifyPinSchema), authController.verifyPin);
 router.get('/sessions', authMiddleware, authController.getSessions);
 router.delete('/sessions/all', authMiddleware, authController.deleteAllSessions);
 router.delete('/sessions/:id', authMiddleware, authController.deleteSession);

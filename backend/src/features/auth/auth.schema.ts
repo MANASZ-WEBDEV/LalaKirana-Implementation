@@ -31,3 +31,15 @@ export const ResetUserPasswordSchema = z.object({
     newPassword: z.string().min(6, 'New password must be at least 6 characters'),
   }),
 });
+
+export const UpdatePinSchema = z.object({
+  body: z.object({
+    pin: z.string().regex(/^\d{4}$/, 'PIN must be exactly 4 digits'),
+  }),
+});
+
+export const VerifyPinSchema = z.object({
+  body: z.object({
+    pin: z.string().regex(/^\d{4}$/, 'PIN must be exactly 4 digits'),
+  }),
+});
