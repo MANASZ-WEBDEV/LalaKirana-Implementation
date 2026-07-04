@@ -5,7 +5,7 @@ export const reportsController = {
   getDashboardStats: async (req: Request, res: Response) => {
     try {
       const stats = await reportsService.getDashboardStats();
-      if (req.user?.role !== 'owner') {
+      if (req.user?.role !== 'owner' && req.user?.role !== 'master') {
         stats.inventoryValue = null;
       }
       return res.json(stats);
