@@ -25,6 +25,32 @@ export const billingService = {
       }
     }
 
+    // Populate actual cost_prices from products table to prevent client-side spoofing or nulls
+    if (input.mode === 'full' && input.items && input.items.length > 0) {
+      const productIds = input.items.map(item => item.product_id);
+      const { data: dbProducts, error: dbError } = await supabase
+        .from('products')
+        .select('id, cost_price')
+        .in('id', productIds);
+
+      if (dbError || !dbProducts) {
+        throw new Error(`Failed to validate products: ${dbError?.message || 'Products not found'}`);
+      }
+
+      const costPriceMap = new Map<string, number>();
+      for (const p of dbProducts) {
+        costPriceMap.set(p.id, Number(p.cost_price));
+      }
+
+      for (const item of input.items) {
+        const dbCostPrice = costPriceMap.get(item.product_id);
+        if (dbCostPrice === undefined) {
+          throw new Error(`Product not found: ${item.product_name}`);
+        }
+        item.cost_price = dbCostPrice;
+      }
+    }
+
     // Call transactional PostgreSQL function
     const { data: billId, error: txError } = await supabase
       .rpc('confirm_bill_transaction', {

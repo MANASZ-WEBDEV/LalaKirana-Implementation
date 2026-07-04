@@ -6,10 +6,10 @@ const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-
 const BillItemSchema = z.object({
   product_id: z.string().regex(uuidRegex, 'Invalid product ID'),
   product_name: z.string().min(1, 'Product name is required'),
-  qty: z.number().positive('Quantity must be positive'),
-  unit_price: z.number().min(0, 'Unit price must be non-negative'),
-  cost_price: z.number().min(0, 'Cost price must be non-negative'),
-  discount: z.number().min(0, 'Discount must be non-negative').optional().default(0),
+  qty: z.coerce.number().positive('Quantity must be positive'),
+  unit_price: z.coerce.number().min(0, 'Unit price must be non-negative'),
+  cost_price: z.coerce.number().min(0, 'Cost price must be non-negative').optional().nullable(),
+  discount: z.coerce.number().min(0, 'Discount must be non-negative').optional().default(0),
   is_loose: z.boolean().optional().default(false),
 });
 
@@ -23,7 +23,7 @@ export const ConfirmBillSchema = z.object({
     customer_id: z.string().regex(uuidRegex).optional().nullable(),
     customer_name: z.string().optional().nullable(),
     // For khata bills, at least customer_name or customer_id is required
-    total: z.number().min(0, 'Total must be non-negative'),
+    total: z.coerce.number().min(0, 'Total must be non-negative'),
     note: z.string().optional().nullable(),
     // Used for quick bills: short description of what was sold
   }).refine(
