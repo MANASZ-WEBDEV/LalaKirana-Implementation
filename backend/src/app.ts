@@ -16,6 +16,7 @@ import purchaseRoutes from './features/purchases/purchases.routes.js';
 import storeSettingsRoutes from './features/settings/settings.routes.js';
 import masterRoutes from './features/master/master.routes.js';
 import activityRoutes from './features/activity/activity.routes.js';
+import hrRoutes from './features/hr/hr.routes.js';
 
 const app = express();
 
@@ -53,6 +54,7 @@ app.use('/api/v1/purchases', purchaseRoutes);
 app.use('/api/v1/settings', storeSettingsRoutes);
 app.use('/api/v1/master', masterRoutes);
 app.use('/api/v1/activity', activityRoutes);
+app.use('/api/v1/hr', hrRoutes);
 
 app.get('/', (req: Request, res: Response) => {
   res.json({ message: 'LalaKirana API is online' });
