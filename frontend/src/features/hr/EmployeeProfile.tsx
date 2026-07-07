@@ -276,8 +276,8 @@ export default function EmployeeProfile() {
       )}
 
       {showEditModal && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '2rem' }}>
-          <div style={{ background: 'var(--color-white)', borderRadius: 'var(--radius-lg)', maxWidth: '600px', width: '100%', overflowY: 'auto', maxHeight: '90vh' }}>
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '2rem' }}>
+          <div style={{ background: 'var(--color-white)', borderRadius: 'var(--radius-lg)', maxWidth: '800px', width: '100%', overflowY: 'auto', maxHeight: '90vh' }}>
             <AddEmployeeForm employee={employee} onCancel={() => setShowEditModal(false)} onSuccess={() => setShowEditModal(false)} />
           </div>
         </div>

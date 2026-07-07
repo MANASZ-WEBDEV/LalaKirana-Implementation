@@ -121,188 +121,195 @@ export default function AddEmployeeForm({ employee, onCancel, onSuccess }: AddEm
         {isEditMode ? `Edit Profile: ${employee?.name}` : 'Add New Employee'}
       </h3>
 
-      <div className={styles.formGrid}>
-        {/* Section: Personal Info */}
-        <h4 className={styles.sectionHeader}>Personal Info</h4>
+      <div className={styles.formColumns}>
+        {/* Left Column: Personal Info & Emergency Contact */}
+        <div className={styles.column}>
+          <h4 className={styles.sectionHeader}>Personal Info</h4>
 
-        <div className={styles.formGroup}>
-          <label className={styles.label}>Full Name *</label>
-          <input
-            type="text"
-            className={styles.input}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Ramesh Kumar"
-            required
-          />
-        </div>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Full Name *</label>
+            <input
+              type="text"
+              className={styles.input}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Ramesh Kumar"
+              required
+            />
+          </div>
 
-        <div className={styles.formGroup}>
-          <label className={styles.label}>Phone Number</label>
-          <input
-            type="tel"
-            className={styles.input}
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="10-digit number"
-            pattern="[0-9]{10}"
-          />
-        </div>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Phone Number</label>
+            <input
+              type="tel"
+              className={styles.input}
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="10-digit number"
+              pattern="[0-9]{10}"
+            />
+          </div>
 
-        <div className={`${styles.formGroup} styles.formGroupFull ${styles.formGroupFull}`}>
-          <label className={styles.label}>Address</label>
-          <input
-            type="text"
-            className={styles.input}
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            placeholder="Current residential address"
-          />
-        </div>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Address</label>
+            <input
+              type="text"
+              className={styles.input}
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="Current residential address"
+            />
+          </div>
 
-        {/* Section: Job Parameters */}
-        <h4 className={styles.sectionHeader}>Employment Details</h4>
+          <h4 className={styles.sectionHeader} style={{ marginTop: '0.5rem' }}>Emergency Contact</h4>
 
-        <div className={styles.formGroup}>
-          <label className={styles.label}>Designation</label>
-          <select
-            className={`${styles.input} ${styles.selectInput}`}
-            value={designation}
-            onChange={(e) => setDesignation(e.target.value)}
-          >
-            <option value="Counter Staff">Counter Staff</option>
-            <option value="Billing Executive">Billing Executive</option>
-            <option value="Helper">Helper</option>
-            <option value="Cleaner">Cleaner</option>
-            <option value="Delivery Person">Delivery Person</option>
-            <option value="Manager">Manager</option>
-            <option value="Staff Member">Staff Member</option>
-          </select>
-        </div>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Contact Name</label>
+            <input
+              type="text"
+              className={styles.input}
+              value={emergencyName}
+              onChange={(e) => setEmergencyName(e.target.value)}
+              placeholder="e.g. Spouse/Parent Name"
+            />
+          </div>
 
-        <div className={styles.formGroup}>
-          <label className={styles.label}>Employment Type</label>
-          <select
-            className={`${styles.input} ${styles.selectInput}`}
-            value={employmentType}
-            onChange={(e: any) => setEmploymentType(e.target.value)}
-          >
-            <option value="full_time">Full Time</option>
-            <option value="part_time">Part Time</option>
-            <option value="daily_wage">Daily Wage</option>
-          </select>
-        </div>
-
-        <div className={styles.formGroup}>
-          <label className={styles.label}>Salary Basis</label>
-          <select
-            className={`${styles.input} ${styles.selectInput}`}
-            value={salaryType}
-            onChange={(e: any) => setSalaryType(e.target.value)}
-          >
-            <option value="monthly">Monthly Salary</option>
-            <option value="daily">Daily Wage</option>
-          </select>
-        </div>
-
-        <div className={styles.formGroup}>
-          <label className={styles.label}>Salary Amount (₹) *</label>
-          <input
-            type="number"
-            className={styles.input}
-            value={salaryAmount}
-            onChange={(e) => setSalaryAmount(e.target.value)}
-            placeholder="Amount in Rupees"
-            min="1"
-            required
-          />
-        </div>
-
-        <div className={styles.formGroup}>
-          <label className={styles.label}>Date of Joining</label>
-          <input
-            type="date"
-            className={styles.input}
-            value={dateOfJoining}
-            onChange={(e) => setDateOfJoining(e.target.value)}
-            required
-          />
-        </div>
-
-        {/* Link to Login User */}
-        <div className={styles.formGroup}>
-          <label className={styles.label}>Link System User Account</label>
-          <select
-            className={`${styles.input} ${styles.selectInput}`}
-            value={userId}
-            onChange={(e) => setUserId(e.target.value)}
-          >
-            <option value="">None (Unlinked)</option>
-            {employee?.user_id && (
-              <option value={employee.user_id}>
-                {employee.name} ({users?.find((u) => u.id === employee.user_id)?.email || 'Linked Account'})
-              </option>
-            )}
-            {availableUsers.map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.name || u.email} ({u.email})
-              </option>
-            ))}
-          </select>
-          <span style={{ fontSize: '0.7rem', color: 'var(--color-outline)' }}>
-            Allows the employee to log in and use EOD/billing features under this staff role.
-          </span>
-        </div>
-
-        {/* Schedule */}
-        <div className={`${styles.formGroup} ${styles.formGroupFull}`}>
-          <label className={styles.label}>Standard Weekly Work Schedule</label>
-          <div className={styles.checkboxGroup}>
-            <label className={styles.checkboxLabel}>
-              <input
-                type="checkbox"
-                className={styles.checkbox}
-                checked={worksSaturday}
-                onChange={(e) => setWorksSaturday(e.target.checked)}
-              />
-              Works Saturdays
-            </label>
-            <label className={styles.checkboxLabel}>
-              <input
-                type="checkbox"
-                className={styles.checkbox}
-                checked={worksSunday}
-                onChange={(e) => setWorksSunday(e.target.checked)}
-              />
-              Works Sundays
-            </label>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Contact Phone</label>
+            <input
+              type="tel"
+              className={styles.input}
+              value={emergencyPhone}
+              onChange={(e) => setEmergencyPhone(e.target.value)}
+              placeholder="10-digit number"
+              pattern="[0-9]{10}"
+            />
           </div>
         </div>
 
-        {/* Section: Emergency Contact */}
-        <h4 className={styles.sectionHeader}>Emergency Contact</h4>
+        {/* Right Column: Employment Details */}
+        <div className={styles.column}>
+          <h4 className={styles.sectionHeader}>Employment Details</h4>
 
-        <div className={styles.formGroup}>
-          <label className={styles.label}>Contact Name</label>
-          <input
-            type="text"
-            className={styles.input}
-            value={emergencyName}
-            onChange={(e) => setEmergencyName(e.target.value)}
-            placeholder="e.g. Spouse/Parent Name"
-          />
-        </div>
+          <div className={styles.formGroupGrid}>
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Designation</label>
+              <select
+                className={`${styles.input} ${styles.selectInput}`}
+                value={designation}
+                onChange={(e) => setDesignation(e.target.value)}
+              >
+                <option value="Counter Staff">Counter Staff</option>
+                <option value="Billing Executive">Billing Executive</option>
+                <option value="Helper">Helper</option>
+                <option value="Cleaner">Cleaner</option>
+                <option value="Delivery Person">Delivery Person</option>
+                <option value="Manager">Manager</option>
+                <option value="Staff Member">Staff Member</option>
+              </select>
+            </div>
 
-        <div className={styles.formGroup}>
-          <label className={styles.label}>Contact Phone</label>
-          <input
-            type="tel"
-            className={styles.input}
-            value={emergencyPhone}
-            onChange={(e) => setEmergencyPhone(e.target.value)}
-            placeholder="10-digit number"
-            pattern="[0-9]{10}"
-          />
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Employment Type</label>
+              <select
+                className={`${styles.input} ${styles.selectInput}`}
+                value={employmentType}
+                onChange={(e: any) => setEmploymentType(e.target.value)}
+              >
+                <option value="full_time">Full Time</option>
+                <option value="part_time">Part Time</option>
+                <option value="daily_wage">Daily Wage</option>
+              </select>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Salary Basis</label>
+              <select
+                className={`${styles.input} ${styles.selectInput}`}
+                value={salaryType}
+                onChange={(e: any) => setSalaryType(e.target.value)}
+              >
+                <option value="monthly">Monthly Salary</option>
+                <option value="daily">Daily Wage</option>
+              </select>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Salary Amount (₹) *</label>
+              <input
+                type="number"
+                className={styles.input}
+                value={salaryAmount}
+                onChange={(e) => setSalaryAmount(e.target.value)}
+                placeholder="Amount in Rupees"
+                min="1"
+                required
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Date of Joining</label>
+              <input
+                type="date"
+                className={styles.input}
+                value={dateOfJoining}
+                onChange={(e) => setDateOfJoining(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Link System User</label>
+              <select
+                className={`${styles.input} ${styles.selectInput}`}
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
+              >
+                <option value="">None (Unlinked)</option>
+                {employee?.user_id && (
+                  <option value={employee.user_id}>
+                    {employee.name} ({users?.find((u) => u.id === employee.user_id)?.email || 'Linked Account'})
+                  </option>
+                )}
+                {availableUsers.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.name || u.email} ({u.email})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className={styles.formGroupFull} style={{ marginTop: '0.1rem' }}>
+            <span style={{ fontSize: '0.65rem', color: 'var(--color-outline)', display: 'block' }}>
+              * Link Account allows the employee to log in and use EOD/billing features.
+            </span>
+          </div>
+
+          {/* Schedule */}
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Weekly Work Schedule</label>
+            <div className={styles.checkboxGroup}>
+              <label className={styles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  className={styles.checkbox}
+                  checked={worksSaturday}
+                  onChange={(e) => setWorksSaturday(e.target.checked)}
+                />
+                Works Saturdays
+              </label>
+              <label className={styles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  className={styles.checkbox}
+                  checked={worksSunday}
+                  onChange={(e) => setWorksSunday(e.target.checked)}
+                />
+                Works Sundays
+              </label>
+            </div>
+          </div>
         </div>
       </div>
 
