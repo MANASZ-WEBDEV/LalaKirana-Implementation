@@ -22,4 +22,7 @@ export const authApi = {
 
   deleteSession: (id: string) =>
     api.delete<{ message: string }>(`/auth/sessions/${id}`).then((r) => r.data),
+
+  getUsers: () =>
+    api.get<User[]>('/auth/users').then((r) => r.data),
 };

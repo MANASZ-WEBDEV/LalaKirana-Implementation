@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { hrApi } from './hr.api';
+import { authApi } from '../auth/auth.api';
 import { useToastStore } from '@/shared/store/toastStore';
 
 export const hrKeys = {
@@ -205,5 +206,14 @@ export function useCreateAdvance() {
     onError: (err: any) => {
       addToast('error', err.response?.data?.message || 'Failed to record advance');
     },
+  });
+}
+
+// ── Linkage / System Users Hooks ─────────────────────────────────────
+
+export function useSystemUsers() {
+  return useQuery({
+    queryKey: ['auth', 'users'] as const,
+    queryFn: authApi.getUsers,
   });
 }
