@@ -168,8 +168,8 @@ describe('HR Module Endpoints', () => {
         .single();
 
       expect(record).toBeDefined();
-      expect(record.status).toBe('absent');
-      expect(record.note).toBe('Sick leave');
+      expect(record!.status).toBe('absent');
+      expect(record!.note).toBe('Sick leave');
     });
 
     it('should get attendance history and summary', async () => {
@@ -192,7 +192,7 @@ describe('HR Module Endpoints', () => {
         .single();
 
       const res = await request(app)
-        .delete(`/api/v1/hr/attendance/${record.id}`)
+        .delete(`/api/v1/hr/attendance/${record!.id}`)
         .set('Authorization', `Bearer ${ownerToken}`);
 
       expect(res.status).toBe(200);
