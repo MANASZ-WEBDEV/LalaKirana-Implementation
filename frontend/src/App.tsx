@@ -29,6 +29,8 @@ const PurchasesPage = lazy(() => import('./features/purchases/PurchasesPage'));
 const NewPurchaseForm = lazy(() => import('./features/purchases/NewPurchaseForm'));
 const NotFoundPage = lazy(() => import('./features/error/NotFoundPage'));
 const MasterPage = lazy(() => import('./features/master/MasterPage'));
+const HRPage = lazy(() => import('./features/hr/HRPage'));
+const EmployeeProfile = lazy(() => import('./features/hr/EmployeeProfile'));
 
 // Protected Route Guard
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -46,6 +48,14 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 function MasterRoute({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((s) => s.user);
   return user?.role === 'master' ? <>{children}</> : <Navigate to="/dashboard" replace />;
+}
+
+// Owner Route Guard
+function OwnerRoute({ children }: { children: React.ReactNode }) {
+  const user = useAuthStore((s) => s.user);
+  const isMaster = user?.role === 'master';
+  const isOwner = user?.role === 'owner' || isMaster;
+  return isOwner ? <>{children}</> : <Navigate to="/dashboard" replace />;
 }
 
 // Suspense Fallback
@@ -108,6 +118,22 @@ export default function App() {
                   <Route path="purchases" element={<PurchasesPage />} />
                   <Route path="purchases/new" element={<NewPurchaseForm />} />
                   <Route path="settings" element={<SettingsPage />} />
+                  <Route
+                    path="hr"
+                    element={
+                      <OwnerRoute>
+                        <HRPage />
+                      </OwnerRoute>
+                    }
+                  />
+                  <Route
+                    path="hr/employee/:id"
+                    element={
+                      <OwnerRoute>
+                        <EmployeeProfile />
+                      </OwnerRoute>
+                    }
+                  />
                   <Route
                     path="master"
                     element={
