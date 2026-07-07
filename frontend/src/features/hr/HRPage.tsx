@@ -3,7 +3,7 @@ import { useEmployees } from './hr.queries';
 import EmployeeCard from './EmployeeCard';
 import styles from './HRPage.module.css';
 
-// Lazy loaded placeholders for components built in subsequent steps
+// Imports for sub-components (stubs built to prevent build compilation errors)
 import AttendanceToday from './AttendanceToday';
 import AddEmployeeForm from './AddEmployeeForm';
 
